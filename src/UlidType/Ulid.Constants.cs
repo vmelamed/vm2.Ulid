@@ -107,6 +107,7 @@ public readonly partial struct Ulid
     /// characters from the <see cref="CrockfordDigits"/>. This method is optimized for performance by pre-compiling the regular expression.
     /// </remarks>
     /// <returns>A <see cref="Regex"/> instance configured to match valid ULID strings.</returns>
+    [ExcludeFromCodeCoverage]
     [GeneratedRegex(UlidStringRegex, RegexOptions.Compiled | RegexOptions.IgnoreCase, 500)]
     public static partial Regex UlidString();
 
@@ -190,5 +191,4 @@ public readonly partial struct Ulid
          30, // y
          31, // z
     ];
-
 }

@@ -4,4 +4,15 @@
     <RootNamespace>vm2</RootNamespace>
   </PropertyGroup>
 
+    <PropertyGroup Label="NuGet">
+        <Title>vm2.ULID</Title>
+        <Description>Implementation of the Universaly Unique Lexicographically Sortable Identifier (ULID) for .NET.</Description>
+        <PackageReleaseNotes>Initial version of the vm2.Ulid.</PackageReleaseNotes>
+        <RepositoryUrl>https://github.com/vmelamed/vm2.Ulid</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/vmelamed/vm2.Ulid/blob/main/src/UlidType/UlidType.csproj</PackageProjectUrl>
+        <PackageTags>ULID Universaly Unique Lexicographically Sortable Identifier .net core vm2</PackageTags>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <Version>1.0.0-beta01</Version>
+    </PropertyGroup>
+
 </Project>

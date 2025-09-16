@@ -1,7 +1,6 @@
 namespace vm2.UlidType.Tests;
 
-using System.Text;
-
+[ExcludeFromCodeCoverage]
 public class UlidTests
 {
     [Fact]
@@ -18,6 +17,10 @@ public class UlidTests
         var s = ulid.ToString();
         s.Should().NotBeNullOrWhiteSpace();
         s.Length.Should().Be(UlidStringLength);
+
+        var guid = ulid.ToGuid();
+        guid.ToByteArray().Should().Equal(bytes);
+        new Ulid(guid).Should().Be(ulid);
     }
 
     [Fact]
@@ -173,5 +176,109 @@ public class UlidTests
         (a2 == a).Should().BeTrue();
         (a2 <= a).Should().BeTrue();
         (a2 >= a).Should().BeTrue();
+    }
+
+    [Fact]
+    public void GetHashCode_Is_Stable_And_Consistent_With_Equality()
+    {
+        var factory = new UlidFactory();
+        var ulid = factory.NewUlid();
+        var hash1 = ulid.GetHashCode();
+        var hash11 = ulid.GetHashCode();
+        hash1.Should().Be(hash11);
+
+        var ulid2 = Ulid.Parse(ulid.ToString());
+        var hash2 = ulid2.GetHashCode();
+
+        hash2.Should().Be(hash1);
+    }
+
+    [Fact]
+    public void NewUlid_FromBytes_WithWrongLength_Throws()
+    {
+        Action act = () => new Ulid(new byte[UlidBytesLength - 1]);
+        act.Should().Throw<ArgumentException>();
+        act = () => new Ulid(new byte[UlidBytesLength + 1]);
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void NewUlid_FromBytes_WithWrongByteUtf8_Throws()
+    {
+        var bytes = new byte[UlidStringLength];
+
+        for (var i = 0; i < bytes.Length; i++)
+            bytes[i] = 0xFF;
+        Action act = () => new Ulid(bytes);
+        act.Should().Throw<ArgumentException>();
+
+        for (var i = 0; i < bytes.Length; i++)
+            bytes[i] = (byte)'U';
+
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void NewUlid_FromString_WithWrongChar_Throws()
+    {
+        Action act = () => new Ulid(new string('!', UlidStringLength));
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void NewUlid_FromDateTimeOffsetAndRandom_Roundtrips_As_Expected()
+    {
+        var factory = new UlidFactory();
+        var ulid = factory.NewUlid();
+        var ts = ulid.Timestamp;
+        var random = ulid.RandomBytes.ToArray();
+
+        var ulid2 = new Ulid(ts, random);
+        var ulid3 = new Ulid(new DateTime(ts.Ticks, DateTimeKind.Utc), random);
+
+        ulid2.Should().Be(ulid);
+        ulid3.Should().Be(ulid);
+    }
+
+    [Fact]
+    public void NewUlid_FromDateTimeOffsetAndRandomWrongLength_Throws()
+    {
+        var factory = new UlidFactory();
+        var ulid = factory.NewUlid();
+        var ts = ulid.Timestamp;
+        var random = ulid.RandomBytes.ToArray();
+        Action act = () => new Ulid(ts, random.AsSpan(0, RandomLength - 1).ToArray());
+        act.Should().Throw<ArgumentException>();
+
+        act = () => new Ulid(ts, random.AsSpan(0, RandomLength + 1).ToArray());
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void NewUlid_FromNullOrEmptyString_Throws()
+    {
+        Action act = () => new Ulid(null!);
+        act.Should().Throw<ArgumentException>();
+
+        act = () => new Ulid("");
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void IncrementUlid_Works_As_Expected()
+    {
+        var factory = new UlidFactory();
+        var ulid = factory.NewUlid();
+        var incremented = ulid;
+        incremented++;
+
+        (incremented < ulid).Should().BeFalse();
+        (incremented == ulid).Should().BeFalse();
+        (incremented > ulid).Should().BeTrue();
+
+        // Incrementing the max value overflows
+        var maxUlid = Ulid.AllBitsSet;
+        Action act = () => maxUlid++;
+        act.Should().Throw<OverflowException>();
     }
 }

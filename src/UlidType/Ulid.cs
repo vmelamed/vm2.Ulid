@@ -31,12 +31,12 @@ public readonly partial struct Ulid :
     /// </summary>
     public static readonly Ulid AllBitsSet = new([ 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF ]);
 
-    readonly byte[] _ulidBytes;
+    readonly ReadOnlyMemory<byte> _ulidBytes;
 
     /// <summary>
     /// Gets a read-only span of bytes representing the underlying data of the ULID.
     /// </summary>
-    public readonly ReadOnlySpan<byte> Bytes => _ulidBytes.AsSpan();
+    public readonly ReadOnlySpan<byte> Bytes => _ulidBytes.Span;
 
     /// <summary>
     /// Extracts and converts the ULID's timestamp component into a <see cref="DateTimeOffset"/> representation.
@@ -52,8 +52,8 @@ public readonly partial struct Ulid :
             Span<byte> timestampBytes = stackalloc byte[sizeof(long)];
 
             _ulidBytes
-                    .AsSpan(TimestampBegin, TimestampLength)
-                    .CopyTo(timestampBytes.Slice((BitConverter.IsLittleEndian ? 2 : 0), TimestampLength));
+                .Span[TimestampBegin..TimestampEnd]
+                .CopyTo(timestampBytes.Slice((BitConverter.IsLittleEndian ? 2 : 0), TimestampLength));
 
             return DateTimeOffset.FromUnixTimeMilliseconds(ReadInt64BigEndian(timestampBytes));
         }
@@ -66,14 +66,6 @@ public readonly partial struct Ulid :
     /// The returned byte array represents the random portion of the ULID, which is independent of the timestamp component.
     /// </remarks>
     public readonly ReadOnlySpan<byte> RandomBytes => Bytes[RandomBegin..RandomEnd];
-
-    #region IMinMaxValues<Ulid>
-    /// <inheritdoc/>
-    public static Ulid MaxValue => AllBitsSet;
-
-    /// <inheritdoc/>
-    public static Ulid MinValue => Empty;
-    #endregion
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Ulid"/> struct using the passed in <paramref name="bytes"/>.<br/>
@@ -95,8 +87,7 @@ public readonly partial struct Ulid :
     {
         if (bytes.Length == UlidBytesLength)
         {
-            _ulidBytes = new byte[UlidBytesLength];
-            bytes.CopyTo(_ulidBytes);
+            _ulidBytes = new ReadOnlyMemory<byte>(bytes.ToArray());
             return;
         }
 
@@ -143,9 +134,9 @@ public readonly partial struct Ulid :
                         $"The random bytes argument must contain exactly {nameof(Ulid)}.{nameof(RandomLength)} ({RandomLength}) bytes.",
                         nameof(randomBytes));
 
-        _ulidBytes = new byte[UlidBytesLength];
+        var bytes = new byte[UlidBytesLength];
 
-        var ulidSpan = _ulidBytes.AsSpan();
+        var ulidSpan = bytes.AsSpan();
         var timestampNow = dateTime.ToUnixTimeMilliseconds();
 
         if (!BitConverter.IsLittleEndian)
@@ -157,6 +148,7 @@ public readonly partial struct Ulid :
             ulidSpan[TimestampBegin..TimestampEnd].Reverse();   // 0x0605040302010000.Reverse(0..6) => 0x0102030405060000
 
         randomBytes.CopyTo(ulidSpan[RandomBegin..RandomEnd]);
+        _ulidBytes = new ReadOnlyMemory<byte>(bytes);
     }
 
     /// <summary>
@@ -178,7 +170,7 @@ public readonly partial struct Ulid :
     /// Converts the current ULID value to its equivalent Guid representation.
     /// </summary>
     /// <returns></returns>
-    public readonly Guid ToGuid() => new(_ulidBytes);
+    public readonly Guid ToGuid() => new(Bytes);
 
     /// <summary>
     /// Converts the current ULID value to its equivalent Base64 string representation.
@@ -188,7 +180,7 @@ public readonly partial struct Ulid :
     /// storage or transmission of the ULID value.
     /// </remarks>
     /// <returns>A Base64-encoded string that represents the ULID value.</returns>
-    public readonly string ToBase64() => Convert.ToBase64String(_ulidBytes.AsSpan());
+    public readonly string ToBase64() => Convert.ToBase64String(Bytes);
 
     /// <summary>
     /// Converts the current ULID instance to its equivalent Base32 (the default) string representation.
@@ -229,7 +221,7 @@ public readonly partial struct Ulid :
         if (destination.Length < UlidStringLength)
             return false;
 
-        var ulidAsNumber = ReadUInt128BigEndian(_ulidBytes.AsSpan());
+        var ulidAsNumber = ReadUInt128BigEndian(Bytes);
 
         for (var i = 0; i < UlidStringLength; i++)
         {
@@ -260,7 +252,7 @@ public readonly partial struct Ulid :
         if (destination.Length < UlidBytesLength)
             return false;
 
-        _ulidBytes.AsSpan().CopyTo(destination);
+        Bytes.CopyTo(destination);
         return true;
     }
 
@@ -284,7 +276,7 @@ public readonly partial struct Ulid :
         ReadOnlySpan<char> sourceSpan,
         out Ulid result)
     {
-        result = new Ulid();
+        result = Empty;
 
         if (sourceSpan.Length < UlidStringLength)
             return false;
@@ -343,7 +335,7 @@ public readonly partial struct Ulid :
         ReadOnlySpan<byte> sourceSpan,
         out Ulid result)
     {
-        result = new Ulid();
+        result = Empty;
 
         if (sourceSpan.Length < UlidStringLength)
             return false;
@@ -358,8 +350,7 @@ public readonly partial struct Ulid :
 
             var crockfordIndex = sourceSpan[i] - (byte)'0';
 
-            if (crockfordIndex < 0
-                || crockfordIndex >= CrockfordDigitValues.Length)
+            if (crockfordIndex < 0 || crockfordIndex >= CrockfordDigitValues.Length)
                 return false;
 
             var digitValue = CrockfordDigitValues[crockfordIndex];
@@ -381,6 +372,61 @@ public readonly partial struct Ulid :
         result = new Ulid(ulidSpan);
         return true;
     }
+
+    /// <summary>
+    /// Determines whether the current instance is equal to the specified <see cref="Ulid"/> instance.
+    /// </summary>
+    /// <param name="other">The <see cref="Ulid"/> instance to compare with the current instance.</param>
+    /// <returns>
+    /// <see langword="true"/> if the current instance is equal to the specified <see cref="Ulid"/> instance; otherwise, <see langword="false"/>.
+    /// </returns>
+    public bool Equals(Ulid other) => Bytes.SequenceCompareTo(other.Bytes) == 0;
+
+    /// <summary>
+    /// Determines whether the specified object is equal to the current instance.
+    /// </summary>
+    /// <param name="obj">The object to compare with the current instance. Can be <see langword="null"/>.</param>
+    /// <returns>
+    /// <see langword="true"/> if the specified object is a <see cref="Ulid"/> and is equal to the current instance; otherwise, <see langword="false"/>.
+    /// </returns>
+    public override bool Equals([NotNullWhen(true)] object? obj) => obj is Ulid u && Equals(u);
+
+    /// <summary>
+    /// Returns the hash code for the current instance.
+    /// </summary>
+    /// <remarks>The hash code is computed based on the underlying byte array representing the ULID.</remarks>
+    /// <returns>A 32-bit signed integer that serves as the hash code for the current instance.</returns>
+    public override int GetHashCode()
+    {
+        HashCode hc = new();
+        foreach (var b in Bytes)
+            hc.Add(b);
+        return hc.ToHashCode();
+    }
+
+    /// <summary>
+    /// Compares the current instance with another <see cref="Ulid"/> object and returns an integer that indicates their
+    /// relative order.
+    /// </summary>
+    /// <remarks>The comparison is performed based on the byte sequence of the underlying ULID
+    /// values.</remarks>
+    /// <param name="other">The <see cref="Ulid"/> instance to compare to the current instance.</param>
+    /// <returns>
+    /// A signed integer that indicates the relative order of the objects being compared: <list type="bullet">
+    /// <item><description>Less than zero if the current instance precedes <paramref name="other"/> in the sort
+    /// order.</description></item> <item><description>Zero if the current instance occurs in the same position as
+    /// <paramref name="other"/> in the sort order.</description></item> <item><description>Greater than zero if the
+    /// current instance follows <paramref name="other"/> in the sort order.</description></item> </list>
+    /// </returns>
+    public int CompareTo(Ulid other) => Bytes.SequenceCompareTo(other.Bytes);
+
+    #region IMinMaxValues<Ulid>
+    /// <inheritdoc/>
+    public static Ulid MaxValue => AllBitsSet;
+
+    /// <inheritdoc/>
+    public static Ulid MinValue => Empty;
+    #endregion
 
     #region IParseable
     /// <summary>
@@ -425,46 +471,6 @@ public readonly partial struct Ulid :
         return TryParse(source, out result);
     }
     #endregion
-    /// <summary>
-    /// Determines whether the current instance is equal to the specified <see cref="Ulid"/> instance.
-    /// </summary>
-    /// <param name="other">The <see cref="Ulid"/> instance to compare with the current instance.</param>
-    /// <returns>
-    /// <see langword="true"/> if the current instance is equal to the specified <see cref="Ulid"/> instance; otherwise, <see langword="false"/>.
-    /// </returns>
-    public bool Equals(Ulid other) => _ulidBytes.AsSpan().SequenceCompareTo(other._ulidBytes.AsSpan()) == 0;
-
-    /// <summary>
-    /// Determines whether the specified object is equal to the current instance.
-    /// </summary>
-    /// <param name="obj">The object to compare with the current instance. Can be <see langword="null"/>.</param>
-    /// <returns>
-    /// <see langword="true"/> if the specified object is a <see cref="Ulid"/> and is equal to the current instance; otherwise, <see langword="false"/>.
-    /// </returns>
-    public override bool Equals([NotNullWhen(true)] object? obj) => obj is Ulid u && Equals(u);
-
-    /// <summary>
-    /// Returns the hash code for the current instance.
-    /// </summary>
-    /// <remarks>The hash code is computed based on the underlying byte array representing the ULID.</remarks>
-    /// <returns>A 32-bit signed integer that serves as the hash code for the current instance.</returns>
-    public override int GetHashCode() => _ulidBytes.GetHashCode();
-
-    /// <summary>
-    /// Compares the current instance with another <see cref="Ulid"/> object and returns an integer that indicates their
-    /// relative order.
-    /// </summary>
-    /// <remarks>The comparison is performed based on the byte sequence of the underlying ULID
-    /// values.</remarks>
-    /// <param name="other">The <see cref="Ulid"/> instance to compare to the current instance.</param>
-    /// <returns>
-    /// A signed integer that indicates the relative order of the objects being compared: <list type="bullet">
-    /// <item><description>Less than zero if the current instance precedes <paramref name="other"/> in the sort
-    /// order.</description></item> <item><description>Zero if the current instance occurs in the same position as
-    /// <paramref name="other"/> in the sort order.</description></item> <item><description>Greater than zero if the
-    /// current instance follows <paramref name="other"/> in the sort order.</description></item> </list>
-    /// </returns>
-    public int CompareTo(Ulid other) => _ulidBytes.AsSpan().SequenceCompareTo(other._ulidBytes.AsSpan());
 
     #region IEqualityOperators<Ulid, Ulid, bool>
     /// <inheritdoc/>
@@ -493,22 +499,21 @@ public readonly partial struct Ulid :
     public bool Equals(Ulid x, Ulid y) => x.Equals(y);
 
     /// <inheritdoc/>
-    public int GetHashCode([DisallowNull] Ulid obj) => obj.GetHashCode();
+    public int GetHashCode(Ulid obj) => obj.GetHashCode();
     #endregion
 
     #region IIncrementOperators<Ulid>
     /// <inheritdoc/>
     public static Ulid operator ++(Ulid value)
     {
-        var newUlidBytes = (byte[])value._ulidBytes.Clone();
+        var newUlidBytes = value.Bytes.ToArray();
         var span = newUlidBytes.AsSpan();
 
         var i = span.Length-1;
         for (; i >= 0; i--)
-            if (unchecked(++span[i]) >= 0)
+            if (unchecked(++span[i]) != 0)
                 return new Ulid(span);
 
-        Debug.Assert(false, "We should never be here.");
         throw new OverflowException("Ulid overflowed.");
     }
     #endregion

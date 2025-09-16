@@ -2,16 +2,11 @@
 
   <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <RootNamespace>vm2.Tests</RootNamespace>
+        <RootNamespace>vm2.UlidType.Tests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\UlidType\UlidType.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Using Include="Xunit" />
-    <Using Include="FluentAssertions" />
   </ItemGroup>
 
 </Project>

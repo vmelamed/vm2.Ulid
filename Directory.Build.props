@@ -17,7 +17,7 @@
         <IsPackable>true</IsPackable>
         <Company>vm</Company>
         <Product>vm2</Product>
-        <ProductName>Val Melamed's packages</ProductName>
+        <ProductName>vm2 packages</ProductName>
         <Authors>Val Melamed</Authors>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <RepositoryUrl>https://github.com/vmelamed/vm2</RepositoryUrl>
@@ -54,6 +54,14 @@
         <!-- for test libraries in the test folder: -->
         <PackageReference Include="xunit.v3.extensibility.core"/>
         <!-- xunit.v3.assert.source -->
+    </ItemGroup>
+    <ItemGroup Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]test[/\\]'))">
+        <Using Include="Xunit" />
+        <Using Include="FluentAssertions" />
+        <Using Include="FluentAssertions.Formatting"/>
+        <Using Include="FluentAssertions.Extensibility"/>
+        <!--
+        -->
     </ItemGroup>
 
     <PropertyGroup Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]benchmarks[/\\]'))">
