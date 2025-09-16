@@ -40,36 +40,48 @@ jobs:
         run: |
           set -euo pipefail
 
-          # run tests and collect coverage (XPlat collector)
-          dotnet test ./test/UlidType.Tests/UlidType.Tests.csproj -c Release --no-build --collect:"XPlat Code Coverage"
+          # # run tests and collect coverage (XPlat collector)
+          # dotnet test ./test/UlidType.Tests/UlidType.Tests.csproj -c Release --no-build --collect:"XPlat Code Coverage"
 
-          # locate cobertura file produced by collector
-          COV_FILE=$(find "$(pwd)" -type f -path "*/TestResults/*/coverage.cobertura.xml" -print -quit || true)
-          if [ -z "$COV_FILE" ]; then
-            echo "Coverage file not found."
+          # # locate cobertura file produced by collector
+          # COV_FILE=$(find "$(pwd)" -type f -path "*/TestResults/*/coverage.cobertura.xml" -print -quit || true)
+          # if [ -z "$COV_FILE" ]; then
+          #   echo "Coverage file not found."
+          #   exit 2
+          # fi
+          # mkdir -p coverage
+          # cp "$COV_FILE" coverage/coverage.cobertura.xml
+
+          # # install ReportGenerator and create a text summary
+          # dotnet tool install --tool-path ./tools dotnet-reportgenerator-globaltool --version 5.*
+          # ./tools/reportgenerator -reports:coverage/coverage.cobertura.xml -targetdir:coverage_report -reporttypes:TextSummary
+
+          # SUMMARY="coverage_report/Summary.txt"
+          # if [ ! -f "$SUMMARY" ]; then
+          #   echo "Coverage summary not found; failing."
+          #   exit 2
+          # fi
+
+          # PCT=$(grep -oP '\d+(\.\d+)?(?=%)' "$SUMMARY" | head -n1 || true)
+          # if [ -z "$PCT" ]; then
+          #   echo "Could not parse coverage percent from $SUMMARY"
+          #   exit 2
+          # fi
+
+          # echo "Coverage: $PCT% (threshold: ${COVERAGE_THRESHOLD}%)"
+          # awk -v p="$PCT" -v t="${COVERAGE_THRESHOLD}" 'BEGIN { if (p+0 < t+0) { print "Coverage below threshold"; exit 1 } else { print "Coverage OK" } }'
+          # run tests and produce cobertura via coverlet.msbuild
+          dotnet test ./test/UlidType.Tests/UlidType.Tests.csproj -c Release --no-build \
+            /p:CollectCoverage=true \
+            /p:CoverletOutputFormat=cobertura \
+            /p:CoverletOutput=coverage/coverage.cobertura.xml
+
+          if [ ! -f coverage/coverage.cobertura.xml ]; then
+            echo "coverage file not produced; listing TestResults and coverage dir:"
+            find . -type d -name "TestResults" -print -exec ls -la {} \; || true
+            find coverage -maxdepth 2 -type f -print || true
             exit 2
           fi
-          mkdir -p coverage
-          cp "$COV_FILE" coverage/coverage.cobertura.xml
-
-          # install ReportGenerator and create a text summary
-          dotnet tool install --tool-path ./tools dotnet-reportgenerator-globaltool --version 5.*
-          ./tools/reportgenerator -reports:coverage/coverage.cobertura.xml -targetdir:coverage_report -reporttypes:TextSummary
-
-          SUMMARY="coverage_report/Summary.txt"
-          if [ ! -f "$SUMMARY" ]; then
-            echo "Coverage summary not found; failing."
-            exit 2
-          fi
-
-          PCT=$(grep -oP '\d+(\.\d+)?(?=%)' "$SUMMARY" | head -n1 || true)
-          if [ -z "$PCT" ]; then
-            echo "Could not parse coverage percent from $SUMMARY"
-            exit 2
-          fi
-
-          echo "Coverage: $PCT% (threshold: ${COVERAGE_THRESHOLD}%)"
-          awk -v p="$PCT" -v t="${COVERAGE_THRESHOLD}" 'BEGIN { if (p+0 < t+0) { print "Coverage below threshold"; exit 1 } else { print "Coverage OK" } }'
         shell: bash
 
       # -- Benchmark run: Linux only -----------------------------------------
