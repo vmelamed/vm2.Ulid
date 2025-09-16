@@ -4,6 +4,16 @@ namespace vm2.UlidType.Tests;
 public class UlidTests
 {
     [Fact]
+    public void Ulid_NewUlid_Uses_InternalFactory()
+    {
+        var ulid1 = Ulid.NewUlid();
+        var ulid2 = Ulid.NewUlid();
+
+        ulid1.Should().BeLessThan(ulid2);
+        ulid2.Timestamp.Should().BeOnOrAfter(ulid1.Timestamp);
+    }
+
+    [Fact]
     public void NewUlid_Roundtrip_ToByteArray_ToGuid_ToBase64_ToString()
     {
         var factory = new UlidFactory();

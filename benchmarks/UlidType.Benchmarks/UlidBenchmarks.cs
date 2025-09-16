@@ -4,6 +4,8 @@ using System.Text;
 
 using vm2;
 
+#pragma warning disable CA1822 // The benchmark methods must not be static
+
 class PreGeneratedData<T>
 {
     int _numberItems;
@@ -34,19 +36,16 @@ class PreGeneratedData<T>
 [Orderer(SummaryOrderPolicy.FastestToSlowest, MethodOrderPolicy.Declared)]
 public class NewUlid
 {
-    UlidFactory _factory = null!;
+    UlidFactory _factory = new();
 
-    Action _method = null!;
+    [Benchmark(Description = "Guid.NewGuid", Baseline = true)]
+    public Guid Generate_Guid() => Guid.NewGuid();
 
-    [GlobalSetup]
-    public void Setup()
-    {
-        _factory = new UlidFactory();
-        _method = () => _factory.NewUlid();
-    }
+    [Benchmark(Description = "Ulid.NewUlid")]
+    public Ulid GenerateUlid_Ulid() => Ulid.NewUlid();
 
     [Benchmark(Description = "UlidFactory.NewUlid")]
-    public void Generate_Ulid() => _factory.NewUlid();
+    public Ulid Generate_Ulid() => _factory.NewUlid();
 }
 
 [SimpleJob(RuntimeMoniker.HostProcess)]
@@ -57,18 +56,23 @@ public class NewUlid
 public class UlidToString
 {
     const int MaxDataItems = 1000;
-    UlidFactory _factory = null!;
-    PreGeneratedData<Ulid> _dataVm = null!;
+    UlidFactory _factory = new();
+    PreGeneratedData<Guid> _data1 = null!;
+    PreGeneratedData<Ulid> _data2 = null!;
 
     [GlobalSetup]
     public void Setup()
     {
-        _factory = new();
-        _dataVm = new(MaxDataItems, _ => _factory.NewUlid());
+        _data1 = new(MaxDataItems, _ => Guid.NewGuid());
+        _data2 = new(MaxDataItems, _ => _factory.NewUlid());
     }
 
+    [Benchmark(Description = "Guid.ToString", Baseline = true)]
+    public string Guid_ToString() => _data1.GetNext().ToString();
+
+
     [Benchmark(Description = "Ulid.ToString")]
-    public string Ulid_ToString() => _dataVm.GetNext().ToString();
+    public string Ulid_ToString() => _data2.GetNext().ToString();
 }
 
 [SimpleJob(RuntimeMoniker.HostProcess)]
@@ -79,40 +83,27 @@ public class UlidToString
 public class ParseUlid
 {
     const int MaxDataItems = 1000;
-    UlidFactory _factory = null!;
-    PreGeneratedData<string> _data = null!;
+    UlidFactory _factory = new();
+    PreGeneratedData<string> _data1 = null!;
+    PreGeneratedData<string> _data2 = null!;
+    PreGeneratedData<byte[]> _data3 = null!;
 
     [GlobalSetup]
     public void Setup()
     {
-        _factory = new();
-        _data = new(MaxDataItems, _ => _factory.NewUlid().ToString());
+        _data1 = new(MaxDataItems, _ => Guid.NewGuid().ToString());
+        _data2 = new(MaxDataItems, _ => _factory.NewUlid().ToString());
+        _data3 = new(MaxDataItems, _ => Encoding.UTF8.GetBytes(_factory.NewUlid().ToString()));
     }
 
-    [Benchmark(Description = "Ulid.Parse")]
-    public Ulid Ulid_Parse() => Ulid.Parse(_data.GetNext());
-}
+    [Benchmark(Description = "Guid.Parse", Baseline = true)]
+    public Guid Guid_Parse() => Guid.Parse(_data1.GetNext());
 
-[SimpleJob(RuntimeMoniker.HostProcess)]
-[MemoryDiagnoser]
-[HtmlExporter]
-[CPUUsageDiagnoser]
-[Orderer(SummaryOrderPolicy.FastestToSlowest, MethodOrderPolicy.Declared)]
-public class ParseUtf8Ulid
-{
-    const int MaxDataItems = 1000;
-    UlidFactory _factory = null!;
-    PreGeneratedData<byte[]> _data = null!;
+    [Benchmark(Description = "Ulid.ParseString")]
+    public Ulid Ulid_Parse() => Ulid.Parse(_data2.GetNext());
 
-    [GlobalSetup]
-    public void Setup()
-    {
-        _factory = new();
-        _data = new(MaxDataItems, _ => Encoding.UTF8.GetBytes(_factory.NewUlid().ToString()));
-    }
-
-    [Benchmark(Description = "Ulid.Parse")]
-    public Ulid Ulid_Parse() => Ulid.TryParse(_data.GetNext(), out var ulid)
+    [Benchmark(Description = "Ulid.ParseUtf8String")]
+    public Ulid Ulid_ParseUtf8() => Ulid.TryParse(_data3.GetNext(), out var ulid)
                                         ? ulid
-                                        : throw new InvalidOperationException($"Failed to parse: {string.Join("-", _data.Current.Select(b => b.ToString("X2")))}");
+                                        : throw new InvalidOperationException($"Failed to parse: {string.Join("-", _data3.Current.Select(b => b.ToString("X2")))}");
 }

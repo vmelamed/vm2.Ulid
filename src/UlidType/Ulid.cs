@@ -31,6 +31,8 @@ public readonly partial struct Ulid :
     /// </summary>
     public static readonly Ulid AllBitsSet = new([ 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF ]);
 
+    static UlidFactory? _defaultFactory;
+
     readonly ReadOnlyMemory<byte> _ulidBytes;
 
     /// <summary>
@@ -66,6 +68,16 @@ public readonly partial struct Ulid :
     /// The returned byte array represents the random portion of the ULID, which is independent of the timestamp component.
     /// </remarks>
     public readonly ReadOnlySpan<byte> RandomBytes => Bytes[RandomBegin..RandomEnd];
+
+    /// <summary>
+    /// Generates a new unique ULID (Universally Unique Lexicographically Sortable Identifier).
+    /// </summary>
+    /// <remarks>
+    /// This method uses an internal, default <see cref="UlidFactory"/> instance to create a new ULID.<br/>
+    /// Consider using your own factories that generate separate sequences of ULIDs, e.g. a factory per DB table or per entity type.<br/>
+    /// </remarks>
+    /// <returns>A new <see cref="Ulid"/> instance representing a unique identifier.</returns>
+    public static Ulid NewUlid() => (_defaultFactory ??= new UlidFactory()).NewUlid();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Ulid"/> struct using the passed in <paramref name="bytes"/>.<br/>
