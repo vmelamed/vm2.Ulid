@@ -399,3 +399,8 @@ FodyWeavers.xsd
 
 # benchmarkDotNet results folder
 BenchmarkDotNet.Artifacts/
+# benchmark profiler generated code
+
+
+# unit tests Code Coverage folder
+TestResults/

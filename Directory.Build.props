@@ -78,16 +78,15 @@
         <PackageReference Include="BenchmarkDotNet.Annotations" />
         <PackageReference Include="BenchmarkDotNet.Diagnostics.dotMemory" />
         <PackageReference Include="BenchmarkDotNet.Diagnostics.dotTrace" />
-        <!-- To Shows up in the test explorer (with some perf. penalty):
+        <!-- To show up in the test explorer (with some perf. penalty)
         <PackageReference Include="BenchmarkDotNet.TestAdapter" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" />
-         -->
-         <!--
+        -->
+        <!-- for running with Visual Studio profiler:
         <PackageReference Include="Microsoft.VisualStudio.DiagnosticsHub.BenchmarkDotNetDiagnosers" />
         -->
     </ItemGroup>
     <ItemGroup Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]benchmarks[/\\]'))">
-        <Using Include="Microsoft.VSDiagnostics"/>
         <Using Include="BenchmarkDotNet" />
         <Using Include="BenchmarkDotNet.Attributes" />
         <Using Include="BenchmarkDotNet.Configs" />

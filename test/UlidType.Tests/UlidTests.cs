@@ -53,9 +53,9 @@ public class UlidTests
         var small = new byte[UlidBytesLength - 1];
         ulid.TryWrite(small.AsSpan()).Should().BeFalse();
 
-        var dest = new byte[UlidBytesLength];
-        ulid.TryWrite(dest.AsSpan()).Should().BeTrue();
-        dest.Should().Equal(ulid.Bytes.ToArray());
+        var destination = new byte[UlidBytesLength];
+        ulid.TryWrite(destination.AsSpan()).Should().BeTrue();
+        destination.Should().Equal(ulid.Bytes.ToArray());
     }
 
     [Fact]

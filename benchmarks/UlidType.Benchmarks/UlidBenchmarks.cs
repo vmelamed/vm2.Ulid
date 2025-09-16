@@ -31,8 +31,8 @@ class PreGeneratedData<T>
 
 [SimpleJob(RuntimeMoniker.HostProcess)]
 [MemoryDiagnoser]
-[HtmlExporter]
-[CPUUsageDiagnoser]
+//[HtmlExporter]
+[JsonExporter]
 [Orderer(SummaryOrderPolicy.FastestToSlowest, MethodOrderPolicy.Declared)]
 public class NewUlid
 {
@@ -50,8 +50,8 @@ public class NewUlid
 
 [SimpleJob(RuntimeMoniker.HostProcess)]
 [MemoryDiagnoser]
-[HtmlExporter]
-[CPUUsageDiagnoser]
+//[HtmlExporter]
+[JsonExporter]
 [Orderer(SummaryOrderPolicy.FastestToSlowest, MethodOrderPolicy.Declared)]
 public class UlidToString
 {
@@ -77,8 +77,8 @@ public class UlidToString
 
 [SimpleJob(RuntimeMoniker.HostProcess)]
 [MemoryDiagnoser]
-[HtmlExporter]
-[CPUUsageDiagnoser]
+//[HtmlExporter]
+[JsonExporter]
 [Orderer(SummaryOrderPolicy.FastestToSlowest, MethodOrderPolicy.Declared)]
 public class ParseUlid
 {
