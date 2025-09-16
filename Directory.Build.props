@@ -29,8 +29,7 @@
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     </PropertyGroup>
 
-    <PropertyGroup
-        Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]test[/\\]'))">
+    <PropertyGroup Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]test[/\\]'))">
         <!-- Test projects settings -->
         <IsTestProject>true</IsTestProject>
         <IsPackable>false</IsPackable>
@@ -41,8 +40,7 @@
             $(NoWarn);CA1031;CA1701;CA1702;CA1707;CA1806;CA2211;CS0618;CS1572;CS1573;CS1574;CS1591;CS1711;IDE0021;IDE0022;IDE0039;IDE0065;IDE1006;IDE2000;IDE2002;IDE0058;IDE0290
         </NoWarn>
     </PropertyGroup>
-    <ItemGroup
-        Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]test[/\\]')) and $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectName), '^*.Tests$'))">
+    <ItemGroup Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]test[/\\]')) and $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectName), '^*.Tests$'))">
         <PackageReference Include="Microsoft.NET.Test.Sdk" />
         <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" />
         <PackageReference Include="NSubstitute" />
@@ -51,24 +49,19 @@
         <PackageReference Include="xunit.runner.visualstudio" />
         <PackageReference Include="coverlet.collector" />
     </ItemGroup>
-    <ItemGroup
-        Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]test[/\\]')) and !$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectName), '^*.Tests$'))">
+    <ItemGroup Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]test[/\\]')) and !$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectName), '^*.Tests$'))">
         <!-- for test libraries in the test folder: -->
         <PackageReference Include="xunit.v3.extensibility.core" />
         <!-- xunit.v3.assert.source -->
     </ItemGroup>
-    <ItemGroup
-        Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]test[/\\]'))">
+    <ItemGroup Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]test[/\\]'))">
         <Using Include="Xunit" />
         <Using Include="FluentAssertions" />
         <Using Include="FluentAssertions.Formatting" />
         <Using Include="FluentAssertions.Extensibility" />
-        <!--
-        -->
     </ItemGroup>
 
-    <PropertyGroup
-        Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]benchmarks[/\\]'))">
+    <PropertyGroup Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]benchmarks[/\\]'))">
         <!-- Test projects settings -->
         <OutputType>Exe</OutputType>
         <IsPackable>false</IsPackable>
@@ -77,8 +70,7 @@
             $(NoWarn);CA1031;CA1701;CA1702;CA1707;CA1806;CA2211;CS0618;CS1572;CS1573;CS1574;CS1591;CS1711;IDE0021;IDE0022;IDE0039;IDE0065;IDE1006;IDE2000;IDE2002;IDE0058;IDE0290
         </NoWarn>
     </PropertyGroup>
-    <ItemGroup
-        Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]benchmarks[/\\]'))">
+    <ItemGroup Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]benchmarks[/\\]'))">
         <PackageReference Include="BenchmarkDotNet" />
         <PackageReference Include="BenchmarkDotNet.Annotations" />
         <PackageReference Include="BenchmarkDotNet.Diagnostics.dotMemory" />
@@ -91,8 +83,7 @@
         <PackageReference Include="Microsoft.VisualStudio.DiagnosticsHub.BenchmarkDotNetDiagnosers" />
         -->
     </ItemGroup>
-    <ItemGroup
-        Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]benchmarks[/\\]'))">
+    <ItemGroup Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]benchmarks[/\\]'))">
         <Using Include="BenchmarkDotNet" />
         <Using Include="BenchmarkDotNet.Attributes" />
         <Using Include="BenchmarkDotNet.Configs" />
