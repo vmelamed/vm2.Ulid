@@ -185,16 +185,6 @@ public readonly partial struct Ulid :
     public readonly Guid ToGuid() => new(Bytes);
 
     /// <summary>
-    /// Converts the current ULID value to its equivalent Base64 string representation.
-    /// </summary>
-    /// <remarks>
-    /// The Base64 string is generated from the underlying byte array of the ULID. This representation is suitable for compact<br/>
-    /// storage or transmission of the ULID value.
-    /// </remarks>
-    /// <returns>A Base64-encoded string that represents the ULID value.</returns>
-    public readonly string ToBase64() => Convert.ToBase64String(Bytes);
-
-    /// <summary>
     /// Converts the current ULID instance to its equivalent Base32 (the default) string representation.
     /// </summary>
     /// <remarks>

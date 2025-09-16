@@ -22,8 +22,6 @@ public class UlidTests
         var bytes = ulid.Bytes.ToArray();
         bytes.Should().HaveCount(UlidBytesLength);
 
-        Convert.FromBase64String(ulid.ToBase64()).Should().Equal(bytes);
-
         var s = ulid.ToString();
         s.Should().NotBeNullOrWhiteSpace();
         s.Length.Should().Be(UlidStringLength);
