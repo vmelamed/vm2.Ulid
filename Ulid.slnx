@@ -1,0 +1,22 @@
+<Solution>
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj" />
+  </Folder>
+  <Folder Name="/examples/">
+    <Project Path="examples/GenerateUlids/GenerateUlids.csproj" />
+  </Folder>
+  <Folder Name="/solution items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="LICENSE" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/UlidType/UlidType.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test/UlidType.Tests/UlidType.Tests.csproj" />
+  </Folder>
+</Solution>
