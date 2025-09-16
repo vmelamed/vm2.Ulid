@@ -29,10 +29,10 @@ jobs:
           dotnet-version: '9.0.x'
 
       - name: Restore
-        run: __dotnet restore__
+        run: dotnet restore
 
       - name: Build (Release)
-        run: __dotnet build__ -c Release --no-restore
+        run: dotnet build -c Release --no-restore
 
       # -- Unit tests + coverage: Linux only ---------------------------------
       - name: Run unit tests with coverage (Linux)
