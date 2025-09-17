@@ -42,7 +42,7 @@ jobs:
         run: |
           set -euo pipefail
           dotnet test ./test/UlidType.Tests/UlidType.Tests.csproj -c Release --no-build \
-            /p:ExcludeByAttribute="GeneratedCodeAttribute"
+            /p:ExcludeByAttribute="GeneratedCodeAttribute" \
             -- \
             --coverage \
             --coverage-output-format xml \
