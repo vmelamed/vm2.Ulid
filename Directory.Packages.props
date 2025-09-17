@@ -13,8 +13,7 @@
     <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="9.0.8" />
     <PackageVersion Include="System.ServiceModel.Primitives" Version="8.1.2" />
     <PackageVersion Include="System.Text.Json" Version="9.0.9" />
-    <!--<PackageReference
-    Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All"/>-->
+    <!--<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All"/>-->
     <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.9" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.9" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.9" />
@@ -32,8 +31,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageVersion>
-    <!--<PackageReference
-    Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All"/>-->
+    <!--<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All"/>-->
     <PackageVersion Include="OpenTelemetry" Version="1.12.0" />
     <PackageVersion Include="OpenTelemetry.Exporter.Console" Version="1.12.0" />
     <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.12.0" />
@@ -48,13 +46,12 @@
     <PackageVersion Include="FluentAssertions" Version="8.6.0" />
     <PackageVersion Include="xunit.v3" Version="3.0.1" />
     <PackageVersion Include="xunit.v3.extensibility.core" Version="3.0.1" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.4" />
     <!-- xunit.v3.assert.source -->
     <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="17.14.2" />
-    <PackageVersion Include="coverlet.collector" Version="6.0.4">
+<!--    <PackageVersion Include="coverlet.collector" Version="6.0.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageVersion>
+    </PackageVersion>-->
     <!-- BenchmarkDotNet -->
     <PackageVersion Include="Microsoft.VisualStudio.DiagnosticsHub.BenchmarkDotNetDiagnosers" Version="18.0.36421.1" />
     <PackageVersion Include="BenchmarkDotNet" Version="0.15.2" />
