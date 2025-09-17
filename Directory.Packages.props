@@ -46,22 +46,22 @@
         <PackageVersion Include="NSubstitute" Version="5.3.0" />
         <PackageVersion Include="FluentAssertions" Version="8.6.0" />
         <PackageVersion Include="xunit.v3" Version="3.0.1" />
-        <!-- <PackageVersion Include="xunit.runner.visualstudio" Version="3.0.1" /> -->
         <PackageVersion Include="xunit.v3.extensibility.core" Version="3.0.1" />
-        <!-- xunit.v3.assert.source -->
         <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="17.14.2" />
         <!--
     <PackageVersion Include="coverlet.collector" Version="6.0.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageVersion>-->
+    </PackageVersion> -->
         <!-- BenchmarkDotNet -->
-        <PackageVersion Include="Microsoft.VisualStudio.DiagnosticsHub.BenchmarkDotNetDiagnosers"
-            Version="18.0.36421.1" />
         <PackageVersion Include="BenchmarkDotNet" Version="0.15.2" />
         <PackageVersion Include="BenchmarkDotNet.Annotations" Version="0.15.2" />
         <PackageVersion Include="BenchmarkDotNet.Diagnostics.dotMemory" Version="0.15.2" />
         <PackageVersion Include="BenchmarkDotNet.Diagnostics.dotTrace" Version="0.15.2" />
         <PackageVersion Include="BenchmarkDotNet.TestAdapter" Version="0.15.2" />
+        <!-- for running with Visual Studio profiler:
+        <PackageVersion Include="Microsoft.VisualStudio.DiagnosticsHub.BenchmarkDotNetDiagnosers"
+            Version="18.0.36421.1" />
+        -->
     </ItemGroup>
 </Project>

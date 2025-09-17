@@ -91,20 +91,20 @@ jobs:
             || true
 
           mkdir -p benchmarks/results
-          cp -r ./benchmarks/BenchmarkDotNet.Artifacts/results/*.json benchmarks/results/current-bench-result.json
+          cp -r ./benchmarks/BenchmarkDotNet.Artifacts/results/*.json benchmarks/results
 
       - name: Upload benchmark result artifact (Linux)
         if: matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v4
         with:
           name: current-benchmark-result
-          path: benchmarks/results/current-bench-result.json
+          path: benchmarks/results
 
       - name: Compare benchmarks against baseline (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
           set -euo pipefail
-          CURRENT=benchmarks/results/current-bench-result.json
+          CURRENT=benchmarks/results
           BASELINE=benchmarks/baseline.json
 
           if [ ! -f "$CURRENT" ]; then
