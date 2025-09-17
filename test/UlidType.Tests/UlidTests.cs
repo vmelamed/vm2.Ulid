@@ -1,5 +1,7 @@
 namespace vm2.UlidType.Tests;
 
+using vm2.UlidRandomProviders;
+
 [ExcludeFromCodeCoverage]
 public class UlidTests
 {
@@ -17,6 +19,24 @@ public class UlidTests
     public void NewUlid_Roundtrip_ToByteArray_ToGuid_ToBase64_ToString()
     {
         var factory = new UlidFactory();
+        var ulid = factory.NewUlid();
+
+        var bytes = ulid.Bytes.ToArray();
+        bytes.Should().HaveCount(UlidBytesLength);
+
+        var s = ulid.ToString();
+        s.Should().NotBeNullOrWhiteSpace();
+        s.Length.Should().Be(UlidStringLength);
+
+        var guid = ulid.ToGuid();
+        guid.ToByteArray().Should().Equal(bytes);
+        new Ulid(guid).Should().Be(ulid);
+    }
+
+    [Fact]
+    public void NewUlidWithPseudoRandom_Roundtrip_ToByteArray_ToGuid_ToBase64_ToString()
+    {
+        var factory = new UlidFactory(new PseudoRandom());
         var ulid = factory.NewUlid();
 
         var bytes = ulid.Bytes.ToArray();
