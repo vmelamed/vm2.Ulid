@@ -397,10 +397,11 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
+# User-specific file - do not push to all developers!
+launchSettings.json
+
 # benchmarkDotNet results folder
 BenchmarkDotNet.Artifacts/
-# benchmark profiler generated code
-
 
 # unit tests Code Coverage folder
 TestResults/
