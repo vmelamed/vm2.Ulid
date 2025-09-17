@@ -1,5 +1,7 @@
 ﻿namespace vm2;
 
+using vm2.UlidRandomProviders;
+
 /// <summary>
 /// Provides functionality to generate unique lexicographically sortable identifiers (ULIDs).
 /// </summary>
@@ -11,8 +13,9 @@
 /// <b>Hint:</b> you may have more than one factory in your program representing separate sequences of ULID-s. E.g. a factory<br/>
 /// per DB table.
 /// </remarks>
-public class UlidFactory
+public class UlidFactory(IUlidRandomProvider? randomProvider = null)
 {
+    IUlidRandomProvider _rng = randomProvider ?? new CryptoRandom();
     byte[] _lastUlid = new byte[UlidBytesLength];
     long _lastTimestamp;
     Lock _lock = new();
@@ -48,20 +51,13 @@ public class UlidFactory
 
             // accept the new time stamp
             _lastTimestamp = timestampNow;
-
-            if (!BitConverter.IsLittleEndian)
-                timestampNow <<= 2*8; // 0x0000010203040506 << 16 == 0x0102030405060000
-
-            BitConverter.GetBytes(timestampNow)[0..TimestampLength].CopyTo(ulidSpan);
-
-            if (BitConverter.IsLittleEndian)
-                // 0x0605040302010000.Reverse(0..6) => 0x0102030405060000
-                ulidSpan[TimestampBegin..TimestampEnd].Reverse();
-
-            // fill the random bytes part from crypto-strong RNG, overwriting the last 2 bytes of the 8-bit modified timestamp:
-            // 0x01020304050600000000000000000000 => 0x010203040506rrrrrrrrrrrrrrrrrrrr
-            RandomNumberGenerator.Fill(ulidSpan[RandomBegin..RandomEnd]);
         }
+
+        Ulid.CopyTimeStampToUlid(timestampNow, ulidSpan);
+
+        // fill the random bytes part from crypto-strong RNG, overwriting the last 2 bytes of the 8-bit modified timestamp:
+        // 0x01020304050600000000000000000000 => 0x010203040506rrrrrrrrrrrrrrrrrrrr
+        _rng.Fill(ulidSpan[RandomBegin..RandomEnd]);
 
         // create a new ULID from the bytes
         return new Ulid(ulidSpan);

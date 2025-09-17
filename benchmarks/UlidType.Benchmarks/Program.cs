@@ -4,11 +4,11 @@ public static class Program
 {
     public static void Main(string[] args)
     {
-        var artifactsFolder = ".\\BenchmarkDotNet.Artifacts\\results";
+        var artifactsFolder = "./BenchmarkDotNet.Artifacts/results";
 
         for (var i = 0; i < args.Length; i++)
             if ((args[i] == "--artifacts" || args[i] == "i") && i+1 < args.Length)
-                artifactsFolder = args.Length >= 1 ? args[0] : ".\\BenchmarkDotNet.Artifacts\\results";
+                artifactsFolder = args[i+1];
 
         BenchmarkSwitcher
             .FromAssembly(typeof(Program).Assembly)

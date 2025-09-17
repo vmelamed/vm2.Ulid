@@ -77,7 +77,8 @@ public readonly partial struct Ulid :
     /// Consider using your own factories that generate separate sequences of ULIDs, e.g. a factory per DB table or per entity type.<br/>
     /// </remarks>
     /// <returns>A new <see cref="Ulid"/> instance representing a unique identifier.</returns>
-    public static Ulid NewUlid() => (_defaultFactory ??= new UlidFactory()).NewUlid();
+    public static Ulid NewUlid(IUlidRandomProvider? ulidRandomProvider = null)
+        => (_defaultFactory ??= new UlidFactory(ulidRandomProvider)).NewUlid();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Ulid"/> struct using the passed in <paramref name="bytes"/>.<br/>
@@ -151,16 +152,21 @@ public readonly partial struct Ulid :
         var ulidSpan = bytes.AsSpan();
         var timestampNow = dateTime.ToUnixTimeMilliseconds();
 
-        if (!BitConverter.IsLittleEndian)
-            timestampNow <<= 2*8; // 0x0000010203040506 << 16 => 0x0102030405060000
-
-        BitConverter.GetBytes(timestampNow)[TimestampBegin..TimestampEnd].CopyTo(ulidSpan);
-
-        if (BitConverter.IsLittleEndian)
-            ulidSpan[TimestampBegin..TimestampEnd].Reverse();   // 0x0605040302010000.Reverse(0..6) => 0x0102030405060000
+        CopyTimeStampToUlid(timestampNow, ulidSpan);
 
         randomBytes.CopyTo(ulidSpan[RandomBegin..RandomEnd]);
         _ulidBytes = new ReadOnlyMemory<byte>(bytes);
+    }
+
+    internal static void CopyTimeStampToUlid(long timestamp, Span<byte> ulidSpan)
+    {
+        if (!BitConverter.IsLittleEndian)
+            timestamp <<= 2*8; // 0x0000010203040506 << 16 => 0x0102030405060000
+
+        BitConverter.GetBytes(timestamp)[TimestampBegin..TimestampEnd].CopyTo(ulidSpan);
+
+        if (BitConverter.IsLittleEndian)
+            ulidSpan[TimestampBegin..TimestampEnd].Reverse();   // 0x0605040302010000.Reverse(0..6) => 0x0102030405060000
     }
 
     /// <summary>

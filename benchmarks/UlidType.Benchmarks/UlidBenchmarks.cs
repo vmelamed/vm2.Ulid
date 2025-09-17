@@ -3,8 +3,10 @@ namespace vm2.UlidType.Benchmarks;
 using System.Text;
 
 using vm2;
+using vm2.UlidRandomProviders;
 
 #pragma warning disable CA1822 // The benchmark methods must not be static
+
 
 class PreGeneratedData<T>
 {
@@ -31,26 +33,30 @@ class PreGeneratedData<T>
 
 [SimpleJob(RuntimeMoniker.HostProcess)]
 [MemoryDiagnoser]
-//[HtmlExporter]
 [JsonExporter]
 [Orderer(SummaryOrderPolicy.FastestToSlowest, MethodOrderPolicy.Declared)]
 public class NewUlid
 {
-    UlidFactory _factory = new();
+    [Params(typeof(CryptoRandom), typeof(PseudoRandom))]
+    public Type RandomProviderType { get; set; } = null!;
+
+    IUlidRandomProvider RandomProvider => Activator.CreateInstance(RandomProviderType) as IUlidRandomProvider
+                                                ?? throw new InvalidOperationException($"Failed to create instance of {RandomProviderType}");
+
+    UlidFactory Factory => new(RandomProvider);
 
     [Benchmark(Description = "Guid.NewGuid", Baseline = true)]
     public Guid Generate_Guid() => Guid.NewGuid();
 
     [Benchmark(Description = "Ulid.NewUlid")]
-    public Ulid GenerateUlid_Ulid() => Ulid.NewUlid();
+    public Ulid GenerateUlid_Ulid() => Ulid.NewUlid(RandomProvider);
 
     [Benchmark(Description = "UlidFactory.NewUlid")]
-    public Ulid Generate_Ulid() => _factory.NewUlid();
+    public Ulid Generate_Ulid() => Factory.NewUlid();
 }
 
 [SimpleJob(RuntimeMoniker.HostProcess)]
 [MemoryDiagnoser]
-//[HtmlExporter]
 [JsonExporter]
 [Orderer(SummaryOrderPolicy.FastestToSlowest, MethodOrderPolicy.Declared)]
 public class UlidToString
@@ -77,7 +83,6 @@ public class UlidToString
 
 [SimpleJob(RuntimeMoniker.HostProcess)]
 [MemoryDiagnoser]
-//[HtmlExporter]
 [JsonExporter]
 [Orderer(SummaryOrderPolicy.FastestToSlowest, MethodOrderPolicy.Declared)]
 public class ParseUlid

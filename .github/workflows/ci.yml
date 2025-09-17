@@ -29,9 +29,11 @@ jobs:
           dotnet-version: "9.0.x"
 
       - name: Restore
+        if: matrix.os == 'ubuntu-latest'
         run: dotnet restore
 
       - name: Build (Release)
+        if: matrix.os == 'ubuntu-latest'
         run: dotnet build -c Release --no-restore
 
       # -- Unit tests + coverage: Linux only ---------------------------------
@@ -80,20 +82,16 @@ jobs:
           set -euo pipefail
 
           # run benchmark project (BenchmarkDotNet produces JSON under BenchmarkDotNet.Artifacts)
-          dotnet run -c Release --project benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj \
-            --no-build --memory --filter * --exporters JSON || true
+          mkdir BenchmarkDotNet.Artifacts
+          dotnet run -c Release --project ./benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj \
+            --filter '*' \
+            --memory \
+            --exporters JSON \
+            --artifacts ./benchmarks/BenchmarkDotNet.Artifacts \
+            || true
 
-          # locate the latest results JSON
-          RESULT_JSON=$(find . -type f -name "*.json" -path "*/BenchmarkDotNet.Artifacts/*/results/*.json" -print0 | xargs -0 ls -t 2>/dev/null | head -n1 || true)
-          if [ -z "$RESULT_JSON" ]; then
-            RESULT_JSON=$(find . -type f -name "*.json" -path "*/BenchmarkDotNet.Artifacts/*" -print0 | xargs -0 ls -t 2>/dev/null | head -n1 || true)
-          fi
-          if [ -z "$RESULT_JSON" ]; then
-            echo "Benchmark JSON result not found; failing."
-            exit 2
-          fi
           mkdir -p benchmarks/results
-          cp "$RESULT_JSON" benchmarks/results/current-bench-result.json
+          cp -r ./benchmarks/BenchmarkDotNet.Artifacts/results/*.json benchmarks/results/current-bench-result.json
 
       - name: Upload benchmark result artifact (Linux)
         if: matrix.os == 'ubuntu-latest'
