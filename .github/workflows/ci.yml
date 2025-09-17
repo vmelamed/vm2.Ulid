@@ -38,7 +38,8 @@ jobs:
 
       # -- Unit tests + coverage: Linux only ---------------------------------
       - name: Run unit tests with coverage (Linux)
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' || github.event_name == 'pull_request'
+        shell: bash
         run: |
           set -euo pipefail
           dotnet test ./test/UlidType.Tests/UlidType.Tests.csproj -c Release --no-build \
@@ -54,6 +55,7 @@ jobs:
             echo "Coverage file not found."
             exit 2
           fi
+
           mkdir -p coverage
           cp "$COV_FILE" coverage/coverage.cobertura.xml
 
@@ -75,11 +77,20 @@ jobs:
 
           echo "Coverage: $PCT% (threshold: ${COVERAGE_THRESHOLD}%)"
           awk -v p="$PCT" -v t="${COVERAGE_THRESHOLD}" 'BEGIN { if (p+0 < t+0) { print "Coverage below threshold"; exit 1 } else { print "Coverage OK" } }'
-        shell: bash
+
+      - name: Upload coverage artifact
+        if: (github.event_name == 'pull_request' || matrix.os == 'ubuntu-latest') && always()
+        uses: actions/upload-artifact@v4
+        with:
+            name: coverage-${{ matrix.os }}
+            path: |
+              coverage/coverage.cobertura.xml
+              coverage_report/
 
       # -- Benchmark run: Linux only -----------------------------------------
       - name: Run benchmarks (Linux)
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' || github.event_name == 'pull_request'
+        shell: bash
         run: |
           set -euo pipefail
 
@@ -89,60 +100,66 @@ jobs:
             --filter '*' \
             --memory \
             --exporters JSON \
-            --artifacts ./benchmarks/BenchmarkDotNet.Artifacts \
-            || true
+            --artifacts ./benchmarks/BenchmarkDotNet.Artifacts || true
 
           mkdir -p benchmarks/results
           cp -r ./benchmarks/BenchmarkDotNet.Artifacts/results/*.json benchmarks/results
 
       - name: Upload benchmark result artifact (Linux)
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' || github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
         with:
           name: current-benchmark-result
           path: benchmarks/results
 
       - name: Compare benchmarks against baseline (Linux)
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' || github.event_name == 'pull_request'
+        shell: bash
         run: |
           set -euo pipefail
-          CURRENT=benchmarks/results
-          BASELINE=benchmarks/baseline.json
-
-          if [ ! -f "$CURRENT" ]; then
-            echo "Current benchmark result not found; skipping comparison."
-            exit 0
-          fi
-
-          if [ ! -f "$BASELINE" ]; then
-            echo "Baseline not found at $BASELINE. Skipping regression check on first run."
-            echo "To enable regression checks: commit $CURRENT as $BASELINE in the repository."
-            exit 0
-          fi
-
           if ! command -v jq >/dev/null 2>&1; then
             sudo apt-get update && sudo apt-get install -y jq
           fi
 
-          SUM_BASE=$(jq '[.Benchmarks[]? | ( .PrimaryMetrics[0].Mean // (.Statistics.Mean // 0) )] | add' "$BASELINE")
-          SUM_CUR=$(jq '[.Benchmarks[]? | ( .PrimaryMetrics[0].Mean // (.Statistics.Mean // 0) )] | add' "$CURRENT")
+          # If multiple JSON results exist, merge sums heuristically
+          CURRENT_DIR=benchmarks/results
+          BASELINE=benchmarks/baseline.json
 
-          if [ -z "$SUM_BASE" ] || [ "$SUM_BASE" = "null" ] || [ "$SUM_BASE" = "0" ]; then
-            echo "Baseline sums invalid ($SUM_BASE). Skipping regression check."
+          CUR_FILES=$(ls -1 "$CURRENT_DIR"/*.json 2>/dev/null || true)
+          if [ -z "$CUR_FILES" ]; then
+            echo "No current benchmark result JSON files found; skipping comparison."
+            exit 0
+          fi
+
+            # Merge current totals
+          SUM_CUR=0
+          for f in $CUR_FILES; do
+            VAL=$(jq '[.Benchmarks[]? | ( .PrimaryMetrics[0].Mean // (.Statistics.Mean // 0) )] | add // 0' "$f")
+            SUM_CUR=$(awk -v a="$SUM_CUR" -v b="$VAL" 'BEGIN { printf "%.10f", a + b }')
+          done
+
+          if [ ! -f "$BASELINE" ]; then
+            echo "Baseline not found at $BASELINE. To enable regression checks, commit one of the current JSON files as baseline.json."
+            exit 0
+          fi
+
+          SUM_BASE=$(jq '[.Benchmarks[]? | ( .PrimaryMetrics[0].Mean // (.Statistics.Mean // 0) )] | add // 0' "$BASELINE")
+
+          if [ -z "$SUM_BASE" ] || [ "$SUM_BASE" = "0" ]; then
+            echo "Baseline sum invalid ($SUM_BASE); skipping regression check."
             exit 0
           fi
 
           echo "Baseline total mean: $SUM_BASE"
-          echo "Current total mean: $SUM_CUR"
+          echo "Current aggregated total mean (all JSON files): $SUM_CUR"
 
-          PCT_CHANGE=$(awk -v b="$SUM_BASE" -v c="$SUM_CUR" 'BEGIN { printf "%.4f", ((c - b) / b) * 100 }')
+          PCT_CHANGE=$(awk -v b="$SUM_BASE" -v c="$SUM_CUR" 'BEGIN { if (b==0){print 0}else{ printf "%.4f", ((c - b) / b) * 100 } }')
           echo "Percent change vs baseline: ${PCT_CHANGE}% (allowed: ${PERF_THRESHOLD}%)"
+
           awk -v pc="$PCT_CHANGE" -v th="${PERF_THRESHOLD}" 'BEGIN { if (pc > th) { print "Performance regression exceeds threshold"; exit 1 } else { print "Performance OK" } }'
-        shell: bash
 
       # -- macOS & Windows: just confirm build succeeded ---------------------
-      - name: Smoke test message (Windows/macOS)
-        if: matrix.os != 'ubuntu-latest'
-        run: |
-          echo "Build succeeded on $RUNNER_OS. Unit tests and benchmarks are executed on Linux only."
+      - name: Non-test platform notice (push only)
+        if: github.event_name == 'push' && matrix.os != 'ubuntu-latest'
         shell: bash
+        run: "echo \"Push event: tests & benchmarks run only on Linux. This platform performed build validation.\""
