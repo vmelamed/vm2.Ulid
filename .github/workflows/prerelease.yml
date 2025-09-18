@@ -1,0 +1,103 @@
+name: Prerelease Auto Tag & Publish
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  DOTNET_NOLOGO: true
+  MINVER_TAG_PREFIX: v
+
+jobs:
+  prerelease:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Skip if commit already tagged (any v* tag)
+        id: tagcheck
+        run: |
+          if git tag --points-at HEAD | grep -E '^v[0-9]'; then
+            echo "already_tagged=true" >> $GITHUB_OUTPUT
+          else
+            echo "already_tagged=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Stop (already tagged)
+        if: steps.tagcheck.outputs.already_tagged == 'true'
+        run: echo "Commit already has version tag – nothing to do."
+
+      - name: Compute prerelease tag
+        if: steps.tagcheck.outputs.already_tagged == 'false'
+        id: compute
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Find latest stable (no hyphen) tag like v1.2.3
+          if git describe --tags --match 'v[0-9]*.[0-9]*.[0-9]*' --abbrev=0 >/dev/null 2>&1; then
+            LATEST_STABLE=$(git describe --tags --match 'v[0-9]*.[0-9]*.[0-9]*' --abbrev=0)
+            BASE=${LATEST_STABLE#v}
+            MAJOR=${BASE%%.*}
+            REST=${BASE#*.}
+            MINOR=${REST%%.*}
+            PATCH=${REST#*.}
+            # increment patch for prerelease base
+            NEXT_PATCH=$((PATCH + 1))
+          else
+            # No stable tag yet
+            MAJOR=0
+            MINOR=1
+            NEXT_PATCH=0
+          fi
+
+          DATE=$(date -u +%Y%m%d)
+          RUN=${GITHUB_RUN_NUMBER}
+          PRERELEASE_TAG="v${MAJOR}.${MINOR}.${NEXT_PATCH}-preview.${DATE}.${RUN}"
+
+          echo "prerelease_tag=${PRERELEASE_TAG}" >> $GITHUB_OUTPUT
+          echo "Computed prerelease tag: ${PRERELEASE_TAG}"
+
+      - name: Create & push prerelease tag
+        if: steps.tagcheck.outputs.already_tagged == 'false'
+        env:
+          TAG: ${{ steps.compute.outputs.prerelease_tag }}
+        run: |
+            git tag -a "$TAG" -m "Automated prerelease $TAG"
+            git push origin "$TAG"
+
+      - name: Setup .NET
+        if: steps.tagcheck.outputs.already_tagged == 'false'
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Restore
+        if: steps.tagcheck.outputs.already_tagged == 'false'
+        run: dotnet restore
+
+      - name: Build
+        if: steps.tagcheck.outputs.already_tagged == 'false'
+        run: dotnet build -c Release --no-restore
+
+      - name: Pack (MinVer consumes the just-pushed prerelease tag)
+        if: steps.tagcheck.outputs.already_tagged == 'false'
+        run: |
+          mkdir -p artifacts/pack
+          dotnet pack -c Release --no-build -o artifacts/pack /p:MinVerTagPrefix=${MINVER_TAG_PREFIX}
+          ls -1 artifacts/pack
+
+      - name: Publish prerelease to NuGet
+        if: steps.tagcheck.outputs.already_tagged == 'false'
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          if [ -z "${NUGET_API_KEY}" ]; then
+            echo "NUGET_API_KEY not configured"; exit 1
+          fi
+          dotnet nuget push artifacts/pack/*.nupkg --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push artifacts/pack/*.snupkg --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
