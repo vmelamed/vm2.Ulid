@@ -40,10 +40,17 @@ public class NewUlid
     [Params(typeof(CryptoRandom), typeof(PseudoRandom))]
     public Type RandomProviderType { get; set; } = null!;
 
-    IUlidRandomProvider RandomProvider => Activator.CreateInstance(RandomProviderType) as IUlidRandomProvider
-                                                ?? throw new InvalidOperationException($"Failed to create instance of {RandomProviderType}");
+    IUlidRandomProvider? RandomProvider { get; set; }
 
-    UlidFactory Factory => new(RandomProvider);
+    UlidFactory Factory { get; set; } = null!;
+
+    [GlobalSetup]
+    public void Setup()
+    {
+        RandomProvider = Activator.CreateInstance(RandomProviderType) as IUlidRandomProvider
+                                                ?? throw new InvalidOperationException($"Failed to create instance of {RandomProviderType}");
+        Factory = new(RandomProvider);
+    }
 
     [Benchmark(Description = "Guid.NewGuid", Baseline = true)]
     public Guid Generate_Guid() => Guid.NewGuid();
@@ -62,13 +69,14 @@ public class NewUlid
 public class UlidToString
 {
     const int MaxDataItems = 1000;
-    UlidFactory _factory = new();
     PreGeneratedData<Guid> _data1 = null!;
     PreGeneratedData<Ulid> _data2 = null!;
 
     [GlobalSetup]
     public void Setup()
     {
+        UlidFactory _factory = new();
+
         _data1 = new(MaxDataItems, _ => Guid.NewGuid());
         _data2 = new(MaxDataItems, _ => _factory.NewUlid());
     }
@@ -88,7 +96,6 @@ public class UlidToString
 public class ParseUlid
 {
     const int MaxDataItems = 1000;
-    UlidFactory _factory = new();
     PreGeneratedData<string> _data1 = null!;
     PreGeneratedData<string> _data2 = null!;
     PreGeneratedData<byte[]> _data3 = null!;
@@ -96,6 +103,8 @@ public class ParseUlid
     [GlobalSetup]
     public void Setup()
     {
+        UlidFactory _factory = new();
+
         _data1 = new(MaxDataItems, _ => Guid.NewGuid().ToString());
         _data2 = new(MaxDataItems, _ => _factory.NewUlid().ToString());
         _data3 = new(MaxDataItems, _ => Encoding.UTF8.GetBytes(_factory.NewUlid().ToString()));
