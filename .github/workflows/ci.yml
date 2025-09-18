@@ -159,7 +159,7 @@ jobs:
 
           awk -v pc="$PCT_CHANGE" -v th="${PERF_THRESHOLD}" 'BEGIN { if (pc > th) { print "Performance regression exceeds threshold"; exit 1 } else { print "Performance OK" } }'
 
-      # -- macOS & Windows: just confirm build succeeded  ---------------------
+      # -- macOS & Windows: just confirm build succeeded ---------------------
       - name: Non-test platform notice (push only)
         if: github.event_name == 'push' && matrix.os != 'ubuntu-latest'
         shell: bash
