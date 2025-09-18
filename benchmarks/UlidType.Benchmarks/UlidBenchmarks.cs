@@ -7,7 +7,6 @@ using vm2.UlidRandomProviders;
 
 #pragma warning disable CA1822 // The benchmark methods must not be static
 
-
 class PreGeneratedData<T>
 {
     int _numberItems;

@@ -51,7 +51,6 @@
     </PropertyGroup>
     <ItemGroup Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]test[/\\]')) and $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectName), '^*.Tests$'))">
         <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" />
-        <PackageReference Include="NSubstitute" />
         <PackageReference Include="FluentAssertions" />
         <PackageReference Include="xunit.v3" />
     </ItemGroup>
@@ -78,8 +77,6 @@
     <ItemGroup Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]benchmarks[/\\]'))">
         <PackageReference Include="BenchmarkDotNet" />
         <PackageReference Include="BenchmarkDotNet.Annotations" />
-        <PackageReference Include="BenchmarkDotNet.Diagnostics.dotMemory" />
-        <PackageReference Include="BenchmarkDotNet.Diagnostics.dotTrace" />
         <!-- To show up in the test explorer (with some perf. penalty)
         <PackageReference Include="BenchmarkDotNet.TestAdapter" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" />
