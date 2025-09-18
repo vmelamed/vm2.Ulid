@@ -13,6 +13,7 @@ jobs:
   matrix-ci:
     name: Build on ${{ matrix.os }} � tests & benchmarks on Linux
     runs-on: ${{ matrix.os }}
+    if: "!startsWith(github.event.head_commit.message, '[skip]')"
     strategy:
       matrix:
         os: [ubuntu-latest] # , windows-latest, macos-latest]

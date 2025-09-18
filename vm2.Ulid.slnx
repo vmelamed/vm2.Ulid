@@ -15,6 +15,11 @@
     <File Path="README.md" />
     <File Path="ReleaseProcess.md" />
   </Folder>
+  <Folder Name="/Solution Items/CI-CD/">
+    <File Path=".github/workflows/ci.yml" />
+    <File Path=".github/workflows/prerelease.yml" />
+    <File Path=".github/workflows/release.yml" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/UlidType/UlidType.csproj" />
   </Folder>
