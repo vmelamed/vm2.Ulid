@@ -34,10 +34,6 @@
 
     <PropertyGroup>
         <MinVerTagPrefix>v</MinVerTagPrefix>
-        <!-- Uncomment if you want non-tag builds to still have a deterministic preview suffix
-
-            <MinVerDefaultPreReleaseIdentifiers>preview</MinVerDefaultPreReleaseIdentifiers>
-        -->
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="MinVer" />
