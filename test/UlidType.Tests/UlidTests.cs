@@ -274,7 +274,9 @@ public class UlidTests
         var factory = new UlidFactory();
         var ulid = factory.NewUlid();
         var ts = ulid.Timestamp;
-        var random = ulid.RandomBytes.ToArray();
+        var random = new byte[RandomLength + 1];
+        ulid.RandomBytes.CopyTo(random.AsSpan());
+
         Action act = () => new Ulid(ts, random.AsSpan(0, RandomLength - 1).ToArray());
         act.Should().Throw<ArgumentException>();
 

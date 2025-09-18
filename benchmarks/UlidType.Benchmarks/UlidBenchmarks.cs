@@ -22,9 +22,9 @@ class PreGeneratedData<T>
 
     public T GetNext()
     {
-        if (_index == _numberItems)
+        if (_index >= _numberItems)
             _index = 0;
-        return _data[_index];
+        return _data[_index++];
     }
 
     public T Current => _data[_index];

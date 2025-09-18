@@ -1,4 +1,4 @@
-﻿# Universaly Unique Lexicographically Sortable Identifier (ULID) for .NET
+﻿# Universally Unique Lexicographically Sortable Identifier (ULID) for .NET
 
 ## Overview
 
