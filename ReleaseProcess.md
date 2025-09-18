@@ -39,8 +39,10 @@ The actual activation is via:
 
     <!-- Force a prerelease label when not on a tag (disabled now – prerelease tags are created instead) -->
     <!-- <MinVerDefaultPreReleaseIdentifiers>preview</MinVerDefaultPreReleaseIdentifiers> -->
+
     <!-- If you ever want AssemblyVersion = Major.Minor.Patch.0 -->
     <!-- <MinVerMajorMinorPatch>true</MinVerMajorMinorPatch> -->
+
 </PropertyGroup>
 ```
 
