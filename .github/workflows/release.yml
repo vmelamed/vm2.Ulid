@@ -1,0 +1,55 @@
+name: Release (Stable)
+
+# Optional tweak: PreRelease identifier without tagging If you decide you don’t actually need a prerelease tag each merge, you can skip creating the tag and just:
+#  * Remove tag creation step.
+#  * Add /p:MinVerDefaultPreReleaseIdentifiers=preview when packing.
+#  * Publish directly (MinVer will produce x.y.z-preview.<height> without tagging).
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+env:
+  DOTNET_NOLOGO: true
+  MINVER_TAG_PREFIX: v
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build -c Release --no-restore
+
+      - name: Test
+        run: dotnet test -c Release --no-build
+
+      - name: Pack (stable)
+        run: |
+          mkdir -p artifacts/pack
+            # MinVer uses the exact stable tag version
+          dotnet pack -c Release --no-build -o artifacts/pack /p:MinVerTagPrefix=${MINVER_TAG_PREFIX}
+          ls -1 artifacts/pack
+
+      - name: Publish stable to NuGet
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          if [ -z "${NUGET_API_KEY}" ]; then
+            echo "NUGET_API_KEY not configured"; exit 1
+          fi
+          dotnet nuget push artifacts/pack/*.nupkg --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push artifacts/pack/*.snupkg --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
