@@ -22,19 +22,17 @@
         <ProductName>vm2 packages</ProductName>
         <Authors>Val Melamed</Authors>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
-        <RepositoryUrl>https://github.com/vmelamed/vm2</RepositoryUrl>
-        <Copyright>Copyright © 2023-2025 vm</Copyright>
+        <RepositoryUrl>https://github.com/vmelamed/vm2.Ulid</RepositoryUrl>
+        <Copyright>Copyright © 2025 vm</Copyright>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
         <RepositoryType>git</RepositoryType>
         <IncludeSymbols>True</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
         <EnablePackageValidation>true</EnablePackageValidation>
-    </PropertyGroup>
-
-    <PropertyGroup>
         <MinVerTagPrefix>v</MinVerTagPrefix>
     </PropertyGroup>
+
     <ItemGroup>
         <PackageReference Include="MinVer" />
         <PackageReference Include="Microsoft.SourceLink.GitHub" />

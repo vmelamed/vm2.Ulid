@@ -89,6 +89,15 @@ It is prudent to create and reuse more than one `UlidFactory` instances, e.g. on
 ULIDs. But you can also use the static `Ulid.NewUlid()` method which uses an internal instance of a factory. The ULID factory(s)
 are thread-safe and ensures monotonicity of ULIDs generated in different contexts of an application or service.
 
+By default the `UlidFactory` uses a cryptographic random number generator (`vm2.UlidRandomProviders.CryptoRandom`), which is
+suitable for most applications. If you need a different source of randomness (e.g. for testing or performance reasons) or you
+are concerned about the entropy source, you can explicitly specify that the factory should use the pseudo-random number
+generator `vm2.UlidRandomProviders.PseudoRandom`. You can also provide your own, thread-safe implementation of
+`vm2.IRandomNumberGenerator` to the factory.
+
+In contrast, if you do not want to use the `vm2.UlidFactory` directly, at all, you can use the static `vm2.Ulid.NewUlid()`
+method, which uses an internal instance of the factory with a cryptographic random number generator.
+
 ## Get the code
 
 Clone this repository:
@@ -124,50 +133,47 @@ Build from source
 - Visual Studio:
   - Open the solution and choose __Build Solution__ (or use __Rebuild__ as needed).
 
-Run the examples
-- Create a small console project that references this library and run it, or use the example layout below:
+Run the example:
 
   ```bash
-  dotnet new console -o src/UlidType.Example
-  dotnet add src/UlidType.Example/src/UlidType.Example.csproj reference src/UlidType/UlidType.csproj
-  dotnet run --project src/UlidType.Example
+  dotnet run --project examples/GenerateUlids/GenerateUlids.csproj
   ```
-
-Packaging
-- To create a NuGet package:
-  ```bash
-  dotnet pack src/UlidType/UlidType.csproj -c Release
-  ```
-
-API usage examples
-- Minimal example that demonstrates generation, formatting, parsing and introspection.
 
 ## Performance
 
 You can build and run the benchmark tests in release mode with:
 
 ```bash
-vm2.Ulid/benchmarks/UlidType.Benchmarks/bin/Release/net9.0/UlidType.Benchmarks.exe --filter * --memory --artifacts ..\..\..\BenchmarkDotNet.Artifacts
+benchmarks/UlidType.Benchmarks/bin/Release/net9.0/UlidType.Benchmarks.exe --filter * --memory --artifacts ..\..\..\BenchmarkDotNet.Artifacts
 ```
 
-Here are some benchmark results with similar Guid functions as baselines from a run on a Windows 10 machine with:
+Here are some benchmark results with similar Guid functions as baselines from GitHub Actions:
 
-- Processor: Intel(R) Core(TM) Ultra 9 185H, 2500 Mhz, 16 Core(s), 22 Logical Processor(s)
-- Installed Physical Memory:	64.0 GB
-- Available Physical Memory:	32.2 GB
+BenchmarkDotNet v0.15.3, Linux Ubuntu 24.04.3 LTS (Noble Numbat)
+AMD EPYC 7763 2.45GHz, 1 CPU, 4 logical and 2 physical cores
+.NET SDK 9.0.305
+  [Host]     : .NET 9.0.9 (9.0.9, 9.0.925.41916), X64 RyuJIT x86-64-v3
+
+| Method              | RandomProviderType | Mean      | Error    | StdDev   | Ratio | Gen0   | Allocated | Alloc Ratio |
+|-------------------- |------------------- |----------:|---------:|---------:|------:|-------:|----------:|------------:|
+| UlidFactory.NewUlid | CryptoRandom       |  59.10 ns | 0.409 ns | 0.362 ns |  0.10 | 0.0024 |      40 B |          NA |
+| Ulid.NewUlid        | CryptoRandom       |  59.54 ns | 0.179 ns | 0.168 ns |  0.10 | 0.0024 |      40 B |          NA |
+| Guid.NewGuid        | CryptoRandom       | 595.81 ns | 1.776 ns | 1.575 ns |  1.00 |      - |         - |          NA |
+|                     |                    |           |          |          |       |        |           |             |
+| UlidFactory.NewUlid | PseudoRandom       |  58.84 ns | 0.175 ns | 0.155 ns |  0.10 | 0.0024 |      40 B |          NA |
+| Ulid.NewUlid        | PseudoRandom       |  59.42 ns | 0.234 ns | 0.207 ns |  0.10 | 0.0024 |      40 B |          NA |
+| Guid.NewGuid        | PseudoRandom       | 593.93 ns | 1.612 ns | 1.429 ns |  1.00 |      - |         - |          NA |
 
 | Method               | Mean     | Error    | StdDev   | Ratio | RatioSD | Gen0   | Allocated | Alloc Ratio |
-|:-------------------- |---------:|---------:|---------:|------:|--------:|-------:|----------:|------------:|
-| Guid.NewGuid         | 45.70 ns | 0.783 ns | 2.308 ns |  1.00 |    0.07 |      - |         - |          NA |
-| UlidFactory.NewUlid  | 44.16 ns | 0.143 ns | 0.409 ns |  0.97 |    0.05 | 0.0032 |      40 B |          NA |
-| Ulid.NewUlid         | 46.20 ns | 0.555 ns | 1.637 ns |  1.01 |    0.06 | 0.0032 |      40 B |          NA |
-|----------------------|----------|----------|----------|-------|---------|--------|-----------|-------------|
-| Guid.Parse           | 17.07 ns | 0.045 ns | 0.117 ns |  1.00 |    0.01 |      - |         - |          NA |
-| Ulid.ParseUtf8String | 54.35 ns | 0.946 ns | 2.761 ns |  3.18 |    0.16 | 0.0063 |      80 B |          NA |
-| Ulid.ParseString     | 56.23 ns | 0.847 ns | 2.470 ns |  3.29 |    0.15 | 0.0063 |      80 B |          NA |
-|----------------------|----------|----------|----------|-------|---------|--------|-----------|-------------|
-| Guid.ToString        | 11.62 ns | 0.159 ns | 0.466 ns |  1.00 |    0.06 | 0.0076 |      96 B |        1.00 |
-| Ulid.ToString        | 29.00 ns | 0.500 ns | 1.474 ns |  2.50 |    0.16 | 0.0063 |      80 B |        0.83 |
+|--------------------- |---------:|---------:|---------:|------:|--------:|-------:|----------:|------------:|
+| Guid.Parse           | 30.78 ns | 0.111 ns | 0.099 ns |  1.00 |    0.00 |      - |         - |          NA |
+| Ulid.ParseString     | 70.88 ns | 0.499 ns | 0.443 ns |  2.30 |    0.02 | 0.0048 |      80 B |          NA |
+| Ulid.ParseUtf8String | 72.22 ns | 1.457 ns | 1.496 ns |  2.35 |    0.05 | 0.0048 |      80 B |          NA |
+
+| Method        | Mean     | Error    | StdDev   | Ratio | RatioSD | Gen0   | Allocated | Alloc Ratio |
+|-------------- |---------:|---------:|---------:|------:|--------:|-------:|----------:|------------:|
+| Guid.ToString | 16.16 ns | 0.158 ns | 0.148 ns |  1.00 |    0.01 | 0.0057 |      96 B |        1.00 |
+| Ulid.ToString | 49.07 ns | 0.517 ns | 0.484 ns |  3.04 |    0.04 | 0.0048 |      80 B |        0.83 |
 
 Legend:
   - Mean      : Arithmetic mean of all measurements

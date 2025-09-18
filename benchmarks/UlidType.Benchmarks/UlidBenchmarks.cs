@@ -48,7 +48,7 @@ public class NewUlid
     public void Setup()
     {
         RandomProvider = Activator.CreateInstance(RandomProviderType) as IUlidRandomProvider
-                                                ?? throw new InvalidOperationException($"Failed to create instance of {RandomProviderType}");
+                                ?? throw new InvalidOperationException($"Failed to create instance of {RandomProviderType}");
         Factory = new(RandomProvider);
     }
 
