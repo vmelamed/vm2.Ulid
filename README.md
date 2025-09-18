@@ -171,6 +171,27 @@ AMD EPYC 7763 2.45GHz, 1 CPU, 4 logical and 2 physical cores
 | Guid.ToString        |  16.16 ns | 0.158 ns | 0.148 ns |  1.00 | 0.0057 |      96 B |
 | Ulid.ToString        |  49.07 ns | 0.517 ns | 0.484 ns |  3.04 | 0.0048 |      80 B |
 
+| Method              | RandomProviderType | Mean     | Error    | StdDev   | Median   | Ratio | RatioSD | Gen0   | Allocated | Alloc Ratio |
+|-------------------- |------------------- |---------:|---------:|---------:|---------:|------:|--------:|-------:|----------:|------------:|
+| UlidFactory.NewUlid | CryptoRandom       | 47.03 ns | 0.969 ns | 2.636 ns | 46.28 ns |  0.93 |    0.06 | 0.0032 |      40 B |          NA |
+| Ulid.NewUlid        | CryptoRandom       | 50.25 ns | 1.028 ns | 1.631 ns | 50.17 ns |  0.99 |    0.05 | 0.0032 |      40 B |          NA |
+| Guid.NewGuid        | CryptoRandom       | 50.77 ns | 1.044 ns | 1.909 ns | 50.60 ns |  1.00 |    0.05 |      - |         - |          NA |
+|                     |                    |          |          |          |          |       |         |        |           |             |
+| Guid.NewGuid        | PseudoRandom       | 44.54 ns | 0.889 ns | 1.058 ns | 44.41 ns |  1.00 |    0.03 |      - |         - |          NA |
+| UlidFactory.NewUlid | PseudoRandom       | 47.73 ns | 0.959 ns | 1.376 ns | 47.82 ns |  1.07 |    0.04 | 0.0032 |      40 B |          NA |
+| Ulid.NewUlid        | PseudoRandom       | 48.80 ns | 1.009 ns | 1.122 ns | 48.87 ns |  1.10 |    0.04 | 0.0032 |      40 B |          NA |
+
+| Method               | Mean     | Error    | StdDev   | Median   | Ratio | RatioSD | Gen0   | Allocated | Alloc Ratio |
+|--------------------- |---------:|---------:|---------:|---------:|------:|--------:|-------:|----------:|------------:|
+| Guid.Parse           | 17.85 ns | 0.384 ns | 1.046 ns | 17.35 ns |  1.00 |    0.08 |      - |         - |          NA |
+| Ulid.ParseString     | 58.50 ns | 0.772 ns | 0.722 ns | 58.39 ns |  3.29 |    0.18 | 0.0032 |      40 B |          NA |
+| Ulid.ParseUtf8String | 59.45 ns | 1.093 ns | 1.023 ns | 59.13 ns |  3.34 |    0.19 | 0.0032 |      40 B |          NA |
+
+| Method        | Mean     | Error    | StdDev   | Ratio | RatioSD | Gen0   | Allocated | Alloc Ratio |
+|-------------- |---------:|---------:|---------:|------:|--------:|-------:|----------:|------------:|
+| Guid.ToString | 11.39 ns | 0.271 ns | 0.240 ns |  1.00 |    0.03 | 0.0076 |      96 B |        1.00 |
+| Ulid.ToString | 30.13 ns | 0.603 ns | 1.324 ns |  2.65 |    0.13 | 0.0063 |      80 B |        0.83 |
+
 Legend:
   - Mean      : Arithmetic mean of all measurements
   - Error     : Half of 99.9% confidence interval

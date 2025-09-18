@@ -51,13 +51,12 @@ public readonly partial struct Ulid :
     {
         get
         {
-            Span<byte> timestampBytes = stackalloc byte[sizeof(long)];
+            Span<byte> ts = stackalloc byte[sizeof(long)];
 
-            _ulidBytes
-                .Span[TimestampBegin..TimestampEnd]
-                .CopyTo(timestampBytes.Slice((BitConverter.IsLittleEndian ? 2 : 0), TimestampLength));
+            _ulidBytes.Span[TimestampBegin..TimestampEnd].CopyTo(ts[2..8]);
 
-            return DateTimeOffset.FromUnixTimeMilliseconds(ReadInt64BigEndian(timestampBytes));
+            var timestamp = ReadInt64BigEndian(ts);
+            return DateTimeOffset.FromUnixTimeMilliseconds(timestamp);
         }
     }
 
@@ -160,13 +159,12 @@ public readonly partial struct Ulid :
 
     internal static void CopyTimeStampToUlid(long timestamp, Span<byte> ulidSpan)
     {
-        if (!BitConverter.IsLittleEndian)
-            timestamp <<= 2*8; // 0x0000010203040506 << 16 => 0x0102030405060000
+        Debug.Assert(ulidSpan.Length >= sizeof(long));
 
-        BitConverter.GetBytes(timestamp)[TimestampBegin..TimestampEnd].CopyTo(ulidSpan);
+        Span<byte> ts = stackalloc byte[sizeof(long)];
 
-        if (BitConverter.IsLittleEndian)
-            ulidSpan[TimestampBegin..TimestampEnd].Reverse();   // 0x0605040302010000.Reverse(0..6) => 0x0102030405060000
+        WriteInt64BigEndian(ts, timestamp);
+        ts[2..8].CopyTo(ulidSpan[TimestampBegin..TimestampEnd]);
     }
 
     /// <summary>
@@ -312,11 +310,9 @@ public readonly partial struct Ulid :
         }
 
         // get the randomBytes of the UInt128 value
-        var ulidSpan = BitConverter.GetBytes(ulidAsNumber).AsSpan();
+        Span<byte> ulidSpan = stackalloc byte[UlidBytesLength];
 
-        // make sure they are big-endian
-        if (BitConverter.IsLittleEndian)
-            ulidSpan.Reverse();
+        WriteUInt128BigEndian(ulidSpan, ulidAsNumber);
 
         // this is our ULID
         result = new Ulid(ulidSpan);
@@ -370,11 +366,9 @@ public readonly partial struct Ulid :
         }
 
         // get the randomBytes of the UInt128 value
-        var ulidSpan = BitConverter.GetBytes(ulidAsNumber).AsSpan();
+        Span<byte> ulidSpan = stackalloc byte[UlidBytesLength];
 
-        // make sure the number is written big-endian
-        if (BitConverter.IsLittleEndian)
-            ulidSpan.Reverse();
+        WriteUInt128BigEndian(ulidSpan, ulidAsNumber);
 
         // this is our ULID
         result = new Ulid(ulidSpan);

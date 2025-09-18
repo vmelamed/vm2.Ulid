@@ -36,8 +36,8 @@ class PreGeneratedData<T>
 [Orderer(SummaryOrderPolicy.FastestToSlowest, MethodOrderPolicy.Declared)]
 public class NewUlid
 {
-    [Params(typeof(CryptoRandom), typeof(PseudoRandom))]
-    public Type RandomProviderType { get; set; } = null!;
+    [Params(nameof(CryptoRandom), nameof(PseudoRandom))]
+    public string RandomProviderType { get; set; } = "";
 
     IUlidRandomProvider? RandomProvider { get; set; }
 
@@ -46,8 +46,11 @@ public class NewUlid
     [GlobalSetup]
     public void Setup()
     {
-        RandomProvider = Activator.CreateInstance(RandomProviderType) as IUlidRandomProvider
-                                ?? throw new InvalidOperationException($"Failed to create instance of {RandomProviderType}");
+        RandomProvider = RandomProviderType switch {
+            nameof(CryptoRandom) => new CryptoRandom(),
+            nameof(PseudoRandom) => new PseudoRandom(),
+            _ => throw new InvalidOperationException("RandomProviderType is not set"),
+        };
         Factory = new(RandomProvider);
     }
 

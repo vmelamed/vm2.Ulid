@@ -4,11 +4,16 @@
         <LangVersion>preview<!--latest--></LangVersion>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks><!-- for stackalloc mostly -->
         <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+        <AnalysisLevel>preview<!--latest--></AnalysisLevel>
         <WarningLevel>9999</WarningLevel>
         <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
         <WarningsAsErrors />
         <NoWarn>$(NoWarn);IDE0058;IDE0290;IDE0130;NU1109;NU1507</NoWarn>
+        <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+        <IsTrimmable>true</IsTrimmable>
+        <TieredPGO>true</TieredPGO>
         <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>

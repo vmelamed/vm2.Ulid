@@ -311,4 +311,35 @@ public class UlidTests
         Action act = () => maxUlid++;
         act.Should().Throw<OverflowException>();
     }
+
+    [Theory]
+    [InlineData("01ARZ3NDEKTSV4RRFFQ69G5FAV")]
+    [InlineData("01BX5ZZKBKACTAV9WEVGEMMVRZ")]
+    [InlineData("01BX5ZZKBKACTAV9WEVGEMMVS0")]
+    [InlineData("01K5ETWXTDG0ZK9PP9WMC6V4HY")]
+    [InlineData("01K5ETWXTWEQPSJ8AB1PSFVGCR")]
+    [InlineData("01K5ETWXTWEQPSJ8AB1PSFVGCS")]
+    [InlineData("01K5ETWXV32QSSJWA7WKQZ7D0K")]
+    [InlineData("01K5ETWXVDNC94EGFBNK30GBSV")]
+    [InlineData("01K5ETWXVDNC94EGFBNK30GBSW")]
+    [InlineData("01K5ETWXVDNC94EGFBNK30GBSX")]
+    public void RoundTrip_WellKnown_GoodValues(string s)
+    {
+        var ulid = Ulid.Parse(s);
+
+        ulid.ToString().Should().Be(s);
+
+        var bytes = ulid.Bytes.ToArray();
+
+        bytes.Length.Should().Be(UlidBytesLength);
+
+        var fromBytes = new Ulid(bytes);
+
+        fromBytes.Should().Be(ulid);
+
+        var guid = ulid.ToGuid();
+        var fromGuid = new Ulid(guid);
+
+        fromGuid.Should().Be(ulid);
+    }
 }
