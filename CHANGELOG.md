@@ -7,6 +7,7 @@ This format follows:
 - [Semantic Versioning](https://semver.org/)
 - Version numbers are produced by [MinVer](./ReleaseProcess.md) from Git tags.
 
+<!--
 ## [Unreleased]
 
 ### Added
@@ -29,13 +30,17 @@ This format follows:
 
 ### Internal
 - (tooling, infrastructure, build pipeline changes)
+-->
 
 ---
 
-## [v0.1.0] - 2025-09-17
+## [v0.1.1] - 2025-09-17
+
 Initial baseline release.
+
 ### Added
-- Core library foundation.
+
+- - Core library foundation.
 - Initial tests & benchmarking harness.
 - MinVer-based versioning & automated prerelease workflow.
 - Release process documentation (`ReleaseProcess.md`).

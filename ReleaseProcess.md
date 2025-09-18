@@ -128,19 +128,34 @@ Subsequent merges create `v0.1.1-preview.*` prereleases automatically.
 ## 7. Verifying a Build Locally
 
 ```bash
-dotnet clean dotnet build -c Release /p:MinVerVerbosity=detailed
+dotnet clean
+dotnet build -c Release /p:MinVerVerbosity=detailed
 ```
 
 Inspect produced dll
 
 ```bash
-dotnet tool install -g dotnet-ildasm ildasm bin/Release/net9.0/YourAssembly.dll | grep InformationalVersion
+dotnet tool install -g dotnet-ildasm
+dotnet-ildasm src\UlidType\bin\Release\net9.0\UlidType.dll | grep InformationalVersion
 ```
 
 Or:
 
 ```bash
-strings bin/Release/net9.0/YourAssembly.dll | grep InformationalVersion
+strings src\UlidType\bin\Release\net9.0\UlidType.dll | grep InformationalVersion
+```
+
+Or
+
+```powershell
+([System.Reflection.Assembly]::LoadFrom("bin/Release/net9.0/YourAssembly.dll")).GetCustomAttributes(
+   [System.Reflection.AssemblyInformationalVersionAttribute], $false).InformationalVersion
+```
+
+Or
+
+```powershell
+(Get-ItemProperty -Path src\UlidType\bin\Release\net9.0\UlidType.dll).VersionInfo.ProductVersion
 ```
 
 ---
