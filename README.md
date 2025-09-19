@@ -80,14 +80,14 @@ One of the requirements for the ULIDs is that they increase monotonically within
 generate multiple ULIDs in the same millisecond, each subsequent ULID must be greater than the previous one by one in the least
 significant byte(s). To ensure that, there must be a ULID generating object (factory) that keeps track of the timestamp and the
 last generated random bytes. If during generation of a ULID the factory finds out that the current timestamp is the same as the
-timestamp of the previous generation within to the millisecond, the factory must increment the previous random part and use it,
-rather than generating new randomness.
+timestamp of the previous generation to the millisecond, the factory must increment the previous random part and use it, rather
+than generating new randomness.
 
 The `UlidFactory` class encapsulates this logic, providing a simple interface for generating ULIDs that meet this requirement.
 
 It is prudent to create and reuse more than one `UlidFactory` instances, e.g. one per DB table or entity type which require
-ULIDs. But you can also use the static `Ulid.NewUlid()` method which uses an internal instance of a factory. The ULID factory(s)
-are thread-safe and ensures monotonicity of ULIDs generated in different contexts of an application or service.
+ULIDs. The ULID factory(s) are thread-safe and ensure monotonicity of the generated ULIDs in different contexts of an 
+application or a service.
 
 By default the `UlidFactory` uses a cryptographic random number generator (`vm2.UlidRandomProviders.CryptoRandom`), which is
 suitable for most applications. If you need a different source of randomness (e.g. for testing or performance reasons) or you
