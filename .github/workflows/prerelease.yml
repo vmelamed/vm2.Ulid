@@ -1,5 +1,9 @@
 name: Prerelease Auto Tag & Publish
 
+permissions:
+  contents: write
+  packages: write
+
 on:
   push:
     branches:
@@ -66,10 +70,11 @@ jobs:
         if: steps.tagcheck.outputs.already_tagged == 'false'
         env:
           TAG: ${{ steps.compute.outputs.prerelease_tag }}
+          GH_TOKEN: ${{ secrets.GH_PAT_VM2_ULID }}
         run: |
             git config --global user.name "github-actions[bot]"
             git config --global user.email "github-actions[bot]@users.noreply.github.com"
-            git remote set-url origin https://x-access-token:${{ secrets.GH_PAT_VM2_ULID }}@github.com/vmelamed/vm2.Ulid.git
+            git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/vmelamed/vm2.Ulid.git
             git push origin HEAD:refs/heads/${GITHUB_REF_NAME}
             git tag -a "$TAG" -m "Automated prerelease $TAG"
             git push origin "$TAG"
@@ -98,7 +103,7 @@ jobs:
       - name: Publish prerelease to NuGet
         if: steps.tagcheck.outputs.already_tagged == 'false'
         env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+            NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
           if [ -z "${NUGET_API_KEY}" ]; then
             echo "NUGET_API_KEY not configured"; exit 1

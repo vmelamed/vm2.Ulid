@@ -5,6 +5,9 @@ name: Release (Stable)
 #  * Add /p:MinVerDefaultPreReleaseIdentifiers=preview when packing.
 #  * Publish directly (MinVer will produce x.y.z-preview.<height> without tagging).
 
+permissions:
+  packages: write
+
 on:
   push:
     tags:
@@ -13,6 +16,7 @@ on:
 env:
   DOTNET_NOLOGO: true
   MINVER_TAG_PREFIX: v
+  NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
 
 jobs:
   release:
@@ -45,8 +49,6 @@ jobs:
           ls -1 artifacts/pack
 
       - name: Publish stable to NuGet
-        env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
           if [ -z "${NUGET_API_KEY}" ]; then
             echo "NUGET_API_KEY not configured"; exit 1
