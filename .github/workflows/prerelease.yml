@@ -67,6 +67,8 @@ jobs:
         env:
           TAG: ${{ steps.compute.outputs.prerelease_tag }}
         run: |
+            git config --global user.email "valo@vtmelamed.com"
+            git config --global user.name "Val Melamed"
             git tag -a "$TAG" -m "Automated prerelease $TAG"
             git push origin "$TAG"
 
