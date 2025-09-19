@@ -1,4 +1,4 @@
-# Changelog
+ï»¿# Changelog
 
 All notable changes to this project will be documented in this file.
 
@@ -40,7 +40,7 @@ Initial baseline release.
 
 ### Added
 
-- - Core library foundation.
+- Core library foundation.
 - Initial tests & benchmarking harness.
 - MinVer-based versioning & automated prerelease workflow.
 - Release process documentation (`ReleaseProcess.md`).
@@ -50,12 +50,12 @@ Initial baseline release.
 
 ## Usage Notes
 
-1. For every change, prefer small bullet points written in the imperative mood (e.g. “Add …”, “Fix …”).
+1. For every change, prefer small bullet points written in the imperative mood (e.g. â€œAdd â€¦â€, â€œFix â€¦â€).
 2. Group changes under the appropriate heading above; add new headings only when needed.
 3. Before creating a stable tag:
    - Move items from `Unreleased` into a new `## [vX.Y.Z] - YYYY-MM-DD` section.
    - Update the comparison links at the bottom if a major/minor line starts a new baseline.
-4. Do not rewrite history of published versions—append corrections in a new entry if needed.
+4. Do not rewrite history of published versionsâ€”append corrections in a new entry if needed.
 
 ## Categorization Guidance
 
