@@ -110,7 +110,7 @@ Clone this repository:
 
   ```bash
   git clone https://github.com/vmelamed/vm2.Ulid.git
-  cd vm2
+  cd vm2.Ulid
   ```
 
 ## Install the package (NuGet)
