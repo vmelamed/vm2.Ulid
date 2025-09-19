@@ -29,7 +29,7 @@ jobs:
 
       - name: Stop (already tagged)
         if: steps.tagcheck.outputs.already_tagged == 'true'
-        run: echo "Commit already has version tag – nothing to do."
+        run: echo "Commit already has version tag â€“ nothing to do."
 
       - name: Compute prerelease tag
         if: steps.tagcheck.outputs.already_tagged == 'false'
@@ -67,8 +67,8 @@ jobs:
         env:
           TAG: ${{ steps.compute.outputs.prerelease_tag }}
         run: |
-            git config --global user.email "valo@vtmelamed.com"
-            git config --global user.name "Val Melamed"
+            git config --global user.email "github-actions[bot]@users.noreply.github.com"
+            git config --global user.name "GitHub Actions"
             git tag -a "$TAG" -m "Automated prerelease $TAG"
             git push origin "$TAG"
 
