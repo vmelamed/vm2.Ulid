@@ -34,6 +34,13 @@ This format follows:
 
 ---
 
+## [1.0.2] - 2025-09-19
+
+### Changed
+- Suppress creation of packages for the example project(s).
+
+---
+
 ## [1.0.1] - 2025-09-19
 
 ### Changed

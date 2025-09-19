@@ -110,4 +110,10 @@
         <Using Include="BenchmarkDotNet.Running" />
     </ItemGroup>
 
+    <PropertyGroup Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]examples[/\\]'))">
+        <!-- Example projects settings -->
+        <IsPackable>false</IsPackable>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    </PropertyGroup>
+
 </Project>
