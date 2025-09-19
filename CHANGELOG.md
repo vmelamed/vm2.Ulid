@@ -34,23 +34,15 @@ This format follows:
 
 ---
 
-## [Unreleased]
+## [1.0.1] - 2025-09-19
 
 ### Changed
-- Minor document fixes
+- Changed the package name from `vm2.Ulid` to `Vm.Ulid`.
+- Changed also in the README.md and other documentation files.
 
-### Performance
-- Better performance for `Ulid.NewUlid`, `Ulid.Parse`, `Ulid.ToString`, and the related methods.
+## [1.0.0] - 2025-09-19
 
-Initial baseline release.
-
-### Added
-
-- Core library foundation.
-- Initial tests & benchmarking harness.
-- MinVer-based versioning & automated prerelease workflow.
-- Release process documentation (`ReleaseProcess.md`).
-- SourceLink, symbols (`snupkg`) and deterministic build settings.
+- The initial version.
 
 ---
 
