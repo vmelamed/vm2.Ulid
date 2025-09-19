@@ -26,6 +26,10 @@ identifiers (UUIDs or GUIDs) in certain scenarios:
   into five groups separated by hyphens, following the pattern: 8-4-4-4-12
 - ULIDs are **binary-compatible with UUIDs**, allowing for easy integration in systems that already use UUIDs
 
+## Prerequisites
+
+- .NET 9.0 or later
+
 ## Basic Usage
 
 ```csharp
@@ -45,9 +49,10 @@ Ulid ulid2 = factory.NewUlid();
 Ulid ulid = Ulid.NewUlid();
 
 Debug.Assert(ulid1 != ulid2);                           // uniqueness
-Debug.Assert(ulid < ulid2);                             // comparable
+Debug.Assert(ulid1 < ulid2);                            // comparable
+Debug.Assert(ulid  > ulid2);                            // comparable
 
-var ulid1String = ulid1.String();                       // get the canonical string representation
+var ulid1String = ulid1.String();                       // get the ULID canonical string representation
 var ulid2String = ulid1.String();
 
 Debug.Assert(ulid1String != ulid2String);               // ULID strings are unique
@@ -56,22 +61,23 @@ Debug.Assert(ulid1String.Length == 26);                 // ULID string represent
 
 Debug.Assert(ulid1 <= ulid2);
 Debug.Assert(ulid1.Timestamp < ulid2.Timestamp ||       // ULIDs are time-sortable and the timestamp can be extracted
-             ulid1.RandomBytes != ulid2.RandomBytes);   // if generated in the same millisecond, the random part is guaranteed to be different
+             ulid1.Timestamp == ulid2.Timestamp &&      // if generated in the same millisecond
+             ulid1.RandomBytes != ulid2.RandomBytes);   // the random parts are guaranteed to be different
 
-Debug.Assert(ulid1.RandomBytes.ToArray().Length == 10); // ULID has 10 bytes of randomness
+Debug.Assert(ulid1.RandomBytes.Length == 10);           // ULID has 10 bytes of randomness
 
-Debug.Assert(ulid1.Bytes.ToArray().Length == 16);       // ULID is a 16-byte (128-bit) value
+Debug.Assert(ulid1.Bytes.Length == 16);                 // ULID is a 16-byte (128-bit) value
 
 var ulidGuid  = ulid1.ToGuid();                         // ULID can be converted to Guid
 var ulidFromGuid = new Ulid(ulidGuid);                  // ULID can be created from Guid
 
 var ulidUtf8String = Encoding.UTF8.GetBytes(ulid1String);
 
-Ulid.TryParse(ulidString, out var ulidCopy1);           // ULID can be parsed from UTF-16 string representation (26 UTF-16 characters)
-Ulid.TryParse(ulidUtf8String, out var ulidCopy2);       // ULID can be parsed from its UTF-8 string representation (26 UTF-8 characters/bytes)
+Ulid.TryParse(ulid1String, out var ulidCopy1);           // parse ULID from UTF-16 string (26 UTF-16 characters)
+Ulid.TryParse(ulidUtf8String, out var ulidCopy2);       // parse ULID from its UTF-8 string (26 UTF-8 characters/bytes)
 
-Debug.Assert(ulid1 == ulidCopy1 &&
-             ulid1 == ulidCopy2);                       // Parsed ULIDs are equal to the original
+Debug.Assert(ulid1 == ulidCopy1 &&                      // Parsed ULIDs are equal to the original
+             ulid1 == ulidCopy2);
 ```
 
 ## Why do I need `UlidFactory`?
@@ -86,7 +92,7 @@ than generating new randomness.
 The `UlidFactory` class encapsulates this logic, providing a simple interface for generating ULIDs that meet this requirement.
 
 It is prudent to create and reuse more than one `UlidFactory` instances, e.g. one per DB table or entity type which require
-ULIDs. The ULID factory(s) are thread-safe and ensure monotonicity of the generated ULIDs in different contexts of an 
+ULIDs. The ULID factory(s) are thread-safe and ensure monotonicity of the generated ULIDs in different contexts of an
 application or a service.
 
 By default the `UlidFactory` uses a cryptographic random number generator (`vm2.UlidRandomProviders.CryptoRandom`), which is
@@ -95,8 +101,8 @@ are concerned about the entropy source, you can explicitly specify that the fact
 generator `vm2.UlidRandomProviders.PseudoRandom`. You can also provide your own, thread-safe implementation of
 `vm2.IRandomNumberGenerator` to the factory.
 
-In contrast, if you do not want to use the `vm2.UlidFactory` directly, at all, you can use the static `vm2.Ulid.NewUlid()`
-method, which uses an internal instance of the factory with a cryptographic random number generator.
+In contrast, if you do not want to use the `vm2.UlidFactory` directly, you can use the static `vm2.Ulid.NewUlid()` method, which
+uses an internal static factory instance with a cryptographic random number generator.
 
 ## Get the code
 

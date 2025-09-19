@@ -82,6 +82,7 @@ Manual steps:
 1. Ensure main is up to date and CI green
 
    ```bash
+   # bash:
    git checkout main
    git pull origin main
    ```
@@ -89,6 +90,7 @@ Manual steps:
 1. Choose next version (SemVer) – update CHANGELOG if applicable:
 
    ```bash
+   # bash:
    export VER=v1.2.0
    git tag -a $VER -m "$VER"
    git push origin $VER
@@ -136,26 +138,28 @@ Inspect produced dll
 
 ```bash
 dotnet tool install -g dotnet-ildasm
-dotnet-ildasm src\UlidType\bin\Release\net9.0\UlidType.dll | grep InformationalVersion
+dotnet-ildasm src/UlidType/bin/Release/net9.0/UlidType.dll | grep InformationalVersion
 ```
 
 Or:
 
 ```bash
-strings src\UlidType\bin\Release\net9.0\UlidType.dll | grep InformationalVersion
+strings src/UlidType/bin/Release/net9.0/UlidType.dll | grep InformationalVersion
 ```
 
 Or
 
 ```powershell
-([System.Reflection.Assembly]::LoadFrom("bin/Release/net9.0/YourAssembly.dll")).GetCustomAttributes(
+# PowerShell
+([System.Reflection.Assembly]::LoadFrom("src/UlidType/bin/Release/net9.0/UlidType.dll")).GetCustomAttributes(
    [System.Reflection.AssemblyInformationalVersionAttribute], $false).InformationalVersion
 ```
 
 Or
 
 ```powershell
-(Get-ItemProperty -Path src\UlidType\bin\Release\net9.0\UlidType.dll).VersionInfo.ProductVersion
+# PowerShell
+(Get-ItemProperty -Path src/UlidType/bin/Release/net9.0/UlidType.dll).VersionInfo.ProductVersion
 ```
 
 ---
