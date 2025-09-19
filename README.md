@@ -149,48 +149,27 @@ benchmarks/UlidType.Benchmarks/bin/Release/net9.0/UlidType.Benchmarks.exe --filt
 
 Here are some benchmark results with similar Guid functions as baselines from GitHub Actions:
 
-BenchmarkDotNet v0.15.3, Linux Ubuntu 24.04.3 LTS (Noble Numbat)
-AMD EPYC 7763 2.45GHz, 1 CPU, 4 logical and 2 physical cores
-.NET SDK 9.0.305
-  [Host]     : .NET 9.0.9 (9.0.9, 9.0.925.41916), X64 RyuJIT x86-64-v3
+BenchmarkDotNet v0.15.3, Linux Ubuntu 24.04.3 LTS (Noble Numbat)<br/>
+AMD EPYC 7763 2.45GHz, 1 CPU, 4 logical and 2 physical cores .NET SDK 9.0.305<br/>
+- [Host]     : .NET 9.0.9 (9.0.9, 9.0.925.41916), X64 RyuJIT x86-64-v3
+- DefaultJob : .NET 9.0.9 (9.0.9, 9.0.925.41916), X64 RyuJIT x86-64-v3
 
-| Method               | Mean      | Error    | StdDev   | Ratio | Gen0   | Allocated | RandomProviderType |
-|--------------------  |----------:|---------:|---------:|------:|-------:|----------:|------------------- |
-| Ulid.NewUlid         |  65.72 ns | 0.067 ns | 0.052 ns |  0.11 | 0.0024 |      40 B | CryptoRandom       |
-| UlidFactory.NewUlid  |  72.59 ns | 0.078 ns | 0.065 ns |  0.12 | 0.0024 |      40 B | CryptoRandom       |
-| Guid.NewGuid         | 593.35 ns | 0.988 ns | 0.825 ns |  1.00 |      - |         - | CryptoRandom       |
-|                      |           |          |          |       |        |           |                    |
-| Ulid.NewUlid         |  66.18 ns | 0.079 ns | 0.066 ns |  0.11 | 0.0024 |      40 B | PseudoRandom       |
-| UlidFactory.NewUlid  |  66.27 ns | 0.231 ns | 0.216 ns |  0.11 | 0.0024 |      40 B | PseudoRandom       |
-| Guid.NewGuid         | 593.63 ns | 1.013 ns | 0.898 ns |  1.00 |      - |         - | PseudoRandom       |
-|                      |           |          |          |       |        |           |
-| Guid.Parse           |  30.89 ns | 0.048 ns | 0.043 ns |  1.00 |      - |         - |
-| Ulid.ParseUtf8String |  76.92 ns | 0.261 ns | 0.218 ns |  2.49 | 0.0024 |      40 B |
-| Ulid.ParseString     |  79.54 ns | 0.141 ns | 0.125 ns |  2.58 | 0.0024 |      40 B |
-|                      |           |          |          |       |        |           |
-| Guid.ToString        |  16.50 ns | 0.061 ns | 0.054 ns |  1.00 | 0.0057 |      96 B |
-| Ulid.ToString        |  47.52 ns | 0.135 ns | 0.126 ns |  2.88 | 0.0048 |      80 B |
-
-| Method              | RandomProviderType | Mean     | Error    | StdDev   | Median   | Ratio | RatioSD | Gen0   | Allocated | Alloc Ratio |
-|-------------------- |------------------- |---------:|---------:|---------:|---------:|------:|--------:|-------:|----------:|------------:|
-| UlidFactory.NewUlid | CryptoRandom       | 47.03 ns | 0.969 ns | 2.636 ns | 46.28 ns |  0.93 |    0.06 | 0.0032 |      40 B |          NA |
-| Ulid.NewUlid        | CryptoRandom       | 50.25 ns | 1.028 ns | 1.631 ns | 50.17 ns |  0.99 |    0.05 | 0.0032 |      40 B |          NA |
-| Guid.NewGuid        | CryptoRandom       | 50.77 ns | 1.044 ns | 1.909 ns | 50.60 ns |  1.00 |    0.05 |      - |         - |          NA |
-|                     |                    |          |          |          |          |       |         |        |           |             |
-| Guid.NewGuid        | PseudoRandom       | 44.54 ns | 0.889 ns | 1.058 ns | 44.41 ns |  1.00 |    0.03 |      - |         - |          NA |
-| UlidFactory.NewUlid | PseudoRandom       | 47.73 ns | 0.959 ns | 1.376 ns | 47.82 ns |  1.07 |    0.04 | 0.0032 |      40 B |          NA |
-| Ulid.NewUlid        | PseudoRandom       | 48.80 ns | 1.009 ns | 1.122 ns | 48.87 ns |  1.10 |    0.04 | 0.0032 |      40 B |          NA |
-
-| Method               | Mean     | Error    | StdDev   | Median   | Ratio | RatioSD | Gen0   | Allocated | Alloc Ratio |
-|--------------------- |---------:|---------:|---------:|---------:|------:|--------:|-------:|----------:|------------:|
-| Guid.Parse           | 17.85 ns | 0.384 ns | 1.046 ns | 17.35 ns |  1.00 |    0.08 |      - |         - |          NA |
-| Ulid.ParseString     | 58.50 ns | 0.772 ns | 0.722 ns | 58.39 ns |  3.29 |    0.18 | 0.0032 |      40 B |          NA |
-| Ulid.ParseUtf8String | 59.45 ns | 1.093 ns | 1.023 ns | 59.13 ns |  3.34 |    0.19 | 0.0032 |      40 B |          NA |
-
-| Method        | Mean     | Error    | StdDev   | Ratio | RatioSD | Gen0   | Allocated | Alloc Ratio |
-|-------------- |---------:|---------:|---------:|------:|--------:|-------:|----------:|------------:|
-| Guid.ToString | 11.39 ns | 0.271 ns | 0.240 ns |  1.00 |    0.03 | 0.0076 |      96 B |        1.00 |
-| Ulid.ToString | 30.13 ns | 0.603 ns | 1.324 ns |  2.65 |    0.13 | 0.0063 |      80 B |        0.83 |
+| Method               | Mean      | Error    | StdDev   | Ratio | Gen0   | Allocated | Alloc Ratio | RandomProviderType |
+|--------------------  |----------:|---------:|---------:|------:|-------:|----------:|------------:|------------------- |
+| UlidFactory.NewUlid  |  56.12 ns | 0.085 ns | 0.071 ns |  0.09 | 0.0024 |      40 B |          NA | CryptoRandom       |
+| Ulid.NewUlid         |  56.49 ns | 0.105 ns | 0.098 ns |  0.09 | 0.0024 |      40 B |          NA | CryptoRandom       |
+| Guid.NewGuid[^1]     | 595.28 ns | 1.149 ns | 0.897 ns |  1.00 |      - |         - |          NA | CryptoRandom       |
+|                      |           |          |          |       |        |           |             |                    |
+| UlidFactory.NewUlid  |  55.99 ns | 0.106 ns | 0.094 ns |  0.09 | 0.0024 |      40 B |          NA | PseudoRandom       |
+| Ulid.NewUlid         |  56.24 ns | 0.140 ns | 0.131 ns |  0.09 | 0.0024 |      40 B |          NA | PseudoRandom       |
+| Guid.NewGuid         | 595.64 ns | 0.416 ns | 0.368 ns |  1.00 |      - |         - |          NA | PseudoRandom       |
+|                      |           |          |          |       |        |           |             |
+| Guid.Parse           |  30.16 ns | 0.064 ns | 0.060 ns |  1.00 |      - |         - |          NA |
+| Ulid.ParseUtf8String |  77.28 ns | 0.256 ns | 0.239 ns |  2.56 | 0.0024 |      40 B |          NA |
+| Ulid.ParseString     |  80.95 ns | 0.300 ns | 0.266 ns |  2.68 | 0.0024 |      40 B |          NA |
+|                      |           |          |          |       |        |           |             |
+| Guid.ToString        |  16.38 ns | 0.087 ns | 0.082 ns |  1.00 | 0.0057 |      96 B |        1.00 |
+| Ulid.ToString        |  47.93 ns | 0.249 ns | 0.221 ns |  2.93 | 0.0048 |      80 B |        0.83 |
 
 Legend:
   - Mean      : Arithmetic mean of all measurements
@@ -202,6 +181,6 @@ Legend:
   - Allocated : Allocated memory per single operation (managed only, inclusive, 1KB = 1024B)
   - 1 ns      : 1 Nanosecond (0.000000001 sec)
 
-[^1] `Guid.NewGuid` is ~9 times slower than `Ulid.NewUlid` because it uses a cryptographic random number generator on every
-call, whereas `Ulid.NewUlid` only uses it when the millisecond timestamp changes and if it doesn't, it just increments the
-previous random part.
+[^1]: `Guid.NewGuid` is ~10 times slower than `Ulid.NewUlid` because it uses a cryptographic random number generator on every
+  call, whereas `Ulid.NewUlid` only uses it when the millisecond timestamp changes and if it doesn't, it just increments the
+  previous random part.
