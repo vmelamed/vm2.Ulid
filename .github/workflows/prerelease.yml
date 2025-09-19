@@ -8,6 +8,10 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Why run?'      
 
 env:
   DOTNET_NOLOGO: true
