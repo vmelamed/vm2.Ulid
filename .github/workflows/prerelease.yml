@@ -70,7 +70,7 @@ jobs:
             git config --global user.name "github-actions[bot]"
             git config --global user.email "github-actions[bot]@users.noreply.github.com"
             git remote set-url origin https://x-access-token:${{ secrets.GH_PAT_VM2_ULID }}@github.com/vmelamed/vm2.Ulid.git
-            git push origin HEAD:refs/heads/${GITHUB_REF}
+            git push origin HEAD:refs/heads/${GITHUB_REF_NAME}
             git tag -a "$TAG" -m "Automated prerelease $TAG"
             git push origin "$TAG"
 
