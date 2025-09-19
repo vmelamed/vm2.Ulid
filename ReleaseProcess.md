@@ -1,4 +1,4 @@
-# Release Process
+ï»¿# Release Process
 
 This document explains how versioning, prerelease automation, and stable publishing work for this repository.
 
@@ -37,7 +37,7 @@ The actual activation is via:
 
     <MinVerTagPrefix>v</MinVerTagPrefix>
 
-    <!-- Force a prerelease label when not on a tag (disabled now – prerelease tags are created instead) -->
+    <!-- Force a prerelease label when not on a tag (disabled now â€“ prerelease tags are created instead) -->
     <!-- <MinVerDefaultPreReleaseIdentifiers>preview</MinVerDefaultPreReleaseIdentifiers> -->
 
     <!-- If you ever want AssemblyVersion = Major.Minor.Patch.0 -->
@@ -86,7 +86,7 @@ Manual steps:
    git pull origin main
    ```
 
-1. Choose next version (SemVer) – update CHANGELOG if applicable:
+1. Choose next version (SemVer) â€“ update CHANGELOG if applicable:
 
    ```bash
    export VER=v1.2.0

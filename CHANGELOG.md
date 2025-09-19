@@ -1,4 +1,4 @@
-# Changelog
+Ôªø# Changelog
 
 All notable changes to this project will be documented in this file.
 
@@ -34,13 +34,23 @@ This format follows:
 
 ---
 
+## [v0.1.2] - 2025-09-19
+
+### Changed
+- Minor document fixes
+
+### Performance
+- Better performance for `Ulid.NewUlid`, `Ulid.Parse`, `Ulid.ToString`, and the related methods.
+
+---
+
 ## [v0.1.1] - 2025-09-17
 
 Initial baseline release.
 
 ### Added
 
-- - Core library foundation.
+- Core library foundation.
 - Initial tests & benchmarking harness.
 - MinVer-based versioning & automated prerelease workflow.
 - Release process documentation (`ReleaseProcess.md`).
@@ -50,12 +60,12 @@ Initial baseline release.
 
 ## Usage Notes
 
-1. For every change, prefer small bullet points written in the imperative mood (e.g. ìAdd Öî, ìFix Öî).
+1. For every change, prefer small bullet points written in the imperative mood (e.g. ‚ÄúAdd ‚Ä¶‚Äù, ‚ÄúFix ‚Ä¶‚Äù).
 2. Group changes under the appropriate heading above; add new headings only when needed.
 3. Before creating a stable tag:
    - Move items from `Unreleased` into a new `## [vX.Y.Z] - YYYY-MM-DD` section.
    - Update the comparison links at the bottom if a major/minor line starts a new baseline.
-4. Do not rewrite history of published versionsóappend corrections in a new entry if needed.
+4. Do not rewrite history of published versions‚Äîappend corrections in a new entry if needed.
 
 ## Categorization Guidance
 

@@ -145,7 +145,7 @@ public readonly partial struct Ulid :
     /// </summary>
     /// <param name="source">The string representation of the ULID to parse. Must be a valid ULID string.</param>
     public Ulid(string source)
-        => this = Parse(source);
+        => _ulidBytes = Parse(source)._ulidBytes;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Ulid"/> struct from the bytes of the specified <see cref="Guid"/>.
@@ -171,11 +171,13 @@ public readonly partial struct Ulid :
                         $"The random bytes argument must contain exactly {nameof(Ulid)}.{nameof(RandomLength)} ({RandomLength}) bytes.",
                         nameof(randomBytes));
 
-        Span<byte> ulidSpan = stackalloc byte[UlidBytesLength];
+        var ulidBytes = new byte[UlidBytesLength];
+        var ulidSpan = ulidBytes.AsSpan();
 
         PutTimeStampIntoUlid(unixTimestamp, ulidSpan);
         randomBytes.CopyTo(ulidSpan[RandomBegin..RandomEnd]);
-        _ulidBytes = new ReadOnlyMemory<byte>(ulidSpan.ToArray());
+
+        _ulidBytes = new ReadOnlyMemory<byte>(ulidBytes);
     }
 
     /// <summary>
@@ -263,7 +265,7 @@ public readonly partial struct Ulid :
             ulidAsNumber >>>= BitsPerUlidDigit;
         }
 
-        Debug.Assert(ulidAsNumber == 0, "After writing digits into a destination span of 26 chars, there are still bits left unwritten.");
+        Debug.Assert(ulidAsNumber == 0, "After writing the digits into the destination span of 26 chars, there are still bits left unwritten.");
         return true;
     }
 
