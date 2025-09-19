@@ -42,8 +42,7 @@ public sealed class UlidFactory(IUlidRandomProvider? randomProvider = null)
 
                 // this is extremely unlikely case - we ran out of consecutive values for this millisecond.
                 // This is 1 in 2^80 chance of happening.
-                _lastTimestamp++;
-                return new Ulid(_lastTimestamp, randomSpan);
+                throw new OverflowException("Random component overflowed; cannot generate more ULIDs for this millisecond.");
             }
 
             _rng.Fill(randomSpan);
