@@ -73,7 +73,7 @@ var ulidFromGuid = new Ulid(ulidGuid);                  // ULID can be created f
 
 var ulidUtf8String = Encoding.UTF8.GetBytes(ulid1String);
 
-Ulid.TryParse(ulidString, out var ulidCopy1);           // parse ULID from UTF-16 string (26 UTF-16 characters)
+Ulid.TryParse(ulid1String, out var ulidCopy1);           // parse ULID from UTF-16 string (26 UTF-16 characters)
 Ulid.TryParse(ulidUtf8String, out var ulidCopy2);       // parse ULID from its UTF-8 string (26 UTF-8 characters/bytes)
 
 Debug.Assert(ulid1 == ulidCopy1 &&                      // Parsed ULIDs are equal to the original
