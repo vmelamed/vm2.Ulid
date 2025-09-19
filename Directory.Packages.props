@@ -1,28 +1,28 @@
 <Project>
-    <PropertyGroup>
-        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-        <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
-    </PropertyGroup>
-    <ItemGroup>
-        <PackageVersion Include="System.Memory" Version="4.6.3" />
-        <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="9.0.8" />
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="System.Memory" Version="4.6.3" />
+    <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="9.0.8" />
 
-        <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
 
-        <PackageVersion Include="MinVer" Version="6.0.0" />
+    <PackageVersion Include="MinVer" Version="6.0.0" />
 
-        <!-- The test stack: -->
-        <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="17.14.2" />
-        <PackageVersion Include="FluentAssertions" Version="8.6.0" />
-        <PackageVersion Include="xunit.v3" Version="3.0.1" />
-        <PackageVersion Include="xunit.v3.extensibility.core" Version="3.0.1" />
-        <PackageVersion Include="coverlet.msbuild" Version="3.1.2" />
+    <!-- The test stack: -->
+    <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="17.14.2" />
+    <PackageVersion Include="FluentAssertions" Version="8.6.0" />
+    <PackageVersion Include="xunit.v3" Version="3.0.1" />
+    <PackageVersion Include="xunit.v3.extensibility.core" Version="3.0.1" />
+    <PackageVersion Include="coverlet.msbuild" Version="3.1.2" />
 
-        <!-- BenchmarkDotNet -->
-        <!-- for running with Visual Studio profiler:
+    <!-- BenchmarkDotNet -->
+    <!-- for running with Visual Studio profiler:
         <PackageVersion Include="Microsoft.VisualStudio.DiagnosticsHub.BenchmarkDotNetDiagnosers" Version="18.0.36421.1" />
         -->
-        <PackageVersion Include="BenchmarkDotNet" Version="0.15.3" />
-        <PackageVersion Include="BenchmarkDotNet.Annotations" Version="0.15.3" />
-    </ItemGroup>
+    <PackageVersion Include="BenchmarkDotNet" Version="0.15.3" />
+    <PackageVersion Include="BenchmarkDotNet.Annotations" Version="0.15.3" />
+  </ItemGroup>
 </Project>

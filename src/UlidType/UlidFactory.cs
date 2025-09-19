@@ -13,10 +13,10 @@ using vm2.UlidRandomProviders;
 /// <b>Hint:</b> you may have more than one factory in your program representing separate sequences of ULID-s. E.g. a factory<br/>
 /// per DB table.
 /// </remarks>
-public class UlidFactory(IUlidRandomProvider? randomProvider = null)
+public sealed class UlidFactory(IUlidRandomProvider? randomProvider = null)
 {
     IUlidRandomProvider _rng = randomProvider ?? new CryptoRandom();
-    byte[] _lastUlid = new byte[UlidBytesLength];
+    byte[] _lastRandom = new byte[RandomLength];
     long _lastTimestamp;
     Lock _lock = new();
 
@@ -30,36 +30,28 @@ public class UlidFactory(IUlidRandomProvider? randomProvider = null)
     /// <returns>A new <see cref="Ulid"/> instance representing the generated ULID.</returns>
     public Ulid NewUlid()
     {
-        var ulidSpan = _lastUlid.AsSpan();
+        var randomSpan  = _lastRandom.AsSpan();
         var timestampNow = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
         lock (_lock)
         {
-            if (timestampNow == _lastTimestamp)
+            if (_lastTimestamp == timestampNow)
             {
                 // increment the random part with carry over for monotonicity
-                var random = ulidSpan[RandomBegin..RandomEnd];
-                var i = random.Length-1;
-                for (; i >= 0; i--)
-                    if (unchecked(++random[i]) >= 0)
-                        return new Ulid(ulidSpan);
+                for (var i = randomSpan.Length-1; i >= 0; i--)
+                    if (unchecked(++randomSpan[i]) >= 0)
+                        return new Ulid(_lastTimestamp, randomSpan);
 
                 // this is extremely unlikely case - we ran out of consecutive values for this millisecond.
                 // This is 1 in 2^80 chance of happening.
-                timestampNow++;
+                throw new OverflowException("Random component overflowed; cannot generate more ULIDs for this millisecond.");
             }
 
-            // accept the new time stamp
+            _rng.Fill(randomSpan);
             _lastTimestamp = timestampNow;
+
+            // create a new ULID from the bytes
+            return new Ulid(_lastTimestamp, randomSpan);
         }
-
-        Ulid.CopyTimeStampToUlid(timestampNow, ulidSpan);
-
-        // fill the random bytes part from crypto-strong RNG, overwriting the last 2 bytes of the 8-bit modified timestamp:
-        // 0x01020304050600000000000000000000 => 0x010203040506rrrrrrrrrrrrrrrrrrrr
-        _rng.Fill(ulidSpan[RandomBegin..RandomEnd]);
-
-        // create a new ULID from the bytes
-        return new Ulid(ulidSpan);
     }
 }

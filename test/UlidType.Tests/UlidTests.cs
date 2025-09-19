@@ -1,7 +1,5 @@
 namespace vm2.UlidType.Tests;
 
-using vm2.UlidRandomProviders;
-
 [ExcludeFromCodeCoverage]
 public class UlidTests
 {
@@ -110,15 +108,22 @@ public class UlidTests
         lower.Should().Be(ulid);
     }
 
-    [Fact]
-    public void Parse_Invalid_Throws_TryParse_ReturnsFalse()
+    [Theory]
+    [InlineData('!')]
+    [InlineData('U')]
+    [InlineData('l')]
+    [InlineData(']')]
+    [InlineData('}')]
+    public void Parse_Invalid_Throws_TryParse_ReturnsFalse(char wrong)
     {
-        var invalid = new string('!', UlidStringLength);
+        var invalid = new string(wrong, UlidStringLength);
 
         Action act = () => Ulid.Parse(invalid);
         act.Should().Throw<ArgumentException>();
 
         Ulid.TryParse(invalid, out var r).Should().BeFalse();
+
+        Ulid.TryParse(Encoding.UTF8.GetBytes(invalid), out r).Should().BeFalse();
     }
 
     [Fact]
@@ -145,29 +150,9 @@ public class UlidTests
     }
 
     [Fact]
-    public void NewUlid_Generates_Unique_And_Monotonic_Ulids_When_Incrementing_Within_Same_Millisecond()
+    public void NewUlids_Are_Unique_And_Monotonic_When_Created_Within_Same_Millisecond()
     {
         var factory = new UlidFactory();
-
-        // Force the factory into the "same millisecond" increment path by setting private state:
-        var lastTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-
-        // Prepare bytes similar to what the factory would write for the timestamp portion
-        var lastUlidBytes = new byte[UlidBytesLength];
-        BitConverter.TryWriteBytes(lastUlidBytes.AsSpan(), lastTimestamp);
-        if (BitConverter.IsLittleEndian)
-            lastUlidBytes.AsSpan(TimestampBegin, TimestampLength).Reverse();
-
-        // Inject _lastTimestamp and _lastUlid via reflection
-        var type = typeof(UlidFactory);
-        var tsField = type.GetField("_lastTimestamp", BindingFlags.Instance | BindingFlags.NonPublic);
-        var ulidField = type.GetField("_lastUlid", BindingFlags.Instance | BindingFlags.NonPublic);
-
-        tsField.Should().NotBeNull();
-        ulidField.Should().NotBeNull();
-
-        tsField!.SetValue(factory, lastTimestamp);
-        ulidField!.SetValue(factory, lastUlidBytes);
 
         const int count = 10;
         var ulids = Enumerable.Range(0, count).Select(_ => factory.NewUlid()).ToList();
@@ -185,7 +170,6 @@ public class UlidTests
     {
         var factory = new UlidFactory();
         var a = factory.NewUlid();
-
         var b = factory.NewUlid();
 
         a.Should().NotBe(b);
@@ -230,8 +214,13 @@ public class UlidTests
         act.Should().Throw<ArgumentException>();
     }
 
-    [Fact]
-    public void NewUlid_FromBytes_WithWrongByteUtf8_Throws()
+    [Theory]
+    [InlineData('!')]
+    [InlineData('U')]
+    [InlineData('l')]
+    [InlineData(']')]
+    [InlineData('}')]
+    public void NewUlid_FromBytes_WithWrongByteUtf8_Throws(char wrongChar)
     {
         var bytes = new byte[UlidStringLength];
 
@@ -241,15 +230,20 @@ public class UlidTests
         act.Should().Throw<ArgumentException>();
 
         for (var i = 0; i < bytes.Length; i++)
-            bytes[i] = (byte)'U';
+            bytes[i] = (byte)wrongChar;
 
         act.Should().Throw<ArgumentException>();
     }
 
-    [Fact]
-    public void NewUlid_FromString_WithWrongChar_Throws()
+    [Theory]
+    [InlineData('!')]
+    [InlineData('U')]
+    [InlineData('l')]
+    [InlineData(']')]
+    [InlineData('}')]
+    public void NewUlid_FromString_WithWrongChar_Throws(char wrongChar)
     {
-        Action act = () => new Ulid(new string('!', UlidStringLength));
+        Action act = () => new Ulid(new string(wrongChar, UlidStringLength));
         act.Should().Throw<ArgumentException>();
     }
 
@@ -310,5 +304,36 @@ public class UlidTests
         var maxUlid = Ulid.AllBitsSet;
         Action act = () => maxUlid++;
         act.Should().Throw<OverflowException>();
+    }
+
+    [Theory]
+    [InlineData("01ARZ3NDEKTSV4RRFFQ69G5FAV")]
+    [InlineData("01BX5ZZKBKACTAV9WEVGEMMVRZ")]
+    [InlineData("01BX5ZZKBKACTAV9WEVGEMMVS0")]
+    [InlineData("01K5ETWXTDG0ZK9PP9WMC6V4HY")]
+    [InlineData("01K5ETWXTWEQPSJ8AB1PSFVGCR")]
+    [InlineData("01K5ETWXTWEQPSJ8AB1PSFVGCS")]
+    [InlineData("01K5ETWXV32QSSJWA7WKQZ7D0K")]
+    [InlineData("01K5ETWXVDNC94EGFBNK30GBSV")]
+    [InlineData("01K5ETWXVDNC94EGFBNK30GBSW")]
+    [InlineData("01K5ETWXVDNC94EGFBNK30GBSX")]
+    public void RoundTrip_WellKnown_GoodValues(string s)
+    {
+        var ulid = Ulid.Parse(s);
+
+        ulid.ToString().Should().Be(s);
+
+        var bytes = ulid.Bytes.ToArray();
+
+        bytes.Length.Should().Be(UlidBytesLength);
+
+        var fromBytes = new Ulid(bytes);
+
+        fromBytes.Should().Be(ulid);
+
+        var guid = ulid.ToGuid();
+        var fromGuid = new Ulid(guid);
+
+        fromGuid.Should().Be(ulid);
     }
 }

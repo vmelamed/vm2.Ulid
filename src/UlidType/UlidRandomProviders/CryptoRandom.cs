@@ -3,7 +3,7 @@ namespace vm2.UlidRandomProviders;
 /// <summary>
 /// A random provider that uses cryptographic random number generation.
 /// </summary>
-public class CryptoRandom : IUlidRandomProvider
+public sealed class CryptoRandom : IUlidRandomProvider
 {
     /// <summary>
     /// Fills the provided byte span with cryptographically secure random data.

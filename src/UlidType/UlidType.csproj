@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <RootNamespace>vm2</RootNamespace>
@@ -6,20 +6,15 @@
 
   <PropertyGroup Label="NuGet">
     <Title>vm2.ULID</Title>
-    <Description>Implementation of the Universally Unique Lexicographically Sortable Identifier
-      (ULID) for .NET.</Description>
+    <Description>
+        Implementation of the Universally Unique Lexicographically Sortable Identifier (ULID) for .NET.
+    </Description>
+    <PackageId>vm2.ULID</PackageId>
     <PackageReleaseNotes>Initial version of the vm2.Ulid.</PackageReleaseNotes>
     <RepositoryUrl>https://github.com/vmelamed/vm2.Ulid</RepositoryUrl>
     <PackageProjectUrl>https://github.com/vmelamed/vm2.Ulid/blob/main/src/UlidType/UlidType.csproj</PackageProjectUrl>
     <PackageTags>ULID Universally Unique Lexicographically Sortable Identifier .net core vm2</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Update="MinVer">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
 
 </Project>
