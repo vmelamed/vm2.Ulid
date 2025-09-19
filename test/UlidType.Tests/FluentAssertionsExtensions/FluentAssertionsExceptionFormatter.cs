@@ -1,4 +1,4 @@
-﻿namespace vm2.UlidType.Tests.FluentAssertionsExtensions;
+namespace vm2.UlidType.Tests.FluentAssertionsExtensions;
 
 using System.Diagnostics.CodeAnalysis;
 

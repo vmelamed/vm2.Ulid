@@ -1,4 +1,4 @@
-﻿<RunSettings>
+<RunSettings>
   <DataCollectionRunSettings>
     <DataCollectors>
       <DataCollector friendlyName="Code Coverage">

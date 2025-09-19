@@ -1,4 +1,4 @@
-﻿namespace vm2;
+namespace vm2;
 
 /// <summary>
 /// Represents a Universally Unique Lexicographically Sortable Identifier (ULID).

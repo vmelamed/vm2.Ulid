@@ -210,7 +210,6 @@ public class UlidTests
     {
         Action act = () => new Ulid(new byte[UlidBytesLength - 1]);
         act.Should().Throw<ArgumentException>();
-
         act = () => new Ulid(new byte[UlidBytesLength + 1]);
         act.Should().Throw<ArgumentException>();
     }
