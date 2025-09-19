@@ -14,7 +14,7 @@
     <RepositoryUrl>https://github.com/vmelamed/vm2.Ulid</RepositoryUrl>
     <PackageProjectUrl>https://github.com/vmelamed/vm2.Ulid/blob/main/src/UlidType/UlidType.csproj</PackageProjectUrl>
     <PackageTags>ULID Universally Unique Lexicographically Sortable Identifier .net core vm2</PackageTags>
-    <PackageReadmeFile>../../README.md</PackageReadmeFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
     <ItemGroup>
