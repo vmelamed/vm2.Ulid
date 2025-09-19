@@ -21,6 +21,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          filter: tree:0
 
       - name: Skip if commit already tagged (any v* tag)
         id: tagcheck
