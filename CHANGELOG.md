@@ -34,6 +34,16 @@ This format follows:
 
 ---
 
+## [v0.1.2] - 2025-09-19
+
+### Changed
+- Minor document fixes
+
+### Performance
+- Better performance for `Ulid.NewUlid`, `Ulid.Parse`, `Ulid.ToString`, and the related methods.
+
+---
+
 ## [v0.1.1] - 2025-09-17
 
 Initial baseline release.
