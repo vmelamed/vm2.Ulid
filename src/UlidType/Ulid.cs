@@ -41,32 +41,57 @@ public readonly partial struct Ulid :
     public readonly ReadOnlySpan<byte> Bytes => _ulidBytes.Span;
 
     /// <summary>
-    /// Extracts and converts the ULID's timestamp component into a <see cref="DateTimeOffset"/> representation.
+    /// Extracts and converts the ULID's Unix timestamp component into a <see cref="DateTimeOffset"/> representation.
     /// </summary>
     /// <remarks>
-    /// The returned <see cref="DateTimeOffset"/> represents the timestamp encoded in the ULID, which is based on the ulidAsNumber of <br/>
-    /// milliseconds since the Unix epoch (January 1, 1970, 00:00:00 UTC).
+    /// The returned <see cref="DateTimeOffset"/> represents the date and time encoded in the ULID.
     /// </remarks>
-    public readonly DateTimeOffset Timestamp
-    {
-        get
-        {
-            Span<byte> ts = stackalloc byte[sizeof(long)];
-
-            _ulidBytes.Span[TimestampBegin..TimestampEnd].CopyTo(ts[2..8]);
-
-            var timestamp = ReadInt64BigEndian(ts);
-            return DateTimeOffset.FromUnixTimeMilliseconds(timestamp);
-        }
-    }
+    public readonly DateTimeOffset Timestamp => DateTimeOffset.FromUnixTimeMilliseconds(GetTimestampFromUlid(_ulidBytes.Span));
 
     /// <summary>
     /// Returns the bytes of the random component from the current ULID instance.
     /// </summary>
     /// <remarks>
-    /// The returned byte array represents the random portion of the ULID, which is independent of the timestamp component.
+    /// The returned byte array represents the random portion of the ULID.
     /// </remarks>
     public readonly ReadOnlySpan<byte> RandomBytes => Bytes[RandomBegin..RandomEnd];
+
+    /// <summary>
+    /// Extracts the timestamp from a ULID's span of bytes.
+    /// </summary>
+    /// <param name="ulidSpan">
+    /// A read-only span of bytes representing the ULID. The span must contain at least 8 bytes starting from the timestamp portion.
+    /// </param>
+    /// <returns>
+    /// A <see cref="long"/> representing the timestamp encoded in the ULID.
+    /// </returns>
+    internal static long GetTimestampFromUlid(ReadOnlySpan<byte> ulidSpan)
+    {
+        Debug.Assert(ulidSpan.Length >= sizeof(long), "The source Ulid span should be longer than the size of a long - 16.");
+
+        Span<byte> ts = stackalloc byte[sizeof(long)];
+
+        ulidSpan[TimestampBegin..TimestampEnd].CopyTo(ts[2..8]);
+        return ReadInt64BigEndian(ts);
+    }
+
+    /// <summary>
+    /// Copies the timestamp from the specified <see cref="DateTimeOffset"/> to the provided ULID span.
+    /// </summary>
+    /// <param name="unixTimestamp">The timestamp to copy.</param>
+    /// <param name="ulidSpan">
+    /// A span of bytes representing the ULID. The span must have sufficient capacity to accommodate the timestamp at
+    /// the designated position.
+    /// </param>
+    internal static void PutTimeStampIntoUlid(long unixTimestamp, Span<byte> ulidSpan)
+    {
+        Debug.Assert(ulidSpan.Length >= sizeof(long), "The target Ulid span should be longer than the size of a long - 16.");
+
+        Span<byte> ts = stackalloc byte[sizeof(long)];
+
+        WriteInt64BigEndian(ts, unixTimestamp);
+        ts[2..8].CopyTo(ulidSpan[TimestampBegin..TimestampEnd]);
+    }
 
     /// <summary>
     /// Generates a new unique ULID (Universally Unique Lexicographically Sortable Identifier).
@@ -120,7 +145,7 @@ public readonly partial struct Ulid :
     /// </summary>
     /// <param name="source">The string representation of the ULID to parse. Must be a valid ULID string.</param>
     public Ulid(string source)
-        => _ulidBytes = Parse(source)._ulidBytes;
+        => this = Parse(source);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Ulid"/> struct from the bytes of the specified <see cref="Guid"/>.
@@ -132,43 +157,45 @@ public readonly partial struct Ulid :
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Ulid"/> struct using the specified timestamp and random bytes.
+    /// Initializes a new instance of the <see cref="Ulid"/> struct using the specified Unix timestamp and random bytes.
     /// </summary>
     /// <remarks>
     /// <b>Hint:</b> use this constructor to generate predictable sequences of ULIDs, e.g. in unit tests.<br/>
     /// </remarks>
-    /// <param name="dateTime">The timestamp representing the creation time of the ULID.</param>
+    /// <param name="unixTimestamp">The timestamp representing the creation time of the ULID.</param>
     /// <param name="randomBytes">A read-only span of 10 bytes representing the unique identifier portion of the ULID.</param>
-    public Ulid(DateTimeOffset dateTime, ReadOnlySpan<byte> randomBytes)
+    public Ulid(long unixTimestamp, ReadOnlySpan<byte> randomBytes)
     {
         if (randomBytes.Length != RandomLength)
             throw new ArgumentException(
                         $"The random bytes argument must contain exactly {nameof(Ulid)}.{nameof(RandomLength)} ({RandomLength}) bytes.",
                         nameof(randomBytes));
 
-        var bytes = new byte[UlidBytesLength];
+        Span<byte> ulidSpan = stackalloc byte[UlidBytesLength];
 
-        var ulidSpan = bytes.AsSpan();
-        var timestampNow = dateTime.ToUnixTimeMilliseconds();
-
-        CopyTimeStampToUlid(timestampNow, ulidSpan);
-
+        PutTimeStampIntoUlid(unixTimestamp, ulidSpan);
         randomBytes.CopyTo(ulidSpan[RandomBegin..RandomEnd]);
-        _ulidBytes = new ReadOnlyMemory<byte>(bytes);
-    }
-
-    internal static void CopyTimeStampToUlid(long timestamp, Span<byte> ulidSpan)
-    {
-        Debug.Assert(ulidSpan.Length >= sizeof(long));
-
-        Span<byte> ts = stackalloc byte[sizeof(long)];
-
-        WriteInt64BigEndian(ts, timestamp);
-        ts[2..8].CopyTo(ulidSpan[TimestampBegin..TimestampEnd]);
+        _ulidBytes = new ReadOnlyMemory<byte>(ulidSpan.ToArray());
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Ulid"/> struct using the specified timestamp and identifier randomBytes.
+    /// Initializes a new instance of the <see cref="Ulid"/> struct using the specified .NET <see cref="DateTime"/> and identifier randomBytes.
+    /// </summary>
+    /// <remarks>
+    /// <b>Hint:</b> use this constructor to generate predictable sequences of ULIDs, e.g. in unit tests.<br/>
+    /// </remarks>
+    /// <param name="dateTime">
+    /// The .NET <see cref="DateTime"/> representing the creation time of the ULID. Should be in UTC, otherwise assumes local time.
+    /// </param>
+    /// <param name="randomBytes">A read-only span of 10 randomBytes representing the unique identifier portion of the ULID.</param>
+    public Ulid(DateTime dateTime, ReadOnlySpan<byte> randomBytes)
+        : this(new DateTimeOffset(dateTime).ToUnixTimeMilliseconds(), randomBytes)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Ulid"/> struct using the specified .NET <see cref="DateTimeOffset"/> and
+    /// identifier randomBytes.
     /// </summary>
     /// <remarks>
     /// <b>Hint:</b> use this constructor to generate predictable sequences of ULIDs, e.g. in unit tests.<br/>
@@ -177,8 +204,8 @@ public readonly partial struct Ulid :
     /// The timestamp representing the creation time of the ULID. Should be in UTC, otherwise assumes local time.
     /// </param>
     /// <param name="randomBytes">A read-only span of 10 randomBytes representing the unique identifier portion of the ULID.</param>
-    public Ulid(DateTime dateTime, ReadOnlySpan<byte> randomBytes)
-        : this(new DateTimeOffset(dateTime), randomBytes)
+    public Ulid(DateTimeOffset dateTime, ReadOnlySpan<byte> randomBytes)
+        : this(dateTime.ToUnixTimeMilliseconds(), randomBytes)
     {
     }
 
@@ -202,7 +229,7 @@ public readonly partial struct Ulid :
 
         var r = TryWrite(span);
 
-        Debug.Assert(r is true);
+        Debug.Assert(r is true, "Failed to write into a 26 char span.");
         return new string(span);
     }
 
@@ -236,7 +263,7 @@ public readonly partial struct Ulid :
             ulidAsNumber >>>= BitsPerUlidDigit;
         }
 
-        Debug.Assert(ulidAsNumber == 0);
+        Debug.Assert(ulidAsNumber == 0, "After writing digits into a destination span of 26 chars, there are still bits left unwritten.");
         return true;
     }
 
@@ -297,8 +324,7 @@ public readonly partial struct Ulid :
 
             var crockfordIndex = sourceSpan[i] - '0';
 
-            if (crockfordIndex < 0
-                || crockfordIndex >= CrockfordDigitValues.Length)
+            if (crockfordIndex < 0 || crockfordIndex >= CrockfordDigitValues.Length)
                 return false;
 
             var digitValue = CrockfordDigitValues[crockfordIndex];
@@ -439,7 +465,9 @@ public readonly partial struct Ulid :
     /// <returns>The <see cref="Ulid"/> instance that corresponds to the parsed string.</returns>
     /// <exception cref="ArgumentException">Thrown if the input string <paramref name="s"/> cannot be parsed as a valid ULID.</exception>
     public static Ulid Parse(string s, IFormatProvider? formatProvider = null)
-        => TryParse(s, formatProvider, out var u) ? u : throw new ArgumentException("The input source does not represent a valid ULID.", nameof(s));
+        => TryParse(s, formatProvider, out var u)
+                ? u
+                : throw new ArgumentException("The input source does not represent a valid ULID.", nameof(s));
 
     /// <summary>
     /// Attempts to parse the specified string representation of a ULID (Universally Unique Lexicographically Sortable Identifier)<br/>

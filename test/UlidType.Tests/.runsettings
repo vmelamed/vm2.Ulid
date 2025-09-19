@@ -4,7 +4,7 @@
       <DataCollector friendlyName="Code Coverage">
         <Configuration>
           <Exclude>
-            <!-- <Namespace>System.Text.RegularExpressions.Generated</Namespace> -->
+            <Namespace>System.Text.RegularExpressions.Generated</Namespace>
             <Namespace>System.CodeDom.Compiler.GeneratedCodeAttribute</Namespace>
           </Exclude>
         </Configuration>

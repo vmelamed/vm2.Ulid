@@ -1,5 +1,7 @@
 ﻿namespace vm2.UlidType.Tests.FluentAssertionsExtensions;
 
+using System.Diagnostics.CodeAnalysis;
+
 /// <summary>
 /// Class FluentAssertionsExceptionFormatter enables the display of inner exceptions when call.Should().NotThrow() fails.
 /// Implements the FluentAssertions.Formatting.IValueFormatter

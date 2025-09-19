@@ -1,7 +1,5 @@
 namespace vm2.UlidType.Tests;
 
-using vm2.UlidRandomProviders;
-
 [ExcludeFromCodeCoverage]
 public class UlidTests
 {
@@ -110,15 +108,22 @@ public class UlidTests
         lower.Should().Be(ulid);
     }
 
-    [Fact]
-    public void Parse_Invalid_Throws_TryParse_ReturnsFalse()
+    [Theory]
+    [InlineData('!')]
+    [InlineData('U')]
+    [InlineData('l')]
+    [InlineData(']')]
+    [InlineData('}')]
+    public void Parse_Invalid_Throws_TryParse_ReturnsFalse(char wrong)
     {
-        var invalid = new string('!', UlidStringLength);
+        var invalid = new string(wrong, UlidStringLength);
 
         Action act = () => Ulid.Parse(invalid);
         act.Should().Throw<ArgumentException>();
 
         Ulid.TryParse(invalid, out var r).Should().BeFalse();
+
+        Ulid.TryParse(Encoding.UTF8.GetBytes(invalid), out r).Should().BeFalse();
     }
 
     [Fact]
@@ -145,29 +150,9 @@ public class UlidTests
     }
 
     [Fact]
-    public void NewUlid_Generates_Unique_And_Monotonic_Ulids_When_Incrementing_Within_Same_Millisecond()
+    public void NewUlids_Are_Unique_And_Monotonic_When_Created_Within_Same_Millisecond()
     {
         var factory = new UlidFactory();
-
-        // Force the factory into the "same millisecond" increment path by setting private state:
-        var lastTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-
-        // Prepare bytes similar to what the factory would write for the timestamp portion
-        var lastUlidBytes = new byte[UlidBytesLength];
-        BitConverter.TryWriteBytes(lastUlidBytes.AsSpan(), lastTimestamp);
-        if (BitConverter.IsLittleEndian)
-            lastUlidBytes.AsSpan(TimestampBegin, TimestampLength).Reverse();
-
-        // Inject _lastTimestamp and _lastUlid via reflection
-        var type = typeof(UlidFactory);
-        var tsField = type.GetField("_lastTimestamp", BindingFlags.Instance | BindingFlags.NonPublic);
-        var ulidField = type.GetField("_lastUlid", BindingFlags.Instance | BindingFlags.NonPublic);
-
-        tsField.Should().NotBeNull();
-        ulidField.Should().NotBeNull();
-
-        tsField!.SetValue(factory, lastTimestamp);
-        ulidField!.SetValue(factory, lastUlidBytes);
 
         const int count = 10;
         var ulids = Enumerable.Range(0, count).Select(_ => factory.NewUlid()).ToList();
@@ -185,7 +170,6 @@ public class UlidTests
     {
         var factory = new UlidFactory();
         var a = factory.NewUlid();
-
         var b = factory.NewUlid();
 
         a.Should().NotBe(b);
@@ -226,12 +210,18 @@ public class UlidTests
     {
         Action act = () => new Ulid(new byte[UlidBytesLength - 1]);
         act.Should().Throw<ArgumentException>();
+
         act = () => new Ulid(new byte[UlidBytesLength + 1]);
         act.Should().Throw<ArgumentException>();
     }
 
-    [Fact]
-    public void NewUlid_FromBytes_WithWrongByteUtf8_Throws()
+    [Theory]
+    [InlineData('!')]
+    [InlineData('U')]
+    [InlineData('l')]
+    [InlineData(']')]
+    [InlineData('}')]
+    public void NewUlid_FromBytes_WithWrongByteUtf8_Throws(char wrongChar)
     {
         var bytes = new byte[UlidStringLength];
 
@@ -241,15 +231,20 @@ public class UlidTests
         act.Should().Throw<ArgumentException>();
 
         for (var i = 0; i < bytes.Length; i++)
-            bytes[i] = (byte)'U';
+            bytes[i] = (byte)wrongChar;
 
         act.Should().Throw<ArgumentException>();
     }
 
-    [Fact]
-    public void NewUlid_FromString_WithWrongChar_Throws()
+    [Theory]
+    [InlineData('!')]
+    [InlineData('U')]
+    [InlineData('l')]
+    [InlineData(']')]
+    [InlineData('}')]
+    public void NewUlid_FromString_WithWrongChar_Throws(char wrongChar)
     {
-        Action act = () => new Ulid(new string('!', UlidStringLength));
+        Action act = () => new Ulid(new string(wrongChar, UlidStringLength));
         act.Should().Throw<ArgumentException>();
     }
 
