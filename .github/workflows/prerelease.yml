@@ -72,12 +72,13 @@ jobs:
           TAG: ${{ steps.compute.outputs.prerelease_tag }}
           GH_TOKEN: ${{ secrets.GH_PAT_VM2_ULID }}
         run: |
-            git config --global user.name "github-actions[bot]"
-            git config --global user.email "github-actions[bot]@users.noreply.github.com"
-            git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/vmelamed/vm2.Ulid.git
-            git push origin HEAD:refs/heads/${GITHUB_REF_NAME}
-            git tag -a "$TAG" -m "Automated prerelease $TAG"
-            git push origin "$TAG"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global url."https://${{ secrets.GH_PAT }}@github.com/vmelamed/vm2.Ulid.git"
+          git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/vmelamed/vm2.Ulid.git
+          git push origin HEAD:refs/heads/${GITHUB_REF_NAME}
+          git tag -a "$TAG" -m "Automated prerelease $PTAG"
+          git push origin "$TAG"
 
       - name: Setup .NET
         if: steps.tagcheck.outputs.already_tagged == 'false'
