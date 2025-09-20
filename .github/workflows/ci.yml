@@ -4,47 +4,83 @@ on:
   push:
     branches:
       - "**"
+  pull_request:
+    branches:
+      - "**"
+  workflow_dispatch:
+    inputs:
+      os:
+        description: 'JSON array of runners'
+        default: '["ubuntu-latest"]'
+        required: false
+      dotnet-version:
+        description: 'Version of .NET SDK to use'
+        default: '9.0.x'
+      test-project:
+        description: 'Path to test project'
+        default: './test/UlidType.Tests/UlidType.Tests.csproj'
+      coverage-threshold:
+        description: 'Minimum acceptable code coverage percentage'
+        default: '75'
+      run-benchmarks:
+        description: 'Whether to run benchmarks and compare against baseline'
+        type: boolean
+        default: true
+      benchmark-project:
+        description: 'Path to benchmark project'
+        default: './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj'
+      perf-regression-threshold:
+        description: 'Maximum acceptable performance regression percentage'
+        default: '10'
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
-  COVERAGE_THRESHOLD: "75" # percent
-  PERF_THRESHOLD: "10" # percent allowed regression
+  DOTNET_VERSION:            ${{ inputs.dotnet-version            || vars.DOTNET_VERSION            || '9.0.x' }}
+  TEST_PROJECT:              ${{ inputs.test-project              || vars.TEST_PROJECT              || './test/UlidType.Tests/UlidType.Tests.csproj' }}
+  COVERAGE_THRESHOLD:        ${{ inputs.coverage-threshold        || vars.COVERAGE_THRESHOLD        || '75' }} # percent
+  RUN_BENCHMARKS:            ${{ inputs.run-benchmarks            || vars.RUN_BENCHMARKS            || 'true' }} # "true" to run benchmarks and compare against baseline
+  BENCHMARK_PROJECT:         ${{ inputs.benchmark-project         || vars.BENCHMARK_PROJECT         || './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj' }}
+  REGRESSION_THRESHOLD:      ${{ inputs.perf-regression-threshold || vars.REGRESSION_THRESHOLD      || '10' }} # percent allowed regression
 
 jobs:
   matrix-ci:
-    name: Build on ${{ matrix.os }} � tests & benchmarks on Linux
+    name: Build on ${{ matrix.os }} tests & benchmarks on Linux only
     runs-on: ${{ matrix.os }}
-    if: "!(contains(github.event.head_commit.message, '[skip ci]') || contains(github.event.head_commit.message, '[no ci]')"
+    if: ${{ github.event_name != 'push' || !(contains(github.event.head_commit.message, '[skip ci]') || contains(github.event.head_commit.message, '[no ci]')) }}
     strategy:
       matrix:
-        os: [ubuntu-latest] # , windows-latest, macos-latest]
+        os: ${{ fromJSON(inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]') }} # , "windows-latest", "macos-latest"]
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          filter: tree:0
 
-      - name: Setup .NET 9
-        uses: actions/setup-dotnet@v3
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "9.0.x"
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          cache: true
+          cache-dependency-path: |
+            **/packages.lock.json **/*.csproj
 
       - name: Restore
-        if: matrix.os == 'ubuntu-latest'
         run: dotnet restore
 
       - name: Build (Release)
-        if: matrix.os == 'ubuntu-latest'
         run: dotnet build -c Release --no-restore
 
-      # -- Unit tests + coverage: Linux only ---------------------------------
-      - name: Run unit tests with coverage (Linux)
-        if: matrix.os == 'ubuntu-latest' || github.event_name == 'pull_request'
+      # -- Unit tests + coverage ---------------------------------
+      - name: Run unit tests with coverage
         shell: bash
         run: |
           set -euo pipefail
-          dotnet test ./test/UlidType.Tests/UlidType.Tests.csproj -c Release --no-build \
+          dotnet test ${TEST_PROJECT} -c Release --no-build \
             /p:ExcludeByAttribute="GeneratedCodeAttribute" \
             -- \
             --coverage \
@@ -71,7 +107,7 @@ jobs:
             exit 2
           fi
 
-          PCT=$(grep -oP '\d+(\.\d+)?(?=%)' "$SUMMARY" | head -n1 || true)
+          PCT=$(sed -nE 's/.([0-9]+(.[0-9]+)?)%./\1/p' "$SUMMARY" | head -n1)
           if [ -z "$PCT" ]; then
             echo "Could not parse coverage percent from $SUMMARY"
             exit 2
@@ -81,7 +117,6 @@ jobs:
           awk -v p="$PCT" -v t="${COVERAGE_THRESHOLD}" 'BEGIN { if (p+0 < t+0) { print "Coverage below threshold"; exit 1 } else { print "Coverage OK" } }'
 
       - name: Upload coverage artifact
-        if: (github.event_name == 'pull_request' || matrix.os == 'ubuntu-latest') && always()
         uses: actions/upload-artifact@v4
         with:
             name: coverage-${{ matrix.os }}
@@ -90,32 +125,32 @@ jobs:
               coverage_report/
 
       # -- Benchmark run: Linux only -----------------------------------------
-      - name: Run benchmarks (Linux)
-        if: matrix.os == 'ubuntu-latest' || github.event_name == 'pull_request'
+      - name: Run benchmarks
+        if: ${{ fromJSON(env.RUN_BENCHMARKS) && matrix.os == 'ubuntu-latest' }}
         shell: bash
         run: |
           set -euo pipefail
 
           # run benchmark project (BenchmarkDotNet produces JSON under BenchmarkDotNet.Artifacts)
-          mkdir BenchmarkDotNet.Artifacts
-          dotnet run -c Release --project ./benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj \
+          mkdir -p ./benchmarks/BenchmarkDotNet.Artifacts
+          dotnet run -c Release --project ${BENCHMARK_PROJECT} \
             --filter '*' \
             --memory \
             --exporters JSON \
-            --artifacts ./benchmarks/BenchmarkDotNet.Artifacts || true
+            --artifacts "./benchmarks/BenchmarkDotNet.Artifacts" || true
 
-          mkdir -p benchmarks/results
-          cp -r ./benchmarks/BenchmarkDotNet.Artifacts/results/*.json benchmarks/results
+          mkdir -p ./benchmarks/results
+          cp -r ./benchmarks/BenchmarkDotNet.Artifacts/results/*.json benchmarks/results || true
 
-      - name: Upload benchmark result artifact (Linux)
-        if: matrix.os == 'ubuntu-latest' || github.event_name == 'pull_request'
+      - name: Upload benchmark result artifact
+        if: ${{ fromJSON(env.RUN_BENCHMARKS) && matrix.os == 'ubuntu-latest' }}
         uses: actions/upload-artifact@v4
         with:
           name: current-benchmark-result
           path: benchmarks/results
 
-      - name: Compare benchmarks against baseline (Linux)
-        if: matrix.os == 'ubuntu-latest' || github.event_name == 'pull_request'
+      - name: Compare benchmarks against baseline
+        if: ${{ fromJSON(env.RUN_BENCHMARKS) && matrix.os == 'ubuntu-latest' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -133,7 +168,7 @@ jobs:
             exit 0
           fi
 
-            # Merge current totals
+          # Merge current totals
           SUM_CUR=0
           for f in $CUR_FILES; do
             VAL=$(jq '[.Benchmarks[]? | ( .PrimaryMetrics[0].Mean // (.Statistics.Mean // 0) )] | add // 0' "$f")
@@ -156,12 +191,12 @@ jobs:
           echo "Current aggregated total mean (all JSON files): $SUM_CUR"
 
           PCT_CHANGE=$(awk -v b="$SUM_BASE" -v c="$SUM_CUR" 'BEGIN { if (b==0){print 0}else{ printf "%.4f", ((c - b) / b) * 100 } }')
-          echo "Percent change vs baseline: ${PCT_CHANGE}% (allowed: ${PERF_THRESHOLD}%)"
+          echo "Percent change vs baseline: ${PCT_CHANGE}% (allowed: ${REGRESSION_THRESHOLD}%)"
 
-          awk -v pc="$PCT_CHANGE" -v th="${PERF_THRESHOLD}" 'BEGIN { if (pc > th) { print "Performance regression exceeds threshold"; exit 1 } else { print "Performance OK" } }'
+          awk -v pc="$PCT_CHANGE" -v th="${REGRESSION_THRESHOLD}" 'BEGIN { if (pc > th) { print "Performance regression exceeds threshold"; exit 1 } else { print "Performance OK" } }'
 
       # -- macOS & Windows: just confirm build succeeded ---------------------
       - name: Non-test platform notice (push only)
-        if: github.event_name == 'push' && matrix.os != 'ubuntu-latest'
+        if: github.event_name == 'push'
         shell: bash
-        run: "echo \"Push event: tests & benchmarks run only on Linux. This platform performed build validation.\""
+        run: "echo \"Push event: tests & benchmarks (Linux only). This platform performed build validation.\""
