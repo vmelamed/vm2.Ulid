@@ -41,7 +41,7 @@ jobs:
       - name: Pack (stable)
         run: |
           mkdir -p artifacts/pack
-          dotnet pack -c Release --no-build -o artifacts/pack /p:MinVerTagPrefix=${MINVER_TAG_PREFIX}
+          dotnet pack -c Release --no-build -o artifacts/pack
           ls -1 artifacts/pack
 
       - name: Publish stable to NuGet
