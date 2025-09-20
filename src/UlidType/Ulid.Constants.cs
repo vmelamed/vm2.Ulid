@@ -96,21 +96,7 @@ public readonly partial struct Ulid
     /// <summary>
     /// The regular expression pattern for validating ULID strings.
     /// </summary>
-    public const string UlidStringRegex         = $"[{CrockfordDigits}]{{26}}";
-
-    /// <summary>
-    /// Creates a compiled, case-insensitive regular expression for validating ULID (Universally Unique Lexicographically<br/>
-    /// Sortable Identifier) strings.
-    /// </summary>
-    /// <remarks>
-    /// The generated regular expression matches strings that conform to the ULID format, which consists of 26 alphanumeric<br/>
-    /// characters from the <see cref="CrockfordDigits"/>. This method is optimized for performance by pre-compiling the regular expression.
-    /// </remarks>
-    /// <returns>A <see cref="Regex"/> instance configured to match valid ULID strings.</returns>
-    [GeneratedRegex(UlidStringRegex, RegexOptions.Compiled | RegexOptions.IgnoreCase, 500)]
-    public static partial Regex UlidString();
-
-    internal static int Zero = '0';
+    public const string UlidStringRegex         = $"(?i)[{CrockfordDigits}]{{26}}";
 
     internal static byte[] CrockfordDigitValues =
     [
@@ -190,4 +176,6 @@ public readonly partial struct Ulid
          30, // y
          31, // z
     ];
+
+    internal static int Zero = '0';
 }
