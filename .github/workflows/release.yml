@@ -3,20 +3,26 @@ name: Release (Stable)
 on:
   push:
     tags:
-      - "v[0-9]+.[0-9]+.[0-9]+"
+      [ 'v*..' ]
   workflow_dispatch:
     inputs:
       reason:
         description: 'Why run?'
+      dotnet-version:
+        description: 'Version of .NET SDK to use'
+        default: '9.0.x'
 
 env:
   DOTNET_NOLOGO: true
-  MINVER_TAG_PREFIX: v
+  DOTNET_VERSION: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
   NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+  REASON: ${{ inputs.reason || 'manual run' }}
 
 jobs:
   release:
+    if: ${{ startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout (full history)
         uses: actions/checkout@v4
@@ -27,7 +33,11 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 9.0.x
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          cache: true
+          cache-dependency-path: |
+            **/packages.lock.json
+            **/*.csproj
 
       - name: Restore
         run: dotnet restore
@@ -41,7 +51,7 @@ jobs:
       - name: Pack (stable)
         run: |
           mkdir -p artifacts/pack
-          dotnet pack -c Release --no-build -o artifacts/pack
+          dotnet pack -c Release --no-build -o artifacts/pack "/p:PackageReleaseNotes=Stable: ${REASON:-tag push}"
           ls -1 artifacts/pack
 
       - name: Publish stable to NuGet
@@ -49,5 +59,16 @@ jobs:
           if [ -z "${NUGET_API_KEY}" ]; then
             echo "NUGET_API_KEY not configured"; exit 1
           fi
-          dotnet nuget push artifacts/pack/*.nupkg --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push artifacts/pack/*.nupkg --api-key  "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
           dotnet nuget push artifacts/pack/*.snupkg --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+      - name: Summary
+        run: |
+          {
+              echo "## Release Summary"
+              echo
+              echo "- Tag: ${GITHUB_REF_NAME}"
+              echo "- Stable release reason: ${{ inputs.reason || 'tag push' }}"
+              echo "- Artifacts:"
+              ls -1 artifacts/pack | sed 's/^/  - /'
+          } >> "$GITHUB_STEP_SUMMARY"

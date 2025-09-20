@@ -54,7 +54,6 @@ jobs:
       matrix:
         os: ${{ fromJSON(inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]') }} # , "windows-latest", "macos-latest"]
     timeout-minutes: 30
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -67,7 +66,8 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
           cache: true
           cache-dependency-path: |
-            **/packages.lock.json **/*.csproj
+            **/packages.lock.json
+            **/*.csproj
 
       - name: Restore
         run: dotnet restore
