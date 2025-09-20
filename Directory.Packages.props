@@ -9,8 +9,6 @@
 
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
 
-    <PackageVersion Include="MinVer" Version="6.0.0" />
-
     <!-- The test stack: -->
     <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="17.14.2" />
     <PackageVersion Include="FluentAssertions" Version="8.6.0" />
