@@ -153,7 +153,7 @@ You can build and run the benchmark tests in release mode with:
 benchmarks/UlidType.Benchmarks/bin/Release/net9.0/UlidType.Benchmarks.exe --filter * --memory --artifacts ../../../BenchmarkDotNet.Artifacts
 ```
 
-Here are some benchmark results with similar Guid functions as baselines from GitHub Actions:
+Here are some benchmark results with similar Guid functions as baselines run on GitHub Actions:
 
 BenchmarkDotNet v0.15.3, Linux Ubuntu 24.04.3 LTS (Noble Numbat)<br/>
 AMD EPYC 7763 2.45GHz, 1 CPU, 4 logical and 2 physical cores .NET SDK 9.0.305<br/>

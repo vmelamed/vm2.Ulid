@@ -38,18 +38,21 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  DOTNET_VERSION:            ${{ inputs.dotnet-version            || vars.DOTNET_VERSION            || '9.0.x' }}
-  TEST_PROJECT:              ${{ inputs.test-project              || vars.TEST_PROJECT              || './test/UlidType.Tests/UlidType.Tests.csproj' }}
-  COVERAGE_THRESHOLD:        ${{ inputs.coverage-threshold        || vars.COVERAGE_THRESHOLD        || '75' }} # percent
-  RUN_BENCHMARKS:            ${{ inputs.run-benchmarks            || vars.RUN_BENCHMARKS            || 'true' }} # "true" to run benchmarks and compare against baseline
-  BENCHMARK_PROJECT:         ${{ inputs.benchmark-project         || vars.BENCHMARK_PROJECT         || './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj' }}
-  REGRESSION_THRESHOLD:      ${{ inputs.perf-regression-threshold || vars.REGRESSION_THRESHOLD      || '10' }} # percent allowed regression
+  DOTNET_VERSION:       ${{ inputs.dotnet-version            || vars.DOTNET_VERSION       || '9.0.x' }}
+  TEST_PROJECT:         ${{ inputs.test-project              || vars.TEST_PROJECT         || './test/UlidType.Tests/UlidType.Tests.csproj' }}
+  COVERAGE_THRESHOLD:   ${{ inputs.coverage-threshold        || vars.COVERAGE_THRESHOLD   || '75' }} # percent
+  RUN_BENCHMARKS:       ${{ inputs.run-benchmarks            || vars.RUN_BENCHMARKS       || 'true' }} # "true" to run benchmarks and compare against baseline
+  BENCHMARK_PROJECT:    ${{ inputs.benchmark-project         || vars.BENCHMARK_PROJECT    || './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj' }}
+  REGRESSION_THRESHOLD: ${{ inputs.perf-regression-threshold || vars.REGRESSION_THRESHOLD || '10' }} # percent allowed regression
 
 jobs:
   matrix-ci:
     name: Build on ${{ matrix.os }} tests & benchmarks on Linux only
     runs-on: ${{ matrix.os }}
-    if: ${{ github.event_name != 'push' || !(contains(github.event.head_commit.message, '[skip ci]') || contains(github.event.head_commit.message, '[no ci]')) }}
+    if: >-
+      ${{ github.event_name != 'push'
+      || !(contains(github.event.head_commit.message, '[skip ci]')
+      ||   contains(github.event.head_commit.message, '[no ci]')) }}
     strategy:
       matrix:
         os: ${{ fromJSON(inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]') }} # , "windows-latest", "macos-latest"]
@@ -114,7 +117,12 @@ jobs:
           fi
 
           echo "Coverage: $PCT% (threshold: ${COVERAGE_THRESHOLD}%)"
-          awk -v p="$PCT" -v t="${COVERAGE_THRESHOLD}" 'BEGIN { if (p+0 < t+0) { print "Coverage below threshold"; exit 1 } else { print "Coverage OK" } }'
+          if [ $PCT < $COVERAGE_THRESHOLD ]; then
+            echo "Coverage $PCT% is below threshold ${COVERAGE_THRESHOLD}%"
+            exit 1
+          else
+            echo "Coverage $PCT% meets threshold ${COVERAGE_THRESHOLD}%"
+          fi
 
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
@@ -189,11 +197,15 @@ jobs:
 
           echo "Baseline total mean: $SUM_BASE"
           echo "Current aggregated total mean (all JSON files): $SUM_CUR"
-
-          PCT_CHANGE=$(awk -v b="$SUM_BASE" -v c="$SUM_CUR" 'BEGIN { if (b==0){print 0}else{ printf "%.4f", ((c - b) / b) * 100 } }')
+          PCT_CHANGE=$[($SUM_CUR-$SUM_BASE) * 100 / $SUM_BASE]
           echo "Percent change vs baseline: ${PCT_CHANGE}% (allowed: ${REGRESSION_THRESHOLD}%)"
 
-          awk -v pc="$PCT_CHANGE" -v th="${REGRESSION_THRESHOLD}" 'BEGIN { if (pc > th) { print "Performance regression exceeds threshold"; exit 1 } else { print "Performance OK" } }'
+          if [ ${PCT_CHANGE} > ${REGRESSION_THRESHOLD} ]; then
+            echo "Performance regression exceeds threshold";
+            exit 1;
+          else
+            echo "Performance OK";
+          fi;
 
       # -- macOS & Windows: just confirm build succeeded ---------------------
       - name: Non-test platform notice (push only)
