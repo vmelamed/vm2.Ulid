@@ -6,8 +6,8 @@ public class UlidTests
     [Fact]
     public void Ulid_NewUlid_Uses_InternalFactory()
     {
-        var ulid1 = Ulid.NewUlid();
-        var ulid2 = Ulid.NewUlid();
+        var ulid1 = NewUlid();
+        var ulid2 = NewUlid();
 
         ulid1.Should().BeLessThan(ulid2);
         ulid2.Timestamp.Should().BeOnOrAfter(ulid1.Timestamp);
@@ -66,14 +66,24 @@ public class UlidTests
     [Fact]
     public void TryWrite_WithSmallDestination_ReturnsFalse_And_WithCorrectSize_WritesBytes()
     {
-        var ulid = new UlidFactory().NewUlid();
+        var ulid = new Ulid("01K5MVTR82AF7EA4DNPKQAVE3T"u8);
 
-        var small = new byte[UlidBytesLength - 1];
-        ulid.TryWrite(small.AsSpan()).Should().BeFalse();
+        Span<byte> buffer = stackalloc byte[UlidStringLength-1];
+        ulid.TryWrite(buffer).Should().BeFalse();
 
-        var destination = new byte[UlidBytesLength];
-        ulid.TryWrite(destination.AsSpan()).Should().BeTrue();
-        destination.Should().Equal(ulid.Bytes.ToArray());
+        buffer = stackalloc byte[UlidStringLength];
+        ulid.TryWrite(buffer).Should().BeTrue();
+        new Ulid(buffer).Should().Be(ulid);
+
+        buffer = stackalloc byte[UlidStringLength+1];
+        ulid.TryWrite(buffer).Should().BeFalse();
+
+        buffer = stackalloc byte[UlidBytesLength];
+        ulid.TryWrite(buffer).Should().BeTrue();
+        new Ulid(buffer).Should().Be(ulid);
+
+        buffer = stackalloc byte[UlidBytesLength+1];
+        ulid.TryWrite(buffer).Should().BeFalse();
     }
 
     [Fact]
@@ -97,15 +107,31 @@ public class UlidTests
         var ulid = new UlidFactory().NewUlid();
         var str = ulid.ToString();
 
-        var parsed = Ulid.Parse(str);
-        parsed.Should().Be(ulid);
+        Ulid result = Parse(str);
+        result.Should().Be(ulid);
 
-        Ulid.TryParse(str, out var result).Should().BeTrue();
+        result = Parse(Encoding.UTF8.GetBytes(str).AsSpan());
+        result.Should().Be(ulid);
+
+        TryParse(Encoding.UTF8.GetBytes(str), out result).Should().BeTrue();
+        result.Should().Be(ulid);
+
+        TryParse(str, out result).Should().BeTrue();
+        result.Should().Be(ulid);
+
+        TryParse(str+"a", out result).Should().BeFalse();
+        TryParse(str.Substring(0, 1), out result).Should().BeFalse();
+
+        TryParse(Encoding.UTF8.GetBytes(str+"a"), out result).Should().BeFalse();
+        TryParse(Encoding.UTF8.GetBytes(str.Substring(0, 1)), out result).Should().BeFalse();
+
+        // case-insensitive parsing
+        TryParse(str.ToLowerInvariant(), out result).Should().BeTrue();
         result.Should().Be(ulid);
 
         // case-insensitive parsing
-        Ulid.TryParse(str.ToLowerInvariant(), out var lower).Should().BeTrue();
-        lower.Should().Be(ulid);
+        TryParse(Encoding.UTF8.GetBytes(str.ToLowerInvariant()), out result).Should().BeTrue();
+        result.Should().Be(ulid);
     }
 
     [Theory]
@@ -118,18 +144,18 @@ public class UlidTests
     {
         var invalid = new string(wrong, UlidStringLength);
 
-        Action act = () => Ulid.Parse(invalid);
+        Action act = () => Parse(invalid);
         act.Should().Throw<ArgumentException>();
 
-        Ulid.TryParse(invalid, out var r).Should().BeFalse();
+        TryParse(invalid, out var r).Should().BeFalse();
 
-        Ulid.TryParse(Encoding.UTF8.GetBytes(invalid), out r).Should().BeFalse();
+        TryParse(Encoding.UTF8.GetBytes(invalid), out r).Should().BeFalse();
     }
 
     [Fact]
     public void TryParse_Null_ReturnsFalse()
     {
-        Ulid.TryParse("", out _).Should().BeFalse();
+        TryParse("", out _).Should().BeFalse();
     }
 
     [Fact]
@@ -182,8 +208,9 @@ public class UlidTests
         (b >= a).Should().BeTrue();
 
         // equality via same string
-        var a2 = Ulid.Parse(a.ToString());
+        var a2 = Parse(a.ToString());
         a2.Equals((object)a).Should().BeTrue();
+        a2.Equals(a, a2).Should().BeTrue();
         a2.CompareTo(a).Should().Be(0);
         (a2 == a).Should().BeTrue();
         (a2 <= a).Should().BeTrue();
@@ -198,8 +225,9 @@ public class UlidTests
         var hash1 = ulid.GetHashCode();
         var hash11 = ulid.GetHashCode();
         hash1.Should().Be(hash11);
+        ulid.GetHashCode(ulid).Should().Be(hash1);
 
-        var ulid2 = Ulid.Parse(ulid.ToString());
+        var ulid2 = Parse(ulid.ToString());
         var hash2 = ulid2.GetHashCode();
 
         hash2.Should().Be(hash1);
@@ -319,7 +347,7 @@ public class UlidTests
     [InlineData("01K5ETWXVDNC94EGFBNK30GBSX")]
     public void RoundTrip_WellKnown_GoodValues(string s)
     {
-        var ulid = Ulid.Parse(s);
+        var ulid = Parse(s);
 
         ulid.ToString().Should().Be(s);
 
@@ -335,5 +363,12 @@ public class UlidTests
         var fromGuid = new Ulid(guid);
 
         fromGuid.Should().Be(ulid);
+    }
+
+    [Fact]
+    public void UlidMinAndMaxValue_EmptyAndAllBitsSet()
+    {
+        MinValue.Should().Be(Empty);
+        MaxValue.Should().Be(AllBitsSet);
     }
 }

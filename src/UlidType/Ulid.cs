@@ -9,6 +9,8 @@ namespace vm2;
 /// to other formats such as strings or GUIDs. ULIDs are commonly used in distributed systems where unique, sortable identifiers<br/>
 /// are required.
 /// </remarks>
+[Newtonsoft.Json.JsonConverter(typeof(NsJson.UlidNsConverter))]
+[System.Text.Json.Serialization.JsonConverter(typeof(SysJson.UlidSysConverter))]
 public readonly partial struct Ulid :
     IEquatable<Ulid>,
     IComparable<Ulid>,
@@ -46,7 +48,16 @@ public readonly partial struct Ulid :
     /// <remarks>
     /// The returned <see cref="DateTimeOffset"/> represents the date and time encoded in the ULID.
     /// </remarks>
-    public readonly DateTimeOffset Timestamp => DateTimeOffset.FromUnixTimeMilliseconds(GetTimestampFromUlid(_ulidBytes.Span));
+    public readonly DateTimeOffset Timestamp
+    {
+        get
+        {
+            Span<byte> ts = stackalloc byte[sizeof(long)];
+
+            _ulidBytes[TimestampBegin..TimestampEnd].Span.CopyTo(ts[2..8]);
+            return DateTimeOffset.FromUnixTimeMilliseconds(ReadInt64BigEndian(ts));
+        }
+    }
 
     /// <summary>
     /// Returns the bytes of the random component from the current ULID instance.
@@ -55,43 +66,6 @@ public readonly partial struct Ulid :
     /// The returned byte array represents the random portion of the ULID.
     /// </remarks>
     public readonly ReadOnlySpan<byte> RandomBytes => Bytes[RandomBegin..RandomEnd];
-
-    /// <summary>
-    /// Extracts the timestamp from a ULID's span of bytes.
-    /// </summary>
-    /// <param name="ulidSpan">
-    /// A read-only span of bytes representing the ULID. The span must contain at least 8 bytes starting from the timestamp portion.
-    /// </param>
-    /// <returns>
-    /// A <see cref="long"/> representing the timestamp encoded in the ULID.
-    /// </returns>
-    internal static long GetTimestampFromUlid(ReadOnlySpan<byte> ulidSpan)
-    {
-        Debug.Assert(ulidSpan.Length >= sizeof(long), "The source Ulid span should be longer than the size of a long - 16.");
-
-        Span<byte> ts = stackalloc byte[sizeof(long)];
-
-        ulidSpan[TimestampBegin..TimestampEnd].CopyTo(ts[2..8]);
-        return ReadInt64BigEndian(ts);
-    }
-
-    /// <summary>
-    /// Copies the timestamp from the specified <see cref="DateTimeOffset"/> to the provided ULID span.
-    /// </summary>
-    /// <param name="unixTimestamp">The timestamp to copy.</param>
-    /// <param name="ulidSpan">
-    /// A span of bytes representing the ULID. The span must have sufficient capacity to accommodate the timestamp at
-    /// the designated position.
-    /// </param>
-    internal static void PutTimeStampIntoUlid(long unixTimestamp, Span<byte> ulidSpan)
-    {
-        Debug.Assert(ulidSpan.Length >= sizeof(long), "The target Ulid span should be longer than the size of a long - 16.");
-
-        Span<byte> ts = stackalloc byte[sizeof(long)];
-
-        WriteInt64BigEndian(ts, unixTimestamp);
-        ts[2..8].CopyTo(ulidSpan[TimestampBegin..TimestampEnd]);
-    }
 
     /// <summary>
     /// Generates a new unique ULID (Universally Unique Lexicographically Sortable Identifier).
@@ -151,7 +125,7 @@ public readonly partial struct Ulid :
     /// Initializes a new instance of the <see cref="Ulid"/> struct from the bytes of the specified <see cref="Guid"/>.
     /// </summary>
     /// <param name="source">The string representation of the ULID to parse. Must be a valid ULID string.</param>
-    public Ulid(Guid source)
+    public Ulid(in Guid source)
         : this(source.ToByteArray())
     {
     }
@@ -164,7 +138,7 @@ public readonly partial struct Ulid :
     /// </remarks>
     /// <param name="unixTimestamp">The timestamp representing the creation time of the ULID.</param>
     /// <param name="randomBytes">A read-only span of 10 bytes representing the unique identifier portion of the ULID.</param>
-    public Ulid(long unixTimestamp, ReadOnlySpan<byte> randomBytes)
+    public Ulid(long unixTimestamp, in ReadOnlySpan<byte> randomBytes)
     {
         if (randomBytes.Length != RandomLength)
             throw new ArgumentException(
@@ -174,7 +148,11 @@ public readonly partial struct Ulid :
         var ulidBytes = new byte[UlidBytesLength];
         var ulidSpan = ulidBytes.AsSpan();
 
-        PutTimeStampIntoUlid(unixTimestamp, ulidSpan);
+        Span<byte> ts = stackalloc byte[sizeof(long)];
+
+        WriteInt64BigEndian(ts, unixTimestamp);
+        ts[2..8].CopyTo(ulidSpan[TimestampBegin..TimestampEnd]);
+
         randomBytes.CopyTo(ulidSpan[RandomBegin..RandomEnd]);
 
         _ulidBytes = new ReadOnlyMemory<byte>(ulidBytes);
@@ -190,7 +168,7 @@ public readonly partial struct Ulid :
     /// The .NET <see cref="DateTime"/> representing the creation time of the ULID. Should be in UTC, otherwise assumes local time.
     /// </param>
     /// <param name="randomBytes">A read-only span of 10 randomBytes representing the unique identifier portion of the ULID.</param>
-    public Ulid(DateTime dateTime, ReadOnlySpan<byte> randomBytes)
+    public Ulid(DateTime dateTime, in ReadOnlySpan<byte> randomBytes)
         : this(new DateTimeOffset(dateTime).ToUnixTimeMilliseconds(), randomBytes)
     {
     }
@@ -206,7 +184,7 @@ public readonly partial struct Ulid :
     /// The timestamp representing the creation time of the ULID. Should be in UTC, otherwise assumes local time.
     /// </param>
     /// <param name="randomBytes">A read-only span of 10 randomBytes representing the unique identifier portion of the ULID.</param>
-    public Ulid(DateTimeOffset dateTime, ReadOnlySpan<byte> randomBytes)
+    public Ulid(DateTimeOffset dateTime, in ReadOnlySpan<byte> randomBytes)
         : this(dateTime.ToUnixTimeMilliseconds(), randomBytes)
     {
     }
@@ -251,9 +229,9 @@ public readonly partial struct Ulid :
     /// <see langword="true"/> if the ULID string representation was successfully written to the  <paramref name="destination"/> span; otherwise,<br/>
     /// <see langword="false"/> if the span is too small.
     /// </returns>
-    public readonly bool TryWrite(Span<char> destination)
+    public readonly bool TryWrite(in Span<char> destination)
     {
-        if (destination.Length < UlidStringLength)
+        if (destination.Length != UlidStringLength)
             return false;
 
         var ulidAsNumber = ReadUInt128BigEndian(Bytes);
@@ -284,11 +262,28 @@ public readonly partial struct Ulid :
     /// </returns>
     public readonly bool TryWrite(Span<byte> destination)
     {
-        if (destination.Length < UlidBytesLength)
-            return false;
+        if (destination.Length == UlidStringLength)
+        {
+            var ulidAsNumber = ReadUInt128BigEndian(Bytes);
 
-        Bytes.CopyTo(destination);
-        return true;
+            for (var i = 0; i < UlidStringLength; i++)
+            {
+                // get the least significant 5 bits from the number and convert it to character
+                destination[UlidStringLength-i-1] = CrockfordDigitsUtf8[(byte)ulidAsNumber & UlidCharMask];
+                ulidAsNumber >>>= BitsPerUlidDigit;
+            }
+
+            Debug.Assert(ulidAsNumber == 0, "After writing the digits into the destination span of 26 chars, there are still bits left unwritten.");
+            return true;
+        }
+
+        if (destination.Length == UlidBytesLength)
+        {
+            Bytes.CopyTo(destination);
+            return true;
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -308,12 +303,12 @@ public readonly partial struct Ulid :
     /// <see langword="true"/> if the string was successfully parsed as a ULID; otherwise, <see langword="false"/>.
     /// </returns>
     public static bool TryParse(
-        ReadOnlySpan<char> sourceSpan,
+        in ReadOnlySpan<char> sourceSpan,
         out Ulid result)
     {
         result = Empty;
 
-        if (sourceSpan.Length < UlidStringLength)
+        if (sourceSpan.Length != UlidStringLength)
             return false;
 
         // parse the string into a UInt128 value first
@@ -364,12 +359,12 @@ public readonly partial struct Ulid :
     /// <see langword="true"/> if the string was successfully parsed as a ULID; otherwise, <see langword="false"/>.
     /// </returns>
     public static bool TryParse(
-        ReadOnlySpan<byte> sourceSpan,
+        in ReadOnlySpan<byte> sourceSpan,
         out Ulid result)
     {
         result = Empty;
 
-        if (sourceSpan.Length < UlidStringLength)
+        if (sourceSpan.Length != UlidStringLength)
             return false;
 
         // parse the string into a UInt128 value first
@@ -449,6 +444,17 @@ public readonly partial struct Ulid :
     /// current instance follows <paramref name="other"/> in the sort order.</description></item> </list>
     /// </returns>
     public int CompareTo(Ulid other) => Bytes.SequenceCompareTo(other.Bytes);
+
+    /// <summary>
+    /// Parses the specified string representation of a ULID and returns the corresponding <see cref="Ulid"/> instance.
+    /// </summary>
+    /// <param name="s">The string representation of the ULID to parse.</param>
+    /// <returns>The <see cref="Ulid"/> instance that corresponds to the parsed string.</returns>
+    /// <exception cref="ArgumentException">Thrown if the input string <paramref name="s"/> cannot be parsed as a valid ULID.</exception>
+    public static Ulid Parse(in Span<byte> s)
+        => TryParse(s, out var u)
+                ? u
+                : throw new ArgumentException("The input source does not represent a valid ULID.", nameof(s));
 
     #region IMinMaxValues<Ulid>
     /// <inheritdoc/>

@@ -56,5 +56,5 @@ public class FluentAssertionsExceptionFormatter : IValueFormatter
     /// <summary>
     /// Enables the display of inner exceptions when call.Should().NotThrow() fails
     /// </summary>
-    public static void EnableDisplayOfInnerExceptions() => Formatter.AddFormatter(s_formatter);
+    public static void EnableDisplayOfInnerExceptions() => FluentAssertions.Formatting.Formatter.AddFormatter(s_formatter);
 }
