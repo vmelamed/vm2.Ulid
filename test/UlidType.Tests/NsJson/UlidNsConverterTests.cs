@@ -1,5 +1,7 @@
 ﻿namespace vm2.UlidType.Tests.NsJson;
 
+using Newtonsoft.Json;
+
 public class UlidNsConverterTests
 {
 
@@ -35,7 +37,7 @@ public class UlidNsConverterTests
     {
         var sut = new Subject("01K5N2TW3MA38KG6D7WNFDPAKS");
 
-        var json = Newtonsoft.Json.JsonConvert.SerializeObject(sut);
+        var json = JsonConvert.SerializeObject(sut);
 
         json.Should().Contain(sut?.Id?.ToString());
     }
@@ -47,7 +49,7 @@ public class UlidNsConverterTests
         var ulid = new Ulid("01K5N3A2GJYH10NGHHTWQR4VBP");
         var json = $@"{{ ""Id"": ""{ulid}"" }}";
 
-        var deserialize = () => Newtonsoft.Json.JsonConvert.DeserializeObject<Subject>(json);
+        var deserialize = () => JsonConvert.DeserializeObject<Subject>(json);
 
         var sut = deserialize.Should().NotThrow().Which;
         sut.Id.Should().Be(ulid);
@@ -59,7 +61,7 @@ public class UlidNsConverterTests
     {
         var sut = new Subject();
 
-        var json = Newtonsoft.Json.JsonConvert.SerializeObject(sut);
+        var json = JsonConvert.SerializeObject(sut);
 
         json.Should().Contain(@"""Id"":null");
     }
@@ -70,7 +72,7 @@ public class UlidNsConverterTests
     {
         var json = $@"{{ ""Id"":null}}";
 
-        var deserialize = () => Newtonsoft.Json.JsonConvert.DeserializeObject<Subject>(json);
+        var deserialize = () => JsonConvert.DeserializeObject<Subject>(json);
 
         var sut = deserialize.Should().NotThrow().Which;
         sut.Id.Should().BeNull();
@@ -82,7 +84,7 @@ public class UlidNsConverterTests
     {
         var sut = new Subject1("01K5N2TW3MA38KG6D7WNFDPAKS");
 
-        var json = Newtonsoft.Json.JsonConvert.SerializeObject(sut);
+        var json = JsonConvert.SerializeObject(sut);
 
         json.Should().Contain(sut?.Id.ToString());
     }
@@ -94,9 +96,20 @@ public class UlidNsConverterTests
         var ulid = new Ulid("01K5N3A2GJYH10NGHHTWQR4VBP");
         var json = $@"{{ ""Id"": ""{ulid}"" }}";
 
-        var deserialize = () => Newtonsoft.Json.JsonConvert.DeserializeObject<Subject1>(json);
+        var deserialize = () => JsonConvert.DeserializeObject<Subject1>(json);
 
         var sut = deserialize.Should().NotThrow().Which;
         sut.Id.Should().Be(ulid);
+    }
+
+    [Fact]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "<Pending>")]
+    public void Test_Ulid_Deserializes_InvalidUlid_Throws()
+    {
+        var json = @"{ ""Id"": ""U1K5N3A2GJYH10NGHHTWQR4VBP"" }";
+
+        var deserialize = () => JsonConvert.DeserializeObject<Subject1>(json);
+
+        var sut = deserialize.Should().Throw<JsonReaderException>().Which;
     }
 }

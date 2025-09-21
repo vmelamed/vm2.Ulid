@@ -57,15 +57,15 @@ public class UlidNsConverter : JsonConverter
     {
         try
         {
-            if (reader.TokenType is JsonToken.Null)
+            if (reader.TokenType is JsonToken.Null ||
+                reader.Value is null ||
+                reader.Value.ToString() is null)
                 return null;
 
-            var succeeded = TryParse(reader.Value?.ToString(), out var ulid);
+            if (reader.TokenType is not JsonToken.String)
+                throw new JsonReaderException($"Expected token type to be {JsonToken.String} or {JsonToken.Null}, but got {reader.TokenType}.");
 
-            if (!succeeded)
-                throw new JsonReaderException("Could not parse ULID value.");
-
-            return ulid;
+            return Parse(reader.Value.ToString()!);
         }
         catch (Exception ex) when (ex is not JsonReaderException)
         {

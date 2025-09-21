@@ -188,7 +188,7 @@ public class UlidTests
 
         // And they should be strictly increasing (monotonic)
         for (var i = 1; i < ulids.Count; i++)
-            (ulids[i] > ulids[i - 1]).Should().BeTrue();
+            ulids[i].Should().BeGreaterThan(ulids[i - 1]);
     }
 
     [Fact]
