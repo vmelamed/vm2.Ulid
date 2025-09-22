@@ -71,7 +71,7 @@ jobs:
       (!contains(github.event.head_commit.message, '[no ci]')) }}
     with:
       dotnet_version: ${{ inputs.dotnet_version || vars.DOTNET_VERSION || '9.0.x' }}
-      os: ${{ env.MATRIX_OS }}
+      os: ${{ inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]' }}
 
   test:
     name: Test
