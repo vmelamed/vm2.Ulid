@@ -49,10 +49,7 @@ jobs:
   matrix-ci:
     name: Build on ${{ matrix.os }} tests & benchmarks on Linux only
     runs-on: ${{ matrix.os }}
-    if: >-
-      ${{ github.event_name != 'push'
-      || !(contains(github.event.head_commit.message, '[skip ci]')
-      ||   contains(github.event.head_commit.message, '[no ci]')) }}
+    if: ${{ github.event_name != 'push' || !(contains(github.event.head_commit.message, '[skip ci]') ||   contains(github.event.head_commit.message, '[no ci]')) }}
     strategy:
       matrix:
         os: ${{ fromJSON(inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]') }} # , "windows-latest", "macos-latest"]
@@ -150,20 +147,25 @@ jobs:
           mkdir -p ./benchmarks/results
           cp -r ./benchmarks/BenchmarkDotNet.Artifacts/results/*.json benchmarks/results || true
 
-      - name: Upload benchmark result artifact
+      - name: Upload benchmark results artifact
         if: ${{ fromJSON(env.RUN_BENCHMARKS) && matrix.os == 'ubuntu-latest' }}
         uses: actions/upload-artifact@v4
         with:
           name: current-benchmark-result
-          path: benchmarks/results
+          path: benchmarks/results/*-results.json
+          if-no-files-found: error
+          overwrite: true
+          retention-days: 90
 
       - name: Compare benchmarks against baseline
         if: ${{ fromJSON(env.RUN_BENCHMARKS) && matrix.os == 'ubuntu-latest' }}
         shell: bash
         run: |
           set -euo pipefail
+
           if ! command -v jq >/dev/null 2>&1; then
             sudo apt-get update && sudo apt-get install -y jq
+            echo "jq successfully installed."
           fi
 
           # If multiple JSON results exist, merge sums heuristically
@@ -180,7 +182,7 @@ jobs:
           SUM_CUR=0
           for f in $CUR_FILES; do
             VAL=$(jq '[.Benchmarks[]? | ( .PrimaryMetrics[0].Mean // (.Statistics.Mean // 0) )] | add // 0' "$f")
-            SUM_CUR=$(awk -v a="$SUM_CUR" -v b="$VAL" 'BEGIN { printf "%.10f", a + b }')
+            SUM_CUR=$[ $SUM_CUR + $VAL ]
           done
 
           if [ ! -f "$BASELINE" ]; then
