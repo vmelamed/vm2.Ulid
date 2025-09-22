@@ -174,18 +174,8 @@ jobs:
         if: ${{ fromJSON(env.RUN_BENCHMARKS) && matrix.os == 'ubuntu-latest' }}
         uses: actions/upload-artifact@v4
         with:
-          name: benchmark-result
+          name: benchmark-results-${{ matrix.os }}
           path: ${{ env.BM_RESULTS_DIR }}/*-report.json
-          if-no-files-found: error
-          overwrite: true
-          retention-days: 90
-
-      - name: Upload benchmark results artifact as a new baseline
-        if: ${{ fromJSON(env.RUN_BENCHMARKS) && fromJSON(env.FORCE_NEW_BASELINE) && matrix.os == 'ubuntu-latest' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: baseline-benchmark
-          path: ${{ env.BM_RESULTS_DIR }}/*-report.json    # use current results as the new baseline
           if-no-files-found: error
           overwrite: true
           retention-days: 90
@@ -193,9 +183,31 @@ jobs:
       - name: Download baseline benchmark artifact
         if: ${{ fromJSON(env.RUN_BENCHMARKS) && !fromJSON(env.FORCE_NEW_BASELINE) && matrix.os == 'ubuntu-latest' }}
         uses: actions/download-artifact@v4
+        continue-on-error: true # do not fail if no baseline exists yet - assume first run
         with:
-          name: baseline-benchmark
+          name: benchmark-baseline-${{ matrix.os }}
           path: ${{ env.BM_BASELINE_DIR }}
+
+      - name: List benchmark files
+        if: ${{ fromJSON(env.RUN_BENCHMARKS) && !fromJSON(env.FORCE_NEW_BASELINE) && matrix.os == 'ubuntu-latest' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -d "${BM_BASELINE_DIR}" ]; then
+            echo "No baseline benchmark directory found. "
+                 "Assuming this is the first run. Setting `FORCE_NEW_BASELINE=true` to set the current benchmarks as the baseline."
+            echo "FORCE_NEW_BASELINE=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload benchmark results artifact as a new baseline
+        if: ${{ fromJSON(env.RUN_BENCHMARKS) && fromJSON(env.FORCE_NEW_BASELINE) && matrix.os == 'ubuntu-latest' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-baseline-${{ matrix.os }}
+          path: ${{ env.BM_RESULTS_DIR }}/*-report.json    # use current results as the new baseline
+          if-no-files-found: error
+          overwrite: true
+          retention-days: 90
 
       - name: Compare benchmarks against baseline
         if: ${{ fromJSON(env.RUN_BENCHMARKS) && !fromJSON(env.FORCE_NEW_BASELINE) && matrix.os == 'ubuntu-latest' }}
