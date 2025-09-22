@@ -120,10 +120,10 @@ public class UlidTests
         result.Should().Be(ulid);
 
         TryParse(str+"a", out result).Should().BeFalse();
-        TryParse(str.Substring(0, 1), out result).Should().BeFalse();
+        TryParse(str.AsSpan(0, 1), out result).Should().BeFalse();
 
         TryParse(Encoding.UTF8.GetBytes(str+"a"), out result).Should().BeFalse();
-        TryParse(Encoding.UTF8.GetBytes(str.Substring(0, 1)), out result).Should().BeFalse();
+        TryParse(Encoding.UTF8.GetBytes(str[..1]), out result).Should().BeFalse();
 
         // case-insensitive parsing
         TryParse(str.ToLowerInvariant(), out result).Should().BeTrue();

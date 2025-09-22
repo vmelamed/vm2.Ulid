@@ -41,235 +41,32 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  DOTNET_VERSION:       ${{ inputs.dotnet-version            || vars.DOTNET_VERSION       || '9.0.x' }}
-
-  TEST_PROJECT:         ${{ inputs.test-project              || vars.TEST_PROJECT         || './test/UlidType.Tests/UlidType.Tests.csproj' }}
-  COVERAGE_THRESHOLD:   ${{ inputs.coverage-threshold        || vars.COVERAGE_THRESHOLD   || '75' }} # percent
-
-  RUN_BENCHMARKS:       ${{ inputs.run-benchmarks            || vars.RUN_BENCHMARKS       || 'true' }}  # "true" to run benchmarks and compare against baseline
-  FORCE_NEW_BASELINE:   ${{ inputs.force-new-baseline        || vars.FORCE_NEW_BASELINE   || 'false' }} # "true" to force the current benchmarks results as the new baseline
-  BENCHMARK_PROJECT:    ${{ inputs.benchmark-project         || vars.BENCHMARK_PROJECT    || './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj' }}
-  REGRESSION_THRESHOLD: ${{ inputs.perf-regression-threshold || vars.REGRESSION_THRESHOLD || '10' }} # percent allowed regression
-
-  TC_COBERTURA_DIR: 'coverage'
-  TC_COBERTURA_FILE: 'coverage/coverage.cobertura.xml'
-  TC_SUMMARY_DIR: 'coverage_report'
-  TC_SUMMARY_FILE: 'coverage_report/Summary.txt'
-
-  BM_ARTIFACTS_DIR: 'benchmarks/artifacts'
-  BM_RESULTS_DIR: 'benchmarks/results'
-  BM_BASELINE_DIR: 'benchmarks/baseline'
-
 jobs:
-  matrix-ci:
-    name: Build on ${{ matrix.os }} tests and benchmarks (on Linux only)
-    runs-on: ${{ matrix.os }}
+  build:
+    name: Build
+    uses: ./.github/workflows/build.yml
     if: ${{ github.event_name != 'push' || !(contains(github.event.head_commit.message, '[skip ci]') || contains(github.event.head_commit.message, '[no ci]')) }}
-    strategy:
-      matrix:
-        os: ${{ fromJSON(inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]') }} # vs ["ubuntu-latest", "windows-latest", "macos-latest"]
-    timeout-minutes: 30
-    steps:
-      # -- Build ------------------------------------------------
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+    with:
+      dotnet-version: ${{ inputs.dotnet-version || '9.0.x' }}
+      os: ${{ inputs.os || '["ubuntu-latest"]' }}
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-          cache: true
-          cache-dependency-path: |
-            **/packages.lock.json
-            **/*.csproj
+  test:
+    name: Test
+    needs: build
+    uses: ./.github/workflows/test.yml
+    with:
+      dotnet-version: ${{ inputs.dotnet-version || '9.0.x' }}
+      test-project: ${{ inputs.test-project || './test/UlidType.Tests/UlidType.Tests.csproj' }}
+      coverage-threshold: ${{ inputs.coverage-threshold || '75' }}
+      os: ${{ inputs.os || '["ubuntu-latest"]' }}
 
-      - name: Restore
-        run: dotnet restore
-
-      - name: Build (Release)
-        run: dotnet build -c Release --no-restore
-
-      # -- Unit tests + coverage ---------------------------------
-      - name: Run unit tests with coverage
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          dotnet test ${TEST_PROJECT} -c Release --no-build \
-            /p:ExcludeByAttribute="GeneratedCodeAttribute" \
-            -- \
-            --coverage \
-            --coverage-output-format xml \
-            --coverage-output "${TC_COBERTURA_FILE}"
-
-          # locate the cobertura file produced by the collector
-          f=$(find "$(pwd)" -type f -path "*/${TC_COBERTURA_FILE}" -print -quit || true)
-          if [ -z "${f}" ]; then
-            echo "Coverage file not found."
-            exit 2
-          fi
-
-          mkdir -p "${TC_COBERTURA_DIR}"
-          cp "${f}" "${TC_COBERTURA_FILE}"
-
-          # install ReportGenerator and create a text summary
-          dotnet tool install --tool-path ./tools dotnet-reportgenerator-globaltool --version 5.*
-          ./tools/reportgenerator -reports:${TC_COBERTURA_FILE} -targetdir:"${TC_SUMMARY_DIR}" -reporttypes:TextSummary
-
-          if [ ! -s "${TC_SUMMARY_FILE}" ]; then
-            echo "Coverage summary not found."
-            exit 2
-          fi
-
-          pct=$(sed -nE 's/Method coverage: ([0-9]+)(\.[0-9]+)?%.*/\1/p' "${TC_SUMMARY_FILE}" | head -n1)
-          if [ -z "${pct}" ]; then
-            echo "Could not parse coverage percent from ${TC_SUMMARY_FILE}"
-            exit 2
-          fi
-
-          echo "Coverage: ${pct}% (threshold: ${COVERAGE_THRESHOLD}%)"
-          if (( pct < COVERAGE_THRESHOLD )); then
-            echo "Coverage ${pct}% is below threshold ${COVERAGE_THRESHOLD}%"
-            exit 2
-          else
-            echo "Coverage ${pct}% meets threshold ${COVERAGE_THRESHOLD}%"
-          fi
-
-      - name: Upload coverage artifact
-        uses: actions/upload-artifact@v4
-        with:
-            name: coverage-${{ matrix.os }}
-            path: ${{ env.TC_SUMMARY_DIR }}
-
-      # -- Benchmark run: Linux only -----------------------------------------
-      - name: Run benchmarks
-        if: ${{ fromJSON(env.RUN_BENCHMARKS) && matrix.os == 'ubuntu-latest' }}
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          # run benchmark project (BenchmarkDotNet produces JSON under BenchmarkDotNet.Artifacts)
-          mkdir -p "${BM_ARTIFACTS_DIR}"
-          dotnet run -c Release --project "${BENCHMARK_PROJECT}" \
-            --filter '*' \
-            --memory \
-            --exporters JSON \
-            --artifacts "${BM_ARTIFACTS_DIR}"
-
-          mkdir -p "${BM_RESULTS_DIR}"
-          # if a glob pattern does not match any files, it expands to an empty string instead of leaving the pattern unchanged - here: .../results/*-report.json
-          shopt -s nullglob
-          files=(${BM_ARTIFACTS_DIR}/results/*-report.json)
-          if [ ${#files[@]} -eq 0 ]; then
-            echo "No report JSON found."
-            exit 2
-          fi
-          cp -r "${files[@]}" "${BM_RESULTS_DIR}"
-          shopt -u nullglob
-
-      - name: Upload benchmark results artifact
-        if: ${{ fromJSON(env.RUN_BENCHMARKS) && matrix.os == 'ubuntu-latest' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: benchmark-results-${{ matrix.os }}
-          path: ${{ env.BM_RESULTS_DIR }}/*-report.json
-          if-no-files-found: error
-          overwrite: true
-          retention-days: 90
-
-      - name: Download baseline benchmark artifact
-        if: ${{ fromJSON(env.RUN_BENCHMARKS) && !fromJSON(env.FORCE_NEW_BASELINE) && matrix.os == 'ubuntu-latest' }}
-        uses: actions/download-artifact@v4
-        continue-on-error: true # do not fail if no baseline exists yet - assume first run
-        with:
-          name: benchmark-baseline-${{ matrix.os }}
-          path: ${{ env.BM_BASELINE_DIR }}
-
-      - name: List benchmark files
-        if: ${{ fromJSON(env.RUN_BENCHMARKS) && !fromJSON(env.FORCE_NEW_BASELINE) && matrix.os == 'ubuntu-latest' }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [ ! -d "${BM_BASELINE_DIR}" ]; then
-            echo "No baseline benchmark directory found. " \
-                 "Assuming this is the first run. Setting `FORCE_NEW_BASELINE=true` to set the current benchmarks as the baseline."
-            echo "FORCE_NEW_BASELINE=true" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Upload benchmark results artifact as a new baseline
-        if: ${{ fromJSON(env.RUN_BENCHMARKS) && fromJSON(env.FORCE_NEW_BASELINE) && matrix.os == 'ubuntu-latest' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: benchmark-baseline-${{ matrix.os }}
-          path: ${{ env.BM_RESULTS_DIR }}/*-report.json    # use current results as the new baseline
-          if-no-files-found: error
-          overwrite: true
-          retention-days: 90
-
-      - name: Compare benchmarks against baseline
-        if: ${{ fromJSON(env.RUN_BENCHMARKS) && !fromJSON(env.FORCE_NEW_BASELINE) && matrix.os == 'ubuntu-latest' }}
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          # ensure jq is available
-          if ! command -v jq >/dev/null 2>&1; then
-            sudo apt-get update && sudo apt-get install -y jq
-            echo "jq successfully installed."
-          fi
-
-          # If multiple JSON results exist, sum the results heuristically
-          fs=$(ls ${BM_RESULTS_DIR}/*-report.json 2>/dev/null || true)
-          if [ -z "${fs}" ]; then
-            echo "No current benchmark result JSON files found."
-            exit 2
-          fi
-          SUM_CUR=0
-          for f in ${fs}; do
-            VAL=$(jq '[.Benchmarks[]? | ( .Statistics.Mean // (.PrimaryMetrics[0].Mean // 0) )] | add // 0' "${f}")
-            SUM_CUR=$(( SUM_CUR + VAL ))
-          done
-          if (( SUM_CUR == 0 )); then
-            echo "Current sum is invalid (${SUM_CUR})." \
-                 "To enable regression checks, re-run the action with workflow dispatch FORCE_NEW_BASELINE=true."
-            exit 2
-          fi
-
-          # Total the baseline results
-          fs=$(ls "${BM_BASELINE_DIR}"/*-report.json 2>/dev/null || true)
-          if [[ -z "${fs}" ]]; then
-            echo "Baseline reports were not found at ${BM_BASELINE_DIR}." \
-                 "To enable regression checks, re-run the action with workflow dispatch FORCE_NEW_BASELINE=true."
-            exit 2
-          fi
-          SUM_BASE=0
-          for f in ${fs}; do
-            VAL=$(jq '[.Benchmarks[]? | ( .Statistics.Mean // (.PrimaryMetrics[0].Mean // 0) )] | add // 0' "${f}")
-            SUM_BASE=$(( SUM_BASE + VAL ))
-          done
-          if (( SUM_BASE == 0 )); then
-            echo "Baseline sum is invalid (${SUM_BASE})." \
-                 "To enable regression checks, re-run the action with workflow dispatch FORCE_NEW_BASELINE=true."
-            exit 2
-          fi
-
-          echo "Baseline total mean: ${SUM_BASE}"
-          echo "Current total mean:  ${SUM_CUR}"
-          pct=$(( (SUM_CUR - SUM_BASE) * 100 / SUM_BASE ))
-          echo "Percent change vs baseline: ${pct}% (allowed: ${REGRESSION_THRESHOLD}%)"
-
-          if (( pct > REGRESSION_THRESHOLD )); then
-            echo "Performance regression exceeds threshold"
-            exit 2
-          else
-            echo "Performance OK"
-          fi;
-
-      # -- macOS & Windows: just confirm build succeeded ---------------------
-      - name: Non-test platform notice (push only)
-        if: github.event_name == 'push'
-        shell: bash
-        run: "echo \"Push event: tests & benchmarks (Linux only). This platform performed build validation.\""
+  benchmarks:
+    name: Benchmarks (Linux only)
+    needs: build
+    if: ${{ inputs.run-benchmarks }}
+    uses: ./.github/workflows/benchmarks.yml
+    with:
+      dotnet-version: ${{ inputs.dotnet-version || '9.0.x' }}
+      benchmark-project: ${{ inputs.benchmark-project || './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj' }}
+      force-new-baseline: ${{ inputs.force-new-baseline || false }}
+      perf-regression-threshold: ${{ inputs.perf-regression-threshold || '10' }}

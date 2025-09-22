@@ -1,0 +1,166 @@
+name: Reusable - Benchmarks
+
+on:
+  workflow_call:
+    inputs:
+      dotnet-version:
+        type: string
+        required: true
+      benchmark-project:
+        type: string
+        required: true
+      run-benchmarks:
+        type: boolean
+        required: false
+        default: true
+      force-new-baseline:
+        type: boolean
+        required: false
+        default: false
+      perf-regression-threshold:
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+env:
+  BM_ARTIFACTS_DIR: 'benchmarks/artifacts'
+  BM_SUMMARIES_DIR: 'benchmarks/summaries'
+  BM_BASELINE_DIR:  'benchmarks/baseline'
+
+jobs:
+  benchmarks:
+    name: Benchmarks (Linux only)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ inputs.dotnet-version }}
+          cache: true
+          cache-dependency-path: |
+            **/packages.lock.json
+            **/*.csproj
+
+      - name: Run benchmarks
+        shell: bash
+        env:
+          BENCHMARK_PROJECT: ${{ inputs.benchmark-project }}
+        run: |
+          set -euo pipefail
+
+          mkdir -p "${BM_ARTIFACTS_DIR}"
+          dotnet run \
+            --project "${BENCHMARK_PROJECT}" \
+            --configuration Release \
+            --filter '*' \
+            --memory \
+            --exporters JSON \
+            --artifacts "${BM_ARTIFACTS_DIR}"
+
+          shopt -s nullglob
+          # if a glob pattern does not match any files,
+          # it expands to an empty string instead of the default to leaving the pattern unchanged
+          # here: ${BM_ARTIFACTS_DIR}/results/*-report.json
+          files=(${BM_ARTIFACTS_DIR}/results/*-report.json)
+          shopt -u nullglob
+
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No report JSON found."
+            exit 2
+          fi
+          mkdir -p "${BM_SUMMARIES_DIR}"
+          for f in "${files[@]}"; do
+            sf=$(echo $(basename "${f}") | sed -nE 's/(.*)-report.json/\1-summary.json/p')
+            jq -f .github/workflows/summary.jq "${f}" > "${BM_SUMMARIES_DIR}/${sf}"
+          done
+
+      - name: Upload benchmark summaries artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-summaries
+          path: ${{ env.BM_SUMMARIES_DIR }}
+          if-no-files-found: error
+          overwrite: true
+          retention-days: 90
+
+      - name: Download baseline benchmark summaries artifact
+        if: ${{ !inputs.force-new-baseline }}
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: benchmark-summaries
+          path: ${{ env.BM_BASELINE_DIR }}
+
+      - name: Compare benchmarks against baseline
+        if: ${{ !inputs.force-new-baseline }}
+        shell: bash
+        env:
+          REGRESSION_THRESHOLD: ${{ inputs.perf-regression-threshold }}
+        run: |
+          set -euo pipefail
+
+          if ! command -v jq >/dev/null 2>&1; then
+            sudo apt-get update && sudo apt-get install -y jq
+            echo "jq successfully installed."
+          fi
+
+          fs=$(ls ${BM_SUMMARIES_DIR}/*-summary.json 2>/dev/null || true)
+          if [ -z "${fs}" ]; then
+            echo "No current benchmark result JSON files found."
+            exit 2
+          fi
+          SUM_CUR=0
+          for f in ${fs}; do
+            VAL=$(jq '( .Totals.Mean // 0)' "${f}")
+            SUM_CUR=$(( SUM_CUR + VAL ))
+          done
+          if (( SUM_CUR == 0 )); then
+            echo "Current sum is invalid (${SUM_CUR})."
+            exit 2
+          fi
+
+          fs=$(ls "${BM_BASELINE_DIR}"/*-summary.json 2>/dev/null || true)
+          if [[ -z "${fs}" ]]; then
+            echo "Baseline reports were not found at ${BM_BASELINE_DIR}."
+            echo "FORCE_NEW_BASELINE=true" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          SUM_BASE=0
+          for f in ${fs}; do
+            VAL=$(jq '( .Totals.Mean // 0)' "${f}")
+            SUM_BASE=$(( SUM_BASE + VAL ))
+          done
+          if (( SUM_BASE == 0 )); then
+            echo "Baseline sum is invalid (${SUM_BASE})."
+            exit 2
+          fi
+
+          pct=$(( (SUM_CUR - SUM_BASE) * 100 / SUM_BASE ))
+          echo "Percent change vs baseline: ${pct}% (allowed: ${REGRESSION_THRESHOLD}%)"
+
+          if (( pct > REGRESSION_THRESHOLD )); then
+            echo "Performance regression exceeds threshold"
+            exit 2
+          fi
+
+          if (( pct < 0 )); then
+            echo "Better performance than baseline."
+            echo "FORCE_NEW_BASELINE=true" >> "$GITHUB_ENV"
+          fi
+
+      - name: Upload benchmark results artifact as a new baseline
+        if: ${{ inputs.force-new-baseline || env.FORCE_NEW_BASELINE }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-baseline
+          path: ${{ env.BM_SUMMARIES_DIR }}
+          if-no-files-found: error
+          overwrite: true
+          retention-days: 90

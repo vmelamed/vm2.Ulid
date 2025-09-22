@@ -1,7 +1,8 @@
 {
     HostEnvironmentInfo: .HostEnvironmentInfo,
     Totals: {
-        Median: [.Benchmarks.[].Statistics.Median] | add,
+        Mean: [.Benchmarks.[].Statistics.Mean] | add | floor,
+        Median: [.Benchmarks.[].Statistics.Median] | add | floor,
         Memory: {
             Gen0Collections: [.Benchmarks[].Memory.Gen0Collections] | add,
             Gen1Collections: [.Benchmarks[].Memory.Gen1Collections] | add,
@@ -15,10 +16,10 @@
             MethodTitle: .MethodTitle,
             Parameters:  .Parameters,
             Statistics: {
-                Min:        .Statistics.Min,
-                Mean:       .Statistics.Mean,
-                Median:     .Statistics.Median,
-                Max:        .Statistics.Max
+                Min:        .Statistics.Min | floor,
+                Mean:       .Statistics.Mean | floor,
+                Median:     .Statistics.Median | floor,
+                Max:        .Statistics.Max | floor
             },
             Memory: .Memory
         }
