@@ -400,8 +400,9 @@ FodyWeavers.xsd
 # User-specific file - do not push to all developers!
 launchSettings.json
 
-# benchmarkDotNet results folder
+# benchmarkDotNet results folder(s)
 BenchmarkDotNet.Artifacts/
+Artifacts/
 
 # unit tests Code Coverage folder
 TestResults/
