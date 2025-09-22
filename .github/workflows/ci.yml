@@ -50,7 +50,6 @@ env:
   RUN_BENCHMARKS:       ${{ inputs.run-benchmarks            || vars.RUN_BENCHMARKS       || 'true' }}  # "true" to run benchmarks and compare against baseline
   FORCE_NEW_BASELINE:   ${{ inputs.force-new-baseline        || vars.FORCE_NEW_BASELINE   || 'false' }} # "true" to force the current benchmarks results as the new baseline
   BENCHMARK_PROJECT:    ${{ inputs.benchmark-project         || vars.BENCHMARK_PROJECT    || './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj' }}
-  FORCE_NEW_BASELINE:   ${{ inputs.force-new-baseline        || vars.FORCE_NEW_BASELINE   || 'false' }} # "true" to force the current benchmarks results as the new baseline
   REGRESSION_THRESHOLD: ${{ inputs.perf-regression-threshold || vars.REGRESSION_THRESHOLD || '10' }} # percent allowed regression
 
   TC_COBERTURA_DIR: 'coverage'
