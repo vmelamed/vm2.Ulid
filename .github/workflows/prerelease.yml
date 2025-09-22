@@ -11,13 +11,13 @@ on:
     inputs:
       reason:
         description: 'Why run?'
-      dotnet-version:
+      dotnet_version:
         description: 'Version of .NET SDK to use'
         default: '9.0.x'
 
 env:
   DOTNET_NOLOGO: true
-  DOTNET_VERSION: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
+  DOTNET_VERSION: ${{ inputs.dotnet_version || vars.DOTNET_VERSION || '9.0.x' }}
   REASON: ${{ inputs.reason || 'manual run' }}
 
 jobs:
@@ -69,7 +69,7 @@ jobs:
           printf 'prerelease_tag=%s\n' "$PRERELEASE_TAG" >> "$GITHUB_OUTPUT"
 
       - name: Log the reason for workflow dispatch
-        if: ${{ inputs.reason && inputs.reason != '' }}
+        if: ${{ fromJSON(inputs.reason) && inputs.reason != '' }}
         run: |
           {
               echo "Prerelease reason:"
@@ -91,7 +91,7 @@ jobs:
         if: steps.tagcheck.outputs.already_tagged == 'false'
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet_version: ${{ env.DOTNET_VERSION }}
           cache: true
           cache-dependency-path: |
             **/packages.lock.json
