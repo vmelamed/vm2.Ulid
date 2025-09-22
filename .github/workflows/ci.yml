@@ -26,6 +26,10 @@ on:
         description: 'Whether to run benchmarks and compare against baseline'
         type: boolean
         default: true
+      force-new-baseline:
+        description: 'Whether to force new baseline (if true, no regression check is done)'
+        type: boolean
+        default: false
       benchmark-project:
         description: 'Path to benchmark project'
         default: './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj'
@@ -43,6 +47,7 @@ env:
   COVERAGE_THRESHOLD:   ${{ inputs.coverage-threshold        || vars.COVERAGE_THRESHOLD   || '75' }} # percent
   RUN_BENCHMARKS:       ${{ inputs.run-benchmarks            || vars.RUN_BENCHMARKS       || 'true' }} # "true" to run benchmarks and compare against baseline
   BENCHMARK_PROJECT:    ${{ inputs.benchmark-project         || vars.BENCHMARK_PROJECT    || './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj' }}
+  FORCE_NEW_BASELINE:   ${{ inputs.force-new-baseline        || vars.FORCE_NEW_BASELINE   || 'false' }} # "true" to force the current benchmarks results as the new baseline
   REGRESSION_THRESHOLD: ${{ inputs.perf-regression-threshold || vars.REGRESSION_THRESHOLD || '10' }} # percent allowed regression
 
 jobs:
