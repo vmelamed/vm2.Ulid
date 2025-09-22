@@ -17,7 +17,7 @@ on:
         type: boolean
         required: false
         default: false
-      perf-regression-threshold:
+      regression-threshold:
         type: string
         required: true
 
@@ -102,7 +102,7 @@ jobs:
         if: ${{ !inputs.force-new-baseline }}
         shell: bash
         env:
-          REGRESSION_THRESHOLD: ${{ inputs.perf-regression-threshold }}
+          REGRESSION_THRESHOLD: ${{ inputs.regression-threshold }}
         run: |
           set -euo pipefail
 

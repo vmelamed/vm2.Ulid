@@ -19,6 +19,7 @@ on:
       test-project:
         description: 'Path to test project'
         default: './test/UlidType.Tests/UlidType.Tests.csproj'
+        required: false
       coverage-threshold:
         description: 'Minimum acceptable code coverage percentage'
         default: '75'
@@ -33,7 +34,7 @@ on:
       benchmark-project:
         description: 'Path to benchmark project'
         default: './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj'
-      perf-regression-threshold:
+      regression-threshold:
         description: 'Maximum acceptable performance regression percentage'
         default: '10'
 
@@ -41,32 +42,48 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  MATRIX_OS:            ${{ inputs.os                        || vars.MATRIX_OS            || '["ubuntu-latest"]' }}
+
+  DOTNET_VERSION:       ${{ inputs.dotnet-version            || vars.DOTNET_VERSION       || '9.0.x' }}
+
+  TEST_PROJECT:         ${{ inputs.test-project              || vars.TEST_PROJECT         || './test/UlidType.Tests/UlidType.Tests.csproj' }}
+  COVERAGE_THRESHOLD:   ${{ inputs.coverage-threshold        || vars.COVERAGE_THRESHOLD   || '75' }} # percent
+
+  RUN_BENCHMARKS:       ${{ inputs.run-benchmarks            || vars.RUN_BENCHMARKS       || 'true' }}  # "true" to run benchmarks and compare against baseline
+  FORCE_NEW_BASELINE:   ${{ inputs.force-new-baseline        || vars.FORCE_NEW_BASELINE   || 'false' }} # "true" to force the current benchmarks results as the new baseline
+  BENCHMARK_PROJECT:    ${{ inputs.benchmark-project         || vars.BENCHMARK_PROJECT    || './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj' }}
+  REGRESSION_THRESHOLD: ${{ inputs.regression-threshold      || vars.REGRESSION_THRESHOLD || '10' }} # percent allowed performance regression
+
 jobs:
   build:
     name: Build
     uses: ./.github/workflows/build.yml
-    if: ${{ github.event_name != 'push' || !(contains(github.event.head_commit.message, '[skip ci]') || contains(github.event.head_commit.message, '[no ci]')) }}
+    if: |
+      ${{ github.event_name != 'push' ||
+      (!contains(github.event.head_commit.message, '[skip ci]')) &&
+      (!contains(github.event.head_commit.message, '[no ci]')) }}
     with:
-      dotnet-version: ${{ inputs.dotnet-version || '9.0.x' }}
-      os: ${{ inputs.os || '["ubuntu-latest"]' }}
+      dotnet-version: ${{ env.DOTNET_VERSION }}
+      os: ${{ env.MATRIX_OS }}
 
   test:
     name: Test
     needs: build
     uses: ./.github/workflows/test.yml
     with:
-      dotnet-version: ${{ inputs.dotnet-version || '9.0.x' }}
-      test-project: ${{ inputs.test-project || './test/UlidType.Tests/UlidType.Tests.csproj' }}
-      coverage-threshold: ${{ inputs.coverage-threshold || '75' }}
-      os: ${{ inputs.os || '["ubuntu-latest"]' }}
+      dotnet-version: ${{ env.DOTNET_VERSION }}
+      test-project: ${{ env.TEST_PROJECT }}
+      coverage-threshold: ${{ env.COVERAGE_THRESHOLD }}
+      os: ${{ env.MATRIX_OS }}
 
   benchmarks:
     name: Benchmarks (Linux only)
     needs: build
-    if: ${{ inputs.run-benchmarks }}
+    if: ${{ env.RUN_BENCHMARKS }}
     uses: ./.github/workflows/benchmarks.yml
     with:
-      dotnet-version: ${{ inputs.dotnet-version || '9.0.x' }}
-      benchmark-project: ${{ inputs.benchmark-project || './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj' }}
-      force-new-baseline: ${{ inputs.force-new-baseline || false }}
-      perf-regression-threshold: ${{ inputs.perf-regression-threshold || '10' }}
+      dotnet-version: ${{ env.DOTNET_VERSION }}
+      benchmark-project: ${{ env.BENCHMARK_PROJECT }}
+      force-new-baseline: ${{ env.FORCE_NEW_BASELINE }}
+      regression-threshold: ${{ env.REGRESSION_THRESHOLD }}
