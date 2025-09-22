@@ -194,7 +194,7 @@ jobs:
         run: |
           set -euo pipefail
           if [ ! -d "${BM_BASELINE_DIR}" ]; then
-            echo "No baseline benchmark directory found. "
+            echo "No baseline benchmark directory found. " \
                  "Assuming this is the first run. Setting `FORCE_NEW_BASELINE=true` to set the current benchmarks as the baseline."
             echo "FORCE_NEW_BASELINE=true" >> "$GITHUB_OUTPUT"
           fi
