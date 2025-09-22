@@ -3,7 +3,7 @@ name: Release (Stable)
 on:
   push:
     tags:
-      [ 'v*..' ]
+      [ 'v*', '!v-' ]
   workflow_dispatch:
     inputs:
       reason:

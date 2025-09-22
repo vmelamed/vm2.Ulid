@@ -45,8 +45,5 @@ jobs:
             **/packages.lock.json
             **/*.csproj
 
-      - name: Restore
-        run: dotnet restore
-
-      - name: Build (Release)
+      - name: Build (${{ inputs.configuration }})
         run: dotnet build --configuration ${{ inputs.configuration }} --no-restore

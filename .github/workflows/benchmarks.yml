@@ -64,6 +64,11 @@ jobs:
             --exporters JSON \
             --artifacts "${BM_ARTIFACTS_DIR}"
 
+          if ! command -v jq >/dev/null 2>&1; then
+            sudo apt-get update && sudo apt-get install -y jq
+            echo "jq successfully installed."
+          fi
+
           shopt -s nullglob
           # if a glob pattern does not match any files,
           # it expands to an empty string instead of the default to leaving the pattern unchanged
@@ -105,11 +110,6 @@ jobs:
           REGRESSION_THRESHOLD: ${{ inputs.regression-threshold }}
         run: |
           set -euo pipefail
-
-          if ! command -v jq >/dev/null 2>&1; then
-            sudo apt-get update && sudo apt-get install -y jq
-            echo "jq successfully installed."
-          fi
 
           fs=$(ls ${BM_SUMMARIES_DIR}/*-summary.json 2>/dev/null || true)
           if [ -z "${fs}" ]; then
@@ -156,7 +156,7 @@ jobs:
           fi
 
       - name: Upload benchmark results artifact as a new baseline
-        if: ${{ inputs.force-new-baseline || env.FORCE_NEW_BASELINE }}
+        if: ${{ inputs.force-new-baseline || env.FORCE_NEW_BASELINE == 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: benchmark-baseline

@@ -12,31 +12,37 @@ on:
       os:
         description: 'JSON array of runners'
         default: '["ubuntu-latest"]'
-        required: false
+        required: true
       dotnet-version:
         description: 'Version of .NET SDK to use'
         default: '9.0.x'
+        required: true
       test-project:
         description: 'Path to test project'
         default: './test/UlidType.Tests/UlidType.Tests.csproj'
-        required: false
+        required: true
       coverage-threshold:
         description: 'Minimum acceptable code coverage percentage'
         default: '75'
+        required: true
       run-benchmarks:
         description: 'Whether to run benchmarks and compare against baseline'
         type: boolean
         default: true
+        required: true
+      benchmark-project:
+        description: 'Path to benchmark project'
+        default: './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj'
+        required: true
+      regression-threshold:
+        description: 'Maximum acceptable performance regression percentage'
+        default: '10'
+        required: true
       force-new-baseline:
         description: 'Whether to force new baseline (if true, no regression check is done)'
         type: boolean
         default: false
-      benchmark-project:
-        description: 'Path to benchmark project'
-        default: './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj'
-      regression-threshold:
-        description: 'Maximum acceptable performance regression percentage'
-        default: '10'
+        required: true
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -59,7 +65,7 @@ jobs:
   build:
     name: Build
     uses: ./.github/workflows/build.yml
-    if: |
+    if: >
       ${{ github.event_name != 'push' ||
       (!contains(github.event.head_commit.message, '[skip ci]')) &&
       (!contains(github.event.head_commit.message, '[no ci]')) }}
@@ -80,7 +86,7 @@ jobs:
   benchmarks:
     name: Benchmarks (Linux only)
     needs: build
-    if: ${{ env.RUN_BENCHMARKS }}
+    if: ${{ fromJSON(env.RUN_BENCHMARKS) }}
     uses: ./.github/workflows/benchmarks.yml
     with:
       dotnet-version: ${{ env.DOTNET_VERSION }}
