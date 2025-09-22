@@ -3,14 +3,14 @@ name: Reusable - Test .NET
 on:
   workflow_call:
     inputs:
-      dotnet_version:
+      dotnet-version:
         type: string
         required: true
-      test_project:
+      test-project:
         description: 'Path to test project'
         type: string
         required: false
-      coverage_threshold:
+      coverage-threshold:
         type: string
         required: true
       os:
@@ -44,10 +44,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet_version: ${{ inputs.dotnet_version }}
+          dotnet-version: ${{ inputs.dotnet-version }}
           cache: true
           cache-dependency-path: |
             **/packages.lock.json
@@ -56,14 +57,14 @@ jobs:
       - name: Run unit tests with coverage
         shell: bash
         env:
-          COVERAGE_THRESHOLD: ${{ inputs.coverage_threshold }}
-          TEST_PROJECT: ${{ inputs.test_project }}
+          COVERAGE_THRESHOLD: ${{ inputs.coverage-threshold }}
+          TEST_PROJECT: ${{ inputs.test-project }}
           CONFIGURATION: ${{ inputs.configuration }}
         run: |
           set -euo pipefail
 
           dotnet test \
-            ${{ inputs.test_project }} \
+            ${{ inputs.test-project }} \
             --configuration ${{ inputs.configuration }} \
             /p:ExcludeByAttribute="GeneratedCodeAttribute" -- \
             --coverage \

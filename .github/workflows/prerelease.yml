@@ -11,13 +11,13 @@ on:
     inputs:
       reason:
         description: 'Why run?'
-      dotnet_version:
+      dotnet-version:
         description: 'Version of .NET SDK to use'
         default: '9.0.x'
 
 env:
   DOTNET_NOLOGO: true
-  DOTNET_VERSION: ${{ inputs.dotnet_version || vars.DOTNET_VERSION || '9.0.x' }}
+  DOTNET_VERSION: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
   REASON: ${{ inputs.reason || 'manual run' }}
 
 jobs:
@@ -91,7 +91,7 @@ jobs:
         if: steps.tagcheck.outputs.already_tagged == 'false'
         uses: actions/setup-dotnet@v4
         with:
-          dotnet_version: ${{ env.DOTNET_VERSION }}
+          dotnet-version: ${{ env.DOTNET_VERSION }}
           cache: true
           cache-dependency-path: |
             **/packages.lock.json

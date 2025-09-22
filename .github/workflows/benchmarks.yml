@@ -3,21 +3,21 @@ name: Reusable - Benchmarks
 on:
   workflow_call:
     inputs:
-      dotnet_version:
+      dotnet-version:
         type: string
         required: true
-      benchmark_project:
+      benchmark-project:
         type: string
         required: true
-      run_benchmarks:
+      run-benchmarks:
         type: boolean
         required: false
         default: true
-      force_new_baseline:
+      force-new-baseline:
         type: boolean
         required: false
         default: false
-      regression_threshold:
+      regression-threshold:
         type: string
         required: true
 
@@ -42,7 +42,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet_version: ${{ inputs.dotnet_version }}
+          dotnet-version: ${{ inputs.dotnet-version }}
           cache: true
           cache-dependency-path: |
             **/packages.lock.json
@@ -51,7 +51,7 @@ jobs:
       - name: Run benchmarks
         shell: bash
         env:
-          BENCHMARK_PROJECT: ${{ inputs.benchmark_project }}
+          BENCHMARK_PROJECT: ${{ inputs.benchmark-project }}
         run: |
           set -euo pipefail
 
@@ -96,7 +96,7 @@ jobs:
           retention-days: 90
 
       - name: Download baseline benchmark summaries artifact
-        if: ${{ !fromJson(inputs.force_new_baseline) }}
+        if: ${{ !fromJson(inputs.force-new-baseline) }}
         uses: actions/download-artifact@v4
         continue-on-error: true
         with:
@@ -104,10 +104,10 @@ jobs:
           path: ${{ env.BM_BASELINE_DIR }}
 
       - name: Compare benchmarks against baseline
-        if: ${{ !fromJSON(inputs.force_new_baseline) }}
+        if: ${{ !fromJSON(inputs.force-new-baseline) }}
         shell: bash
         env:
-          REGRESSION_THRESHOLD: ${{ inputs.regression_threshold }}
+          REGRESSION_THRESHOLD: ${{ inputs.regression-threshold }}
         run: |
           set -euo pipefail
 
@@ -156,7 +156,7 @@ jobs:
           fi
 
       - name: Upload benchmark results artifact as a new baseline
-        if: ${{ fromJSON(inputs.force_new_baseline) || env.FORCE_NEW_BASELINE == 'true' }}
+        if: ${{ fromJSON(inputs.force-new-baseline) || env.FORCE_NEW_BASELINE == 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: benchmark-baseline
