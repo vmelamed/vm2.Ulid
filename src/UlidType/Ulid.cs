@@ -451,7 +451,7 @@ public readonly partial struct Ulid :
     /// <param name="s">The string representation of the ULID to parse.</param>
     /// <returns>The <see cref="Ulid"/> instance that corresponds to the parsed string.</returns>
     /// <exception cref="ArgumentException">Thrown if the input string <paramref name="s"/> cannot be parsed as a valid ULID.</exception>
-    public static Ulid Parse(in Span<byte> s)
+    public static Ulid Parse(in ReadOnlySpan<byte> s)
         => TryParse(s, out var u)
                 ? u
                 : throw new ArgumentException("The input source does not represent a valid ULID.", nameof(s));
