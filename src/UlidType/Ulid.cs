@@ -308,7 +308,7 @@ public readonly partial struct Ulid :
     {
         result = Empty;
 
-        if (sourceSpan.Length != UlidStringLength)
+        if (sourceSpan.Length < UlidStringLength)
             return false;
 
         // parse the string into a UInt128 value first
