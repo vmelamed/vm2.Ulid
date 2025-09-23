@@ -5,6 +5,7 @@ on:
     inputs:
       dotnet-version:
         type: string
+        default: '9.0.x'
         required: true
       test-project:
         description: 'Path to test project'

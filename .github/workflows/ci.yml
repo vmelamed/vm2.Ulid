@@ -86,16 +86,16 @@ jobs:
     with:
       dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
       test-project: ${{ inputs.test-project || vars.TEST_PROJECT || './test/UlidType.Tests/UlidType.Tests.csproj' }}
-      coverage-threshold: ${{ inputs.coverage-threshold || vars.COVERAGE_THRESHOLD || 75 }}
+      coverage-threshold: ${{ inputs.coverage-threshold || fromJSON(vars.COVERAGE_THRESHOLD) || 75 }}
       os: ${{ inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]' }}
 
   benchmarks:
     name: Benchmarks (Linux only)
     needs: build
-    if: ${{ inputs.run-benchmarks || vars.RUN_BENCHMARKS || true }}
+    if: ${{ inputs.run-benchmarks || fromJSON(vars.RUN_BENCHMARKS) || true }}
     uses: ./.github/workflows/benchmarks.yml
     with:
       dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
       benchmark-project: ${{ inputs.benchmark-project || vars.BENCHMARK_PROJECT || './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj' }}
-      force-new-baseline: ${{ inputs.force-new-baseline || vars.FORCE_NEW_BASELINE || false }}
-      regression-threshold: ${{ inputs.regression-threshold || vars.REGRESSION_THRESHOLD || 10 }}
+      force-new-baseline: ${{ inputs.force-new-baseline || fromJSON(vars.FORCE_NEW_BASELINE) || false }}
+      regression-threshold: ${{ inputs.regression-threshold || fromJSON(vars.REGRESSION_THRESHOLD) || 10 }}

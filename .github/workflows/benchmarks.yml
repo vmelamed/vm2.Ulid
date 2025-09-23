@@ -4,20 +4,21 @@ on:
   workflow_call:
     inputs:
       dotnet-version:
+        description: 'Version of .NET SDK to use'
         type: string
+        default: '9.0.x'
         required: true
       benchmark-project:
+        description: 'Path to benchmark project'
         type: string
         required: true
-      run-benchmarks:
-        type: boolean
-        required: false
-        default: true
       force-new-baseline:
+        description: 'Whether to force new baseline (if true, no regression check is done)'
         type: boolean
         required: true
         default: false
       regression-threshold:
+        description: 'Maximum acceptable performance regression percentage'
         type: number
         required: true
         default: 10 # percent
