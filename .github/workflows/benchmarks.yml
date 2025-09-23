@@ -73,8 +73,8 @@ jobs:
 
           shopt -s nullglob
           # if a glob pattern does not match any files,
-          # it expands to an empty string instead of the default to leaving the pattern unchanged
-          # here: ${BM_ARTIFACTS_DIR}/results/*-report.json
+          # it expands to an empty string instead of the default to leaving the pattern unchanged,
+          # i.e. ${BM_ARTIFACTS_DIR}/results/*-report.json - we don't want that
           files=(${BM_ARTIFACTS_DIR}/results/*-report.json)
           shopt -u nullglob
 
@@ -98,7 +98,7 @@ jobs:
           retention-days: 90
 
       - name: Download baseline benchmark summaries artifact
-        if: ${{ !fromJson(inputs.force-new-baseline) }}
+        if: ${{ !inputs.force-new-baseline }}
         uses: actions/download-artifact@v4
         continue-on-error: true
         with:
@@ -106,7 +106,7 @@ jobs:
           path: ${{ env.BM_BASELINE_DIR }}
 
       - name: Compare benchmarks against baseline
-        if: ${{ !fromJSON(inputs.force-new-baseline) }}
+        if: ${{ !inputs.force-new-baseline }}
         shell: bash
         env:
           REGRESSION_THRESHOLD: ${{ inputs.regression-threshold }}
@@ -150,15 +150,20 @@ jobs:
           if (( pct > REGRESSION_THRESHOLD )); then
             echo "Performance regression exceeds threshold"
             exit 2
-          fi
-
-          if (( pct < 0 )); then
-            echo "Better performance than baseline."
-            echo "FORCE_NEW_BASELINE=true" >> "$GITHUB_ENV"
+          elif (( pct > 0 )); then
+            echo "Performance regression within acceptable threshold."
+          elif (( pct < 0 )); then
+            pct_abs=$(( -pct ))
+            if (( pct_abs >= REGRESSION_THRESHOLD )); then
+              echo "Significant improvement of ${pct_abs}% over baseline. Updating the baseline."
+              echo "FORCE_NEW_BASELINE=true" >> "$GITHUB_ENV"
+            else
+              echo "Improvement of ${pct_abs}% over baseline."
+            fi
           fi
 
       - name: Upload benchmark results artifact as a new baseline
-        if: ${{ fromJSON(inputs.force-new-baseline) || env.FORCE_NEW_BASELINE == 'true' }}
+        if: ${{ inputs.force-new-baseline || env.FORCE_NEW_BASELINE }}
         uses: actions/upload-artifact@v4
         with:
           name: benchmark-baseline
