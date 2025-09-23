@@ -63,13 +63,12 @@ jobs:
         run: |
           set -euo pipefail
 
-          dotnet test \
-            ${{ inputs.test-project }} \
+          dotnet test ${{ inputs.test-project }} \
             --configuration ${{ inputs.configuration }} \
             /p:ExcludeByAttribute="GeneratedCodeAttribute" -- \
-            --coverage \
-            --coverage-output-format xml \
-            --coverage-output "${TC_COBERTURA_FILE}"
+              --coverage \
+              --coverage-output-format xml \
+              --coverage-output "${TC_COBERTURA_FILE}"
 
           f=$(find "$(pwd)" -type f -path "*/${TC_COBERTURA_FILE}" -print -quit || true)
           if [ -z "${f}" ]; then

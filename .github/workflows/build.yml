@@ -46,4 +46,4 @@ jobs:
             **/*.csproj
 
       - name: Build (${{ inputs.configuration }})
-        run: dotnet build --configuration ${{ inputs.configuration }} --no-restore
+        run: dotnet build --configuration ${{ inputs.configuration }}

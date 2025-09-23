@@ -97,13 +97,9 @@ jobs:
             **/packages.lock.json
             **/*.csproj
 
-      - name: Restore
-        if: steps.tagcheck.outputs.already_tagged == 'false'
-        run: dotnet restore
-
       - name: Build
         if: steps.tagcheck.outputs.already_tagged == 'false'
-        run: dotnet build -c Release --no-restore
+        run: dotnet build -c Release
 
       - name: Pack (MinVer consumes the just-pushed prerelease tag)
         if: steps.tagcheck.outputs.already_tagged == 'false'
