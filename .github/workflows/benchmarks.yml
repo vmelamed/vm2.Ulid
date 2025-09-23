@@ -15,11 +15,12 @@ on:
         default: true
       force-new-baseline:
         type: boolean
-        required: false
+        required: true
         default: false
       regression-threshold:
-        type: string
+        type: number
         required: true
+        default: 10 # percent
 
 permissions:
   contents: read

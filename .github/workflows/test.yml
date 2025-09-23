@@ -11,8 +11,9 @@ on:
         type: string
         required: false
       coverage-threshold:
-        type: string
+        type: number
         required: true
+        default: 75
       os:
         type: string
         required: false

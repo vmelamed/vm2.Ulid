@@ -23,7 +23,8 @@ on:
         required: true
       coverage-threshold:
         description: 'Minimum acceptable code coverage percentage'
-        default: '75'
+        type: number
+        default: 75
         required: true
       run-benchmarks:
         description: 'Whether to run benchmarks and compare against baseline'
@@ -36,7 +37,8 @@ on:
         required: true
       regression-threshold:
         description: 'Maximum acceptable performance regression percentage'
-        default: '10'
+        type: number
+        default: 10
         required: true
       force-new-baseline:
         description: 'Whether to force new baseline (if true, no regression check is done)'
@@ -54,12 +56,12 @@ env:
   DOTNET_VERSION:       ${{ inputs.dotnet-version            || vars.DOTNET_VERSION       || '9.0.x' }}
 
   TEST_PROJECT:         ${{ inputs.test-project              || vars.TEST_PROJECT         || './test/UlidType.Tests/UlidType.Tests.csproj' }}
-  COVERAGE_THRESHOLD:   ${{ inputs.coverage-threshold        || vars.COVERAGE_THRESHOLD   || '75' }} # percent
+  COVERAGE_THRESHOLD:   ${{ inputs.coverage-threshold        || vars.COVERAGE_THRESHOLD   || 75 }} # percent
 
   RUN_BENCHMARKS:       ${{ inputs.run-benchmarks            || vars.RUN_BENCHMARKS       || 'true' }}  # "true" to run benchmarks and compare against baseline
   FORCE_NEW_BASELINE:   ${{ inputs.force-new-baseline        || vars.FORCE_NEW_BASELINE   || 'false' }} # "true" to force the current benchmarks results as the new baseline
   BENCHMARK_PROJECT:    ${{ inputs.benchmark-project         || vars.BENCHMARK_PROJECT    || './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj' }}
-  REGRESSION_THRESHOLD: ${{ inputs.regression-threshold      || vars.REGRESSION_THRESHOLD || '10' }} # percent allowed performance regression
+  REGRESSION_THRESHOLD: ${{ inputs.regression-threshold      || vars.REGRESSION_THRESHOLD || 10 }} # percent allowed performance regression
 
 jobs:
   build:
@@ -80,7 +82,7 @@ jobs:
     with:
       dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
       test-project: ${{ inputs.test-project || vars.TEST_PROJECT || './test/UlidType.Tests/UlidType.Tests.csproj' }}
-      coverage-threshold: ${{ inputs.coverage-threshold || vars.COVERAGE_THRESHOLD || '75' }}
+      coverage-threshold: ${{ inputs.coverage-threshold || vars.COVERAGE_THRESHOLD || 75 }}
       os: ${{ inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]' }}
 
   benchmarks:
@@ -92,4 +94,4 @@ jobs:
       dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
       benchmark-project: ${{ inputs.benchmark-project || vars.BENCHMARK_PROJECT || './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj' }}
       force-new-baseline: ${{ inputs.force-new-baseline || vars.FORCE_NEW_BASELINE || 'false' }}
-      regression-threshold: ${{ inputs.regression-threshold || vars.REGRESSION_THRESHOLD || '10' }}
+      regression-threshold: ${{ inputs.regression-threshold || vars.REGRESSION_THRESHOLD || 10 }}
