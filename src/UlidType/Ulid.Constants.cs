@@ -12,42 +12,51 @@ public readonly partial struct Ulid
     /// <summary>
     /// Represents the offset of the timestamp bytes in a ULID.
     /// </summary>
-    public const int TimestampBegin             = 0;
+    public const int TimestampBegin = 0;
 
     /// <summary>
     /// Represents the length of the timestamp bytes in a ULID.
     /// </summary>
-    public const int TimestampLength            = 6;
+    public const int TimestampLength = 6;
 
     /// <summary>
-    /// Represents the length of the timestamp bytes in a ULID.
+    /// Represents the length of the timestamp bytes in a ULID - 6 bytes.
     /// </summary>
-    public const int TimestampEnd               = TimestampBegin + TimestampLength;
+    public const int TimestampEnd = TimestampBegin + TimestampLength;
 
     /// <summary>
     /// Represents the offset of the random bytes in a ULID.
     /// </summary>
-    public const int RandomBegin                = TimestampEnd;
+    public const int RandomBegin = TimestampEnd;
 
     /// <summary>
     /// Represents the length of the random bytes in a ULID.
     /// </summary>
-    public const int RandomLength               = 10;
+    public const int RandomLength = 10;
 
     /// <summary>
     /// Represents the offset of the random bytes in a ULID.
     /// </summary>
-    public const int RandomEnd                  = RandomBegin + RandomLength;
+    public const int RandomEnd = RandomBegin + RandomLength;
 
     /// <summary>
-    /// Represents the total length, in bytes, of a ULID (Universally Unique Lexicographically Sortable Identifier).
+    /// Represents the total length, in bytes (16), of a ULID (Universally Unique Lexicographically Sortable Identifier).
     /// </summary>
-    public const int UlidBytesLength            = TimestampLength + RandomLength;
+    public const int UlidBytesLength = TimestampLength + RandomLength;
 
     /// <summary>
-    /// Represents the total length, in bytes, of a ULID (Universally Unique Lexicographically Sortable Identifier).
+    /// Represents the total length, in bits (128), of a ULID (Universally Unique Lexicographically Sortable Identifier).
     /// </summary>
-    public const int UlidBitsLength             = UlidBytesLength * 8;
+    public const int UlidBitsLength = UlidBytesLength * 8;
+
+    /// <summary>
+    /// Represents the Crockford Base32 alphabet, a character set used for encoding data (here ULID data) in a <b>case-insensitive</b> manner.
+    /// </summary>
+    /// <remarks>
+    /// The Crockford Base32 alphabet excludes characters that are easily confused, such as 'I', 'L', 'O', and 'U'. This alphabet<br/>
+    /// is commonly used in applications such as unique identifier generation and human-readable encoding.
+    /// </remarks>
+    public const string CrockfordDigits = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 
     /// <summary>
     /// Represents the Crockford Base32 alphabet, a character set used for encoding data (here ULID data) in a case-insensitive manner.
@@ -56,18 +65,14 @@ public readonly partial struct Ulid
     /// The Crockford Base32 alphabet excludes characters that are easily confused, such as 'I', 'L', 'O', and 'U'. This alphabet<br/>
     /// is commonly used in applications such as unique identifier generation and human-readable encoding.
     /// </remarks>
-    public const string CrockfordDigits         = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+    public static ReadOnlySpan<byte> CrockfordDigitsUtf8 => "0123456789ABCDEFGHJKMNPQRSTVWXYZ"u8;
 
     /// <summary>
-    /// Represents the weight of each Crockford digit in a ULID. Just like the weight of each digit in a decimal number is 10 (Radix 10)<br/>
-    /// power the position of the digit in the number starting with 0; the weight of each digit in a ULID is 32 (Radix 32) to the
-    /// power of the position of the Crockford digit in the Ulid starting with 0.
+    /// The number of unique symbols used to represent ULID-s, a.k.a. the <see cref="CrockfordDigits"/>. Just like the number of unique<br/>
+    /// symbols (the decimal digits) used to represent decimal numbers is 10 (Radix 10), the number of the Crockford digits is 32<br/>
+    /// (Radix 32).<br/>
     /// </summary>
-    /// <remarks>
-    /// This constant is derived from the bit shift value defined by <see cref="BitsPerUlidDigit"/> and is used in operations <br/>
-    /// involving ULID character manipulation.
-    /// </remarks>
-    public static readonly uint UlidRadix       = 32; // = CrockfordDigits.Length - the radix of a Crockford number
+    public static readonly uint UlidRadix = 32; // = CrockfordDigits.Length - the radix of a Crockford number
 
     /// <summary>
     /// The number of bits that represent a digit in a ULID.
@@ -79,38 +84,25 @@ public readonly partial struct Ulid
     public static readonly int BitsPerUlidDigit = 5; // 1 << BitsPerUlidDigit == CrockfordDigits.Length
 
     /// <summary>
-    /// Represents the bitmask used to extract the least significant character ULID value. If you shift it left by <see cref="BitsPerUlidDigit"/>,
-    /// we get the mask of the second least significant number, etc.
+    /// Represents the bitmask (<c>0b_0001_1111 / 0x1F / 31</c>) used to extract the least significant digit of a ULID value. If<br/>
+    /// we shift it left by <see cref="BitsPerUlidDigit"/> and mask again, we get the mask of the second least significant digit,
+    /// etc.
     /// </summary>
     /// <remarks>
     /// This constant is derived from the bit shift value defined by <see cref="BitsPerUlidDigit"/> and is used in operations <br/>
     /// involving ULID character manipulation.
     /// </remarks>
-    public static readonly int UlidCharMask     = 0b_0001_1111; // the numeric value of the digit CrockfordDigits.Last()
+    public static readonly int UlidDigitMask = 0b_0001_1111; // the numeric value of the digit CrockfordDigits.Last()
 
     /// <summary>
     /// Represents the fixed length of a ULID (Universally Unique Lexicographically Sortable Identifier) string. It is 26 characters long.
     /// </summary>
-    public static readonly int UlidStringLength = (UlidBitsLength / BitsPerUlidDigit) + (UlidBitsLength % BitsPerUlidDigit > 0 ? 1 : 0);
+    public static readonly int UlidStringLength = (int)Math.Ceiling((float)UlidBitsLength / BitsPerUlidDigit);
 
     /// <summary>
     /// The regular expression pattern for validating ULID strings.
     /// </summary>
-    public const string UlidStringRegex         = $"[{CrockfordDigits}]{{26}}";
-
-    /// <summary>
-    /// Creates a compiled, case-insensitive regular expression for validating ULID (Universally Unique Lexicographically<br/>
-    /// Sortable Identifier) strings.
-    /// </summary>
-    /// <remarks>
-    /// The generated regular expression matches strings that conform to the ULID format, which consists of 26 alphanumeric<br/>
-    /// characters from the <see cref="CrockfordDigits"/>. This method is optimized for performance by pre-compiling the regular expression.
-    /// </remarks>
-    /// <returns>A <see cref="Regex"/> instance configured to match valid ULID strings.</returns>
-    [GeneratedRegex(UlidStringRegex, RegexOptions.Compiled | RegexOptions.IgnoreCase, 500)]
-    public static partial Regex UlidString();
-
-    internal static int Zero = '0';
+    public const string UlidStringRegex = $"(?i)[{CrockfordDigits}]{{26}}";
 
     internal static byte[] CrockfordDigitValues =
     [
@@ -190,4 +182,6 @@ public readonly partial struct Ulid
          30, // y
          31, // z
     ];
+
+    internal static int Zero = '0';
 }

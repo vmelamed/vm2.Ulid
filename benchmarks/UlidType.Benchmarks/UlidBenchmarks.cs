@@ -55,13 +55,13 @@ public class NewUlid
     }
 
     [Benchmark(Description = "Guid.NewGuid", Baseline = true)]
-    public Guid Generate_Guid() => Guid.NewGuid();
+    public Guid Guid_NewGuid() => Guid.NewGuid();
 
     [Benchmark(Description = "Ulid.NewUlid")]
-    public Ulid GenerateUlid_Ulid() => Ulid.NewUlid(RandomProvider);
+    public Ulid Ulid_NewUlid() => Ulid.NewUlid(RandomProvider);
 
-    [Benchmark(Description = "UlidFactory.NewUlid")]
-    public Ulid Generate_Ulid() => Factory.NewUlid();
+    [Benchmark(Description = "Factory.NewUlid")]
+    public Ulid Factory_NewUlid() => Factory.NewUlid();
 }
 
 [SimpleJob(RuntimeMoniker.HostProcess)]
@@ -112,14 +112,12 @@ public class ParseUlid
         _data3 = new(MaxDataItems, _ => Encoding.UTF8.GetBytes(_factory.NewUlid().ToString()));
     }
 
-    [Benchmark(Description = "Guid.Parse", Baseline = true)]
+    [Benchmark(Description = "Guid.Parse(string)", Baseline = true)]
     public Guid Guid_Parse() => Guid.Parse(_data1.GetNext());
 
-    [Benchmark(Description = "Ulid.ParseString")]
-    public Ulid Ulid_Parse() => Ulid.Parse(_data2.GetNext());
+    [Benchmark(Description = "Ulid.Parse(StringUtf16)")]
+    public Ulid Ulid_Parse_Utf16() => Ulid.Parse(_data2.GetNext());
 
-    [Benchmark(Description = "Ulid.ParseUtf8String")]
-    public Ulid Ulid_ParseUtf8() => Ulid.TryParse(_data3.GetNext(), out var ulid)
-                                        ? ulid
-                                        : throw new InvalidOperationException($"Failed to parse: {string.Join("-", _data3.Current.Select(b => b.ToString("X2")))}");
+    [Benchmark(Description = "Ulid.Parse(StringUtf8)")]
+    public Ulid Ulid_Parse_Utf8() => Ulid.Parse(_data3.GetNext());
 }

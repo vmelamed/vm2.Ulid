@@ -4,164 +4,85 @@ on:
   push:
     branches:
       - "**"
+  pull_request:
+    branches:
+      - "**"
+  workflow_dispatch:
+    inputs:
+      os:
+        description: 'JSON array of runners'
+        type: string
+        default: '["ubuntu-latest"]'
+        required: true
+      dotnet-version:
+        description: 'Version of .NET SDK to use'
+        type: string
+        default: '9.0.x'
+        required: true
+      test-project:
+        description: 'Path to test project'
+        type: string
+        default: './test/UlidType.Tests/UlidType.Tests.csproj'
+        required: true
+      coverage-threshold:
+        description: 'Minimum acceptable code coverage percentage'
+        type: number
+        default: 75
+        required: true
+      run-benchmarks:
+        description: 'Whether to run benchmarks and compare against baseline'
+        type: boolean
+        default: true
+        required: true
+      benchmark-project:
+        description: 'Path to benchmark project'
+        type: string
+        default: './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj'
+        required: true
+      regression-threshold:
+        description: 'Maximum acceptable performance regression percentage'
+        type: number
+        default: 10
+        required: true
+      force-new-baseline:
+        description: 'Whether to force new baseline (if true, no regression check is done)'
+        type: boolean
+        default: false
+        required: true
 
-env:
-  COVERAGE_THRESHOLD: "75" # percent
-  PERF_THRESHOLD: "10" # percent allowed regression
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  matrix-ci:
-    name: Build on ${{ matrix.os }} � tests & benchmarks on Linux
-    runs-on: ${{ matrix.os }}
-    if: "!(contains(github.event.head_commit.message, '[skip ci]') || contains(github.event.head_commit.message, '[no ci]')"
-    strategy:
-      matrix:
-        os: [ubuntu-latest] # , windows-latest, macos-latest]
+  build:
+    name: Build
+    uses: ./.github/workflows/build.yml
+    if: >
+      ${{ github.event_name != 'push' ||
+          (!contains(github.event.head_commit.message, '[skip ci]')) &&
+          (!contains(github.event.head_commit.message, '[no ci]'  ))    }}
+    with:
+      dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
+      os:             ${{ inputs.os             || vars.MATRIX_OS      || '["ubuntu-latest"]' }}
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          filter: tree:0
+  test:
+    name: Test
+    needs: build
+    uses: ./.github/workflows/test.yml
+    with:
+      dotnet-version:     ${{ inputs.dotnet-version     || vars.DOTNET_VERSION               || '9.0.x' }}
+      os:                 ${{ inputs.os                 || vars.MATRIX_OS                    || '["ubuntu-latest"]' }}
+      test-project:       ${{ inputs.test-project       || vars.TEST_PROJECT                 || './test/UlidType.Tests/UlidType.Tests.csproj' }}
+      coverage-threshold: ${{ inputs.coverage-threshold || fromJSON(vars.COVERAGE_THRESHOLD) || 75 }}
 
-      - name: Setup .NET 9
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: "9.0.x"
-
-      - name: Restore
-        if: matrix.os == 'ubuntu-latest'
-        run: dotnet restore
-
-      - name: Build (Release)
-        if: matrix.os == 'ubuntu-latest'
-        run: dotnet build -c Release --no-restore
-
-      # -- Unit tests + coverage: Linux only ---------------------------------
-      - name: Run unit tests with coverage (Linux)
-        if: matrix.os == 'ubuntu-latest' || github.event_name == 'pull_request'
-        shell: bash
-        run: |
-          set -euo pipefail
-          dotnet test ./test/UlidType.Tests/UlidType.Tests.csproj -c Release --no-build \
-            /p:ExcludeByAttribute="GeneratedCodeAttribute" \
-            -- \
-            --coverage \
-            --coverage-output-format xml \
-            --coverage-output coverage/coverage.cobertura.xml
-
-          # locate cobertura file produced by collector
-          COV_FILE=$(find "$(pwd)" -type f -path "*/TestResults/*/coverage.cobertura.xml" -print -quit || true)
-          if [ -z "$COV_FILE" ]; then
-            echo "Coverage file not found."
-            exit 2
-          fi
-
-          mkdir -p coverage
-          cp "$COV_FILE" coverage/coverage.cobertura.xml
-
-          # install ReportGenerator and create a text summary
-          dotnet tool install --tool-path ./tools dotnet-reportgenerator-globaltool --version 5.*
-          ./tools/reportgenerator -reports:coverage/coverage.cobertura.xml -targetdir:coverage_report -reporttypes:TextSummary
-
-          SUMMARY="coverage_report/Summary.txt"
-          if [ ! -f "$SUMMARY" ]; then
-            echo "Coverage summary not found; failing."
-            exit 2
-          fi
-
-          PCT=$(grep -oP '\d+(\.\d+)?(?=%)' "$SUMMARY" | head -n1 || true)
-          if [ -z "$PCT" ]; then
-            echo "Could not parse coverage percent from $SUMMARY"
-            exit 2
-          fi
-
-          echo "Coverage: $PCT% (threshold: ${COVERAGE_THRESHOLD}%)"
-          awk -v p="$PCT" -v t="${COVERAGE_THRESHOLD}" 'BEGIN { if (p+0 < t+0) { print "Coverage below threshold"; exit 1 } else { print "Coverage OK" } }'
-
-      - name: Upload coverage artifact
-        if: (github.event_name == 'pull_request' || matrix.os == 'ubuntu-latest') && always()
-        uses: actions/upload-artifact@v4
-        with:
-            name: coverage-${{ matrix.os }}
-            path: |
-              coverage/coverage.cobertura.xml
-              coverage_report/
-
-      # -- Benchmark run: Linux only -----------------------------------------
-      - name: Run benchmarks (Linux)
-        if: matrix.os == 'ubuntu-latest' || github.event_name == 'pull_request'
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          # run benchmark project (BenchmarkDotNet produces JSON under BenchmarkDotNet.Artifacts)
-          mkdir BenchmarkDotNet.Artifacts
-          dotnet run -c Release --project ./benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj \
-            --filter '*' \
-            --memory \
-            --exporters JSON \
-            --artifacts ./benchmarks/BenchmarkDotNet.Artifacts || true
-
-          mkdir -p benchmarks/results
-          cp -r ./benchmarks/BenchmarkDotNet.Artifacts/results/*.json benchmarks/results
-
-      - name: Upload benchmark result artifact (Linux)
-        if: matrix.os == 'ubuntu-latest' || github.event_name == 'pull_request'
-        uses: actions/upload-artifact@v4
-        with:
-          name: current-benchmark-result
-          path: benchmarks/results
-
-      - name: Compare benchmarks against baseline (Linux)
-        if: matrix.os == 'ubuntu-latest' || github.event_name == 'pull_request'
-        shell: bash
-        run: |
-          set -euo pipefail
-          if ! command -v jq >/dev/null 2>&1; then
-            sudo apt-get update && sudo apt-get install -y jq
-          fi
-
-          # If multiple JSON results exist, merge sums heuristically
-          CURRENT_DIR=benchmarks/results
-          BASELINE=benchmarks/baseline.json
-
-          CUR_FILES=$(ls -1 "$CURRENT_DIR"/*.json 2>/dev/null || true)
-          if [ -z "$CUR_FILES" ]; then
-            echo "No current benchmark result JSON files found; skipping comparison."
-            exit 0
-          fi
-
-            # Merge current totals
-          SUM_CUR=0
-          for f in $CUR_FILES; do
-            VAL=$(jq '[.Benchmarks[]? | ( .PrimaryMetrics[0].Mean // (.Statistics.Mean // 0) )] | add // 0' "$f")
-            SUM_CUR=$(awk -v a="$SUM_CUR" -v b="$VAL" 'BEGIN { printf "%.10f", a + b }')
-          done
-
-          if [ ! -f "$BASELINE" ]; then
-            echo "Baseline not found at $BASELINE. To enable regression checks, commit one of the current JSON files as baseline.json."
-            exit 0
-          fi
-
-          SUM_BASE=$(jq '[.Benchmarks[]? | ( .PrimaryMetrics[0].Mean // (.Statistics.Mean // 0) )] | add // 0' "$BASELINE")
-
-          if [ -z "$SUM_BASE" ] || [ "$SUM_BASE" = "0" ]; then
-            echo "Baseline sum invalid ($SUM_BASE); skipping regression check."
-            exit 0
-          fi
-
-          echo "Baseline total mean: $SUM_BASE"
-          echo "Current aggregated total mean (all JSON files): $SUM_CUR"
-
-          PCT_CHANGE=$(awk -v b="$SUM_BASE" -v c="$SUM_CUR" 'BEGIN { if (b==0){print 0}else{ printf "%.4f", ((c - b) / b) * 100 } }')
-          echo "Percent change vs baseline: ${PCT_CHANGE}% (allowed: ${PERF_THRESHOLD}%)"
-
-          awk -v pc="$PCT_CHANGE" -v th="${PERF_THRESHOLD}" 'BEGIN { if (pc > th) { print "Performance regression exceeds threshold"; exit 1 } else { print "Performance OK" } }'
-
-      # -- macOS & Windows: just confirm build succeeded ---------------------
-      - name: Non-test platform notice (push only)
-        if: github.event_name == 'push' && matrix.os != 'ubuntu-latest'
-        shell: bash
-        run: "echo \"Push event: tests & benchmarks run only on Linux. This platform performed build validation.\""
+  benchmarks:
+    name: Benchmarks (Linux only)
+    needs: build
+    if: ${{ inputs.run-benchmarks || fromJSON(vars.RUN_BENCHMARKS) || true }}
+    uses: ./.github/workflows/benchmarks.yml
+    with:
+      dotnet-version:       ${{ inputs.dotnet-version       || vars.DOTNET_VERSION                 || '9.0.x' }}
+      benchmark-project:    ${{ inputs.benchmark-project    || vars.BENCHMARK_PROJECT              || './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj' }}
+      force-new-baseline:   ${{ inputs.force-new-baseline   || fromJSON(vars.FORCE_NEW_BASELINE)   || false }}
+      regression-threshold: ${{ inputs.regression-threshold || fromJSON(vars.REGRESSION_THRESHOLD) || 10 }}
