@@ -28,7 +28,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: ${{ inputs.os }}
+        os: ${{ fromJSON(inputs.os) }}
     steps:
 
       - name: Checkout
