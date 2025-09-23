@@ -1,8 +1,5 @@
 name: Prerelease Auto Tag & Publish
 
-permissions:
-  contents: write
-
 on:
   push:
     branches:
@@ -19,6 +16,9 @@ env:
   DOTNET_NOLOGO: true
   DOTNET_VERSION: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
   REASON: ${{ inputs.reason || 'manual run' }}
+
+permissions:
+  contents: write
 
 jobs:
   prerelease:
