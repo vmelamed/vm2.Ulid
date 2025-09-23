@@ -231,7 +231,7 @@ public readonly partial struct Ulid :
     /// </returns>
     public readonly bool TryWrite(in Span<char> destination)
     {
-        if (destination.Length != UlidStringLength)
+        if (destination.Length < UlidStringLength)
             return false;
 
         var ulidAsNumber = ReadUInt128BigEndian(Bytes);
