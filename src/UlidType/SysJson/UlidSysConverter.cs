@@ -51,7 +51,7 @@ public class UlidSysConverter : JsonConverter<Ulid>
         JsonSerializerOptions _)
     {
         Span<byte> utf8Chars = stackalloc byte[UlidStringLength];
-        var success = value.TryWrite(utf8Chars);
+        var success = value.TryWrite(utf8Chars, true);
 
         if (!success)
             throw new JsonException("Could not serialize ULID value.");
