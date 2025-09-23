@@ -86,7 +86,7 @@ jobs:
   benchmarks:
     name: Benchmarks (Linux only)
     needs: build
-    if: ${{ fromJSON(inputs.run-benchmarks) || fromJSON(vars.RUN_BENCHMARKS) || 'true' }}
+    if: ${{ inputs.run-benchmarks || vars.RUN_BENCHMARKS || 'true' }}
     uses: ./.github/workflows/benchmarks.yml
     with:
       dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
