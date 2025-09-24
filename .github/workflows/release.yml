@@ -5,7 +5,9 @@ on:
     branches:
       - main
     tags:
-      [ 'v*', '!v-' ]
+      - 'v*'
+      - '!v*-*'
+
   workflow_dispatch:
     inputs:
       reason:
@@ -51,14 +53,18 @@ jobs:
           ls -1 artifacts/pack
 
       - name: Publish stable to NuGet
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
           if [ -z ${{ secrets.NUGET_API_KEY }} ]; then
             echo "NUGET_API_KEY not configured"; exit 1
           fi
+
           dotnet nuget push artifacts/pack/*.nupkg \
             --api-key  ${{ secrets.NUGET_API_KEY }} \
             --source https://api.nuget.org/v3/index.json \
             --skip-duplicate
+
           dotnet nuget push artifacts/pack/*.snupkg \
             --api-key ${{ secrets.NUGET_API_KEY }} \
             --source https://api.nuget.org/v3/index.json \
