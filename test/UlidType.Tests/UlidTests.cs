@@ -69,12 +69,12 @@ public class UlidTests
         var ulid = new Ulid("01K5MVTR82AF7EA4DNPKQAVE3T"u8, true);
         Span<byte> buffer = stackalloc byte[UlidStringLength+1];
 
-        ulid.TryWrite(buffer[..(UlidStringLength-1)], true).Should().BeFalse();
+        ulid.TryWriteUtf8(buffer[..(UlidStringLength-1)]).Should().BeFalse();
 
-        ulid.TryWrite(buffer[..UlidStringLength], true).Should().BeTrue();
+        ulid.TryWriteUtf8(buffer[..UlidStringLength]).Should().BeTrue();
         new Ulid(buffer, true).Should().Be(ulid);
 
-        ulid.TryWrite(buffer, true).Should().BeTrue();
+        ulid.TryWriteUtf8(buffer).Should().BeTrue();
         new Ulid(buffer, true).Should().Be(ulid);
     }
 
@@ -402,5 +402,31 @@ public class UlidTests
     {
         MinValue.Should().Be(Empty);
         MaxValue.Should().Be(AllBitsSet);
+    }
+
+    [Fact]
+    public void ImplicitConversion_ToAndFrom_Guid_Works_As_Expected()
+    {
+        var factory = new UlidFactory();
+        var ulid = factory.NewUlid();
+
+        Guid guid = ulid;
+        guid.ToByteArray().Should().Equal(ulid.Bytes.ToArray());
+
+        Ulid ulid2 = guid;
+        ulid2.Should().Be(ulid);
+    }
+
+    [Fact]
+    public void ImplicitConversion_ToAndFrom_String_Works_As_Expected()
+    {
+        var factory = new UlidFactory();
+        var ulid = factory.NewUlid();
+
+        string str = ulid;
+        str.Should().Be(ulid.ToString());
+
+        Ulid ulid2 = str;
+        ulid2.Should().Be(ulid);
     }
 }

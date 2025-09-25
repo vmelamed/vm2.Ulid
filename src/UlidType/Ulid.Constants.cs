@@ -100,6 +100,18 @@ public readonly partial struct Ulid
     public static readonly int UlidStringLength = (int)Math.Ceiling((float)UlidBitsLength / BitsPerUlidDigit);
 
     /// <summary>
+    /// The value where all bits of the Ulid value are set to zero. Also, represents the smallest possible value of the
+    /// <see cref="Ulid"/> type.
+    /// </summary>
+    public static readonly Ulid Empty = new();
+
+    /// <summary>
+    /// The value where all bits of the Ulid value are set to one. Also, represents the greatest possible value of the
+    /// <see cref="Ulid"/> type.
+    /// </summary>
+    public static readonly Ulid AllBitsSet = new([ 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF ], false);
+
+    /// <summary>
     /// The regular expression pattern for validating ULID strings.
     /// </summary>
     public const string UlidStringRegex = $"(?i)[{CrockfordDigits}]{{26}}";

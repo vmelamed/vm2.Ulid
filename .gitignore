@@ -407,3 +407,7 @@ Artifacts/
 # unit tests Code Coverage folder
 TestResults/
 report.txt
+
+# Coverage files
+*.cobertura.xml
+.coverage/
