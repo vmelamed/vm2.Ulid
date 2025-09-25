@@ -127,9 +127,8 @@ public class UlidTests
     {
         var ulid = new UlidFactory().NewUlid();
         var str = ulid.ToString();
-        Ulid result;
 
-        TryParse(Encoding.UTF8.GetBytes(str), out result).Should().BeTrue();
+        TryParse(Encoding.UTF8.GetBytes(str), out var result).Should().BeTrue();
         result.Should().Be(ulid);
 
         TryParse(str, out result).Should().BeTrue();

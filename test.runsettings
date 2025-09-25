@@ -7,7 +7,7 @@
         "Run tests in parallel". Unchecked = 1 (only 1), checked = 0 (max). -->
         <MaxCpuCount>0</MaxCpuCount>
         <!-- Path relative to directory that contains .runsettings file-->
-        <ResultsDirectory>.\TestResults</ResultsDirectory>
+        <ResultsDirectory>./TestResults</ResultsDirectory>
 
         <!-- Omit the whole tag for auto-detection. -->
         <!-- [x86] or x64, ARM, ARM64, s390x  -->
@@ -39,17 +39,13 @@
         <DataCollectors>
             <DataCollector friendlyName="XPLAT Code Coverage">
                 <Configuration>
+                    <Format>cobertura</Format>
+                    <OutputDirectory>./TestCoverage</OutputDirectory>
+                    <FileName>coverage.cobertura.xml</FileName>
                     <Exclude>
                         <Namespace>System.Text.RegularExpressions.Generated</Namespace>
                         <Namespace>GeneratedCodeAttribute</Namespace>
                     </Exclude>
-                    <CodeCoverage>
-                        <!-- We recommend you do not change the following values: -->
-                        <UseVerifiableInstrumentation>True</UseVerifiableInstrumentation>
-                        <AllowLowIntegrityProcesses>True</AllowLowIntegrityProcesses>
-                        <CollectFromChildProcesses>True</CollectFromChildProcesses>
-                        <CollectAspDotNet>False</CollectAspDotNet>
-                    </CodeCoverage>
                 </Configuration>
             </DataCollector>
 
