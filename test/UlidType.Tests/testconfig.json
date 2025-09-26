@@ -1,6 +1,7 @@
 {
     "xUnit": {
         // Using testconfig.json is only supported when running tests in Microsoft Testing Platform mode.
+        // See https://xunit.net/docs/config-testconfig-json
         "culture": "en-US",
         "diagnosticMessages": false,
         "internalDiagnostics": false,

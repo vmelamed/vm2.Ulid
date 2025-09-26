@@ -5,13 +5,13 @@ For more information on using a .runsettings file, see https://aka.ms/vstest-run
 -->
 <RunSettings>
     <RunConfiguration>
-        <ResultsDirectory>../../../TestResults</ResultsDirectory>
+        <!--<ResultsDirectory>../../../TestResults</ResultsDirectory> relative to the test project file, not the solution -->
         <CollectSourceInformation>true</CollectSourceInformation>
         <MaxCpuCount>0</MaxCpuCount>
     </RunConfiguration>
     <xUnit>
         <!--
-        See https://xunit.net/docs/config-runsettings
+        See https://xunit.net/docs/config-runsettings sort of alternative to xUnit's testConfig.json: https://xunit.net/docs/config-testconfig-json
         Instead you can use:
         dotnet test <project> <dash dash> xUnit.AppDomain=denied xUnit.ParallelizeTestCollections=false etc
         -->
