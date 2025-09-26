@@ -14,36 +14,43 @@ on:
         type: string
         default: '["ubuntu-latest"]'
         required: true
+
       dotnet-version:
         description: 'Version of .NET SDK to use'
         type: string
         default: '9.0.x'
         required: true
+
       test-project:
         description: 'Path to test project'
         type: string
         default: './test/UlidType.Tests/UlidType.Tests.csproj'
         required: true
+
       coverage-threshold:
         description: 'Minimum acceptable code coverage percentage'
         type: number
         default: 75
         required: true
+
       run-benchmarks:
         description: 'Whether to run benchmarks and compare against baseline'
         type: boolean
         default: true
         required: true
+
       benchmark-project:
         description: 'Path to benchmark project'
         type: string
         default: './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj'
         required: true
+
       regression-threshold:
         description: 'Maximum acceptable performance regression percentage'
         type: number
         default: 10
         required: true
+
       force-new-baseline:
         description: 'Whether to force new baseline (if true, no regression check is done)'
         type: boolean

@@ -63,8 +63,8 @@
         <PackageReference Include="FluentAssertions" />
         <PackageReference Include="xunit.v3" />
         <!-- Microsoft Testing Platform makes the following references redundant:
-        <PackageReference Include="Microsoft.NET.Test.Sdk" />
-        <PackageReference Update="xunit.runner.visualstudio">
+        <PackageReference Include="Microsoft.NET.Test.Sdk" /> <!- - required for VSTest but not for MS Test Platform - ->
+        <PackageReference Update="xunit.runner.visualstudio"> <!- - required for VSTest but not for MS Test Platform - ->
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

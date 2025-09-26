@@ -29,11 +29,7 @@ permissions:
   contents: read
 
 env:
-  TC_COBERTURA_DIR:  'coverage'
-  TC_COBERTURA_FILE: 'coverage/coverage.cobertura.xml'
-  TC_SUMMARY_DIR:    'coverage_report'
-  TC_SUMMARY_FILE:   'coverage_report/Summary.txt'
-
+  TEST_RESULTS_DIR: 'TestResults'
 jobs:
   test:
     name: Test on ${{ matrix.os }}
@@ -65,40 +61,64 @@ jobs:
         run: |
           set -euo pipefail
 
-          dotnet test ${{ inputs.test-project }} \
-            --configuration ${{ inputs.configuration }} -- \
+          base_name=$(basename "${TEST_PROJECT%.*}")                                # the name of the test project without extension
+
+          test_results_dir="${TEST_RESULTS_DIR}/Results"                            # the directory for the log files from the test run
+
+          coverage_source_dir="CoverageResults/coverage"                            # the directory for the raw coverage files
+          coverage_source_fileName="coverage.cobertura.xml"                         # the name of the raw coverage file
+          coverage_source_path="${coverage_source_dir}/${coverage_source_fileName}" # the path to the raw coverage file
+
+          coverage_reports_dir="${coverage_source_dir}/coverage_reports"            # the directory for the coverage reports
+          coverage_reports_fileName="Summary.txt"                                   # the name of the coverage summary file
+          coverage_reports_path="${coverage_reports_dir}/${coverage_reports_fileName}"  # the path to the coverage summary file
+
+          mkdir -p "${coverage_reports_dir}"
+          mkdir -p "${coverage_dir}"
+
+          coverage_summary_dir="${TEST_RESULTS_DIR}/coverage"                       # the directory for the coverage summary artifact
+          coverage_summary_file="${base_name}-TextSummary.txt"                      # the name of the coverage summary artifact file
+          coverage_summary_path="${coverage_summary_dir}/${coverage_summary_file}"  # the path to the coverage summary artifact file
+
+          mkdir -p "${coverage_summary_dir}"
+
+          dotnet test ${TEST_PROJECT} \
+            --configuration ${CONFIGURATION} -- \
+            --results-directory "${test_results_dir}" \
             --coverage \
             --coverage-output-format xml \
-            --coverage-output "${TC_COBERTURA_FILE}"
+            --coverage-output "${coverage_source_path}"
 
-          f=$(find "$(pwd)" -type f -path "*/${TC_COBERTURA_FILE}" -print -quit || true)
+          f=$(find "$(pwd)" -type f -path "*/${coverage_source_fileName}" -print -quit || true)
           if [ -z "${f}" ]; then
             echo "Coverage file not found."
             exit 2
           fi
 
-          mkdir -p "${TC_COBERTURA_DIR}"
-          cp "${f}" "${TC_COBERTURA_FILE}"
-
           dotnet tool install --tool-path ./tools dotnet-reportgenerator-globaltool --version 5.*
-
           ./tools/reportgenerator \
-            -reports:${TC_COBERTURA_FILE} \
-            -targetdir:"${TC_SUMMARY_DIR}" \
+            -reports:${coverage_source_path} \
+            -targetdir:"${coverage_reports_dir}" \
             -reporttypes:TextSummary
 
-          if [ ! -s "${TC_SUMMARY_FILE}" ]; then
+          if [ ! -s "${coverage_reports_path}" ]; then
             echo "Coverage summary not found."
             exit 2
           fi
 
-          pct=$(sed -nE 's/Method coverage: ([0-9]+)(\.[0-9]+)?%.*/\1/p' "${TC_SUMMARY_FILE}" | head -n1)
+          # Copy the coverage report summary to the artifact directory
+          cp ${coverage_reports_path} "${coverage_summary_path}"
+
+          # Extract the coverage percentage from the summary file
+          pct=$(sed -nE 's/Method coverage: ([0-9]+)(\.[0-9]+)?%.*/\1/p' "${coverage_summary_path}" | head -n1)
           if [ -z "${pct}" ]; then
-            echo "Could not parse coverage percent from ${TC_SUMMARY_FILE}"
+            echo "Could not parse coverage percent from $${coverage_summary_path}"
             exit 2
           fi
 
           echo "Coverage: ${pct}% (threshold: ${COVERAGE_THRESHOLD}%)"
+
+          # Compare the coverage percentage against the threshold
           if (( pct < COVERAGE_THRESHOLD )); then
             echo "Coverage ${pct}% is below threshold ${COVERAGE_THRESHOLD}%"
             exit 2
@@ -110,4 +130,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-${{ matrix.os }}
-          path: ${{ env.TC_SUMMARY_DIR }}
+          path: ${{ env.TEST_RESULTS_DIR }}
