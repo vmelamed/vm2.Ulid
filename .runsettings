@@ -8,7 +8,7 @@
                     <FileName>coverage.cobertura.xml</FileName>
                     <Exclude>
                         <Namespace>System.Text.RegularExpressions.Generated</Namespace>
-                        <Attribute>GeneratedCodeAttribute</Attribute>
+                        <Attribute>System.CodeDom.Compiler.GeneratedCodeAttribute</Attribute>
                     </Exclude>
                 </Configuration>
             </DataCollector>

@@ -66,8 +66,7 @@ jobs:
           set -euo pipefail
 
           dotnet test ${{ inputs.test-project }} \
-            --configuration ${{ inputs.configuration }} \
-            /p:ExcludeByAttribute="GeneratedCodeAttribute" -- \
+            --configuration ${{ inputs.configuration }} -- \
               --coverage \
               --coverage-output-format xml \
               --coverage-output "${TC_COBERTURA_FILE}"
