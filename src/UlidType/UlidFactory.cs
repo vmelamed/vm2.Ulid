@@ -1,6 +1,6 @@
 ﻿namespace vm2;
 
-using vm2.UlidRandomProviders;
+using vm2.Providers;
 
 /// <summary>
 /// Provides functionality to generate unique lexicographically sortable identifiers (ULIDs).
@@ -13,9 +13,10 @@ using vm2.UlidRandomProviders;
 /// <b>Hint:</b> you may have more than one factory in your program representing separate sequences of ULID-s. E.g. a factory<br/>
 /// per DB table.
 /// </remarks>
-public sealed class UlidFactory(IUlidRandomProvider? randomProvider = null)
+public sealed class UlidFactory(IUlidRandomProvider? randomProvider = null, IClock? clock = null)
 {
     IUlidRandomProvider _rng = randomProvider ?? new CryptoRandom();
+    IClock _clock = clock ?? new SystemClock();
     byte[] _lastRandom = new byte[RandomLength];
     long _lastTimestamp;
     Lock _lock = new();
@@ -31,7 +32,7 @@ public sealed class UlidFactory(IUlidRandomProvider? randomProvider = null)
     public Ulid NewUlid()
     {
         var randomSpan  = _lastRandom.AsSpan();
-        var timestampNow = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        var timestampNow = _clock.UnixTimeMilliseconds();
 
         lock (_lock)
         {
@@ -39,7 +40,7 @@ public sealed class UlidFactory(IUlidRandomProvider? randomProvider = null)
             {
                 // increment the random part with carry over for monotonicity
                 for (var i = randomSpan.Length-1; i >= 0; i--)
-                    if (unchecked(++randomSpan[i]) >= 0)
+                    if (unchecked(++randomSpan[i]) != 0)
                         return new Ulid(_lastTimestamp, randomSpan);
 
                 // this is extremely unlikely case - we ran out of consecutive values for this millisecond.

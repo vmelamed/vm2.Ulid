@@ -40,7 +40,7 @@ static void Display(Ulid ulid)
     byte[] randomBytes = ulid.RandomBytes.ToArray();
 
     WriteLine($"As ULID string:  \"{ulid}\"");
-    WriteLine($"  u.Timestamp:   {timestamp:o}", timestamp);
+    WriteLine($"  u.Timestamp:   {timestamp:o} ({timestamp.ToUnixTimeMilliseconds()})");
     WriteLine($"  u.RandomBytes: [ 0x{string.Join(", 0x", randomBytes.Select(b => b.ToString("X2")))} ]");
     WriteLine($"As byte array:   [ 0x{string.Join(", 0x", bytes.Select(b => b.ToString("X2")))} ]");
     WriteLine($"As Guid:         {ulid.ToGuid()}");

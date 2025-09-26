@@ -199,6 +199,62 @@ public class UlidTests
         bytes.Skip(RandomBegin).Take(RandomLength).Should().Equal(random);
     }
 
+    public record struct TimeAndRandom(long UnixTime, byte[] Random, bool Throws = false);
+
+    public static TheoryData<(TimeAndRandom, TimeAndRandom)> TimeAndRandoms =
+    [
+        (new TimeAndRandom( 1758851704339L, [0x94, 0x35, 0x28, 0x71, 0x11, 0xE0, 0x66, 0xD6, 0x4A, 0xFF] ),
+         new TimeAndRandom( 1758851704339L, [0x94, 0x35, 0x28, 0x71, 0x11, 0xE0, 0x66, 0xD6, 0x4B, 0x00] )),
+
+        (new TimeAndRandom( 1758851704339L, [0x94, 0x35, 0x28, 0x71, 0x11, 0xE0, 0x66, 0xD6, 0xFF, 0xFF] ),
+         new TimeAndRandom( 1758851704339L, [0x94, 0x35, 0x28, 0x71, 0x11, 0xE0, 0x66, 0xD7, 0x00, 0x00] )),
+
+        (new TimeAndRandom( 1758851704339L, [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF], true ),
+         new TimeAndRandom( 1758851704339L, [0x94, 0x35, 0x28, 0x71, 0x11, 0xE0, 0x66, 0xD7, 0x00, 0x00], true )),
+    ];
+
+    class Test_IUlidRandomProvider : IUlidRandomProvider
+    {
+        private readonly byte[] _bytes;
+
+        public Test_IUlidRandomProvider(byte[] param) => _bytes = param;
+
+        public void Fill(Span<byte> buffer) => _bytes.AsSpan(0, buffer.Length).CopyTo(buffer);
+    }
+
+    class Test_IClock : IClock
+    {
+        private readonly long _unixTimeMilliseconds;
+
+        public Test_IClock(long param) => _unixTimeMilliseconds = param;
+
+        public long UnixTimeMilliseconds() => _unixTimeMilliseconds;
+    }
+
+    [Theory]
+    [MemberData(nameof(TimeAndRandoms))]
+    public void UlidFactory_Increments_Correctly_Random(
+        (TimeAndRandom last, TimeAndRandom next) data)
+    {
+        var ulidFactory = new UlidFactory(new Test_IUlidRandomProvider(data.last.Random),
+                                          new Test_IClock(data.last.UnixTime));
+        var throws = data.next.Throws;
+
+        var _ = ulidFactory.NewUlid();
+
+        if (throws)
+        {
+            Action act = () => ulidFactory.NewUlid();
+            act.Should().Throw<OverflowException>();
+        }
+        else
+        {
+            var ulid2 = ulidFactory.NewUlid();
+            ulid2.Timestamp.ToUnixTimeMilliseconds().Should().Be(data.next.UnixTime);
+            ulid2.RandomBytes.ToArray().Should().Equal(data.next.Random);
+        }
+    }
+
     [Fact]
     public void NewUlids_Are_Unique_And_Monotonic_When_Created_Within_Same_Millisecond()
     {

@@ -2,6 +2,6 @@ global using System.Diagnostics.CodeAnalysis;
 global using System.Runtime.Serialization;
 global using System.Text;
 
-global using vm2.UlidRandomProviders;
+global using vm2.Providers;
 
 global using static vm2.Ulid;

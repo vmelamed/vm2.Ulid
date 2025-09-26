@@ -39,9 +39,11 @@ This format follows:
 
 ### Added
 
+- IClock interface and SystemClock implementation to get the current time used by UlidFactory (testsbility!).
 - JSON serializers for both `System.Text.Json` and `Newtonsoft.Json`
 - Method `public readonly bool TryWriteUtf8(in Span<byte> destination)` (see also [Changed](#changed) below)
 - Implicit conversion to/from `string` and `Guid`
+- Unit tests for the new features above and the fixed bug below.
 
 ### Changed
 
@@ -56,9 +58,16 @@ Small API changes that clarify the semantic of some input parameters:
   UTF-8 characters (`ReadOnlySpan<byte>`).
 - Minor stylistic code changes.
 
+### Fixed
+- Fixed bug where the UlidFactory could produce non-monotonic ULIDs when called within the same millisecond and the last byte of
+  the previous ULID was `0xFF`.
+
 ### Performance
 
 - Small optimization of `UlidToString()`: Using the new `string.Create` (thank you Stephen Toub!).
+
+### Internal
+- build pipeline changes
 
 ---
 

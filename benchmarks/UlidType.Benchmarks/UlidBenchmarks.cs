@@ -3,7 +3,7 @@ namespace vm2.UlidType.Benchmarks;
 using System.Text;
 
 using vm2;
-using vm2.UlidRandomProviders;
+using vm2.Providers;
 
 #pragma warning disable CA1822 // The benchmark methods must not be static
 
