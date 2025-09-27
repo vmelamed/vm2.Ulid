@@ -5,10 +5,10 @@ on:
     inputs:
       dotnet-version:
         type: string
-        default: '9.0.x'
+        default: "9.0.x"
         required: true
       test-project:
-        description: 'Path to test project'
+        description: "Path to test project"
         type: string
         required: false
       coverage-threshold:
@@ -20,16 +20,16 @@ on:
         required: false
         default: '["ubuntu-latest"]'
       configuration:
-        description: 'The type of build to produce, e.g. Release vs Debug'
+        description: "The type of build to produce, e.g. Release vs Debug"
         type: string
         required: false
-        default: 'Release'
+        default: "Release"
 
 permissions:
   contents: read
 
 env:
-  TEST_RESULTS_DIR: 'TestResults'
+  TEST_RESULTS_DIR: "TestResults"
 jobs:
   test:
     name: Test on ${{ matrix.os }}
@@ -43,6 +43,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Make Script Executable
+        run: chmod +x ./.github/workflows/RunTest.sh
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -52,79 +55,13 @@ jobs:
             **/packages.lock.json
             **/*.csproj
 
-      - name: Run unit tests with coverage
+      - name: Run script for unit test with coverage
         shell: bash
         env:
           COVERAGE_THRESHOLD: ${{ inputs.coverage-threshold }}
           TEST_PROJECT: ${{ inputs.test-project }}
           CONFIGURATION: ${{ inputs.configuration }}
-        run: |
-          set -euo pipefail
-
-          base_name=$(basename "${TEST_PROJECT%.*}")                                # the name of the test project without extension
-
-          test_results_dir="${TEST_RESULTS_DIR}/Results"                            # the directory for the log files from the test run
-
-          coverage_source_dir="CoverageResults/coverage"                            # the directory for the raw coverage files
-          coverage_source_fileName="coverage.cobertura.xml"                         # the name of the raw coverage file
-          coverage_source_path="${coverage_source_dir}/${coverage_source_fileName}" # the path to the raw coverage file
-
-          coverage_reports_dir="${coverage_source_dir}/coverage_reports"            # the directory for the coverage reports
-          coverage_reports_fileName="Summary.txt"                                   # the name of the coverage summary file
-          coverage_reports_path="${coverage_reports_dir}/${coverage_reports_fileName}"  # the path to the coverage summary file
-
-          mkdir -p "${coverage_reports_dir}"
-          mkdir -p "${coverage_dir}"
-
-          coverage_summary_dir="${TEST_RESULTS_DIR}/coverage"                       # the directory for the coverage summary artifact
-          coverage_summary_file="${base_name}-TextSummary.txt"                      # the name of the coverage summary artifact file
-          coverage_summary_path="${coverage_summary_dir}/${coverage_summary_file}"  # the path to the coverage summary artifact file
-
-          mkdir -p "${coverage_summary_dir}"
-
-          dotnet test ${TEST_PROJECT} \
-            --configuration ${CONFIGURATION} -- \
-            --results-directory "${test_results_dir}" \
-            --coverage \
-            --coverage-output-format xml \
-            --coverage-output "${coverage_source_path}"
-
-          f=$(find "$(pwd)" -type f -path "*/${coverage_source_fileName}" -print -quit || true)
-          if [ -z "${f}" ]; then
-            echo "Coverage file not found."
-            exit 2
-          fi
-
-          dotnet tool install --tool-path ./tools dotnet-reportgenerator-globaltool --version 5.*
-          ./tools/reportgenerator \
-            -reports:${coverage_source_path} \
-            -targetdir:"${coverage_reports_dir}" \
-            -reporttypes:TextSummary
-
-          if [ ! -s "${coverage_reports_path}" ]; then
-            echo "Coverage summary not found."
-            exit 2
-          fi
-
-          # Copy the coverage report summary to the artifact directory
-          cp ${coverage_reports_path} "${coverage_summary_path}"
-
-          # Extract the coverage percentage from the summary file
-          pct=$(sed -nE 's/Method coverage: ([0-9]+)(\.[0-9]+)?%.*/\1/p' "${coverage_summary_path}" | head -n1)
-          if [ -z "${pct}" ]; then
-            echo "Could not parse coverage percent from $${coverage_summary_path}"
-            exit 2
-          fi
-
-          echo "Coverage: ${pct}% (threshold: ${COVERAGE_THRESHOLD}%)"
-
-          # Compare the coverage percentage against the threshold
-          if (( pct < COVERAGE_THRESHOLD )); then
-            echo "Coverage ${pct}% is below threshold ${COVERAGE_THRESHOLD}%"
-            exit 2
-          else
-            echo "Coverage ${pct}% meets threshold ${COVERAGE_THRESHOLD}%"
-          fi
+        run: ./.github/workflows/RunTest.sh
 
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
