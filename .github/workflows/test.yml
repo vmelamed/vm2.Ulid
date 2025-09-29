@@ -61,7 +61,7 @@ jobs:
           COVERAGE_THRESHOLD: ${{ inputs.coverage-threshold }}
           TEST_PROJECT: ${{ inputs.test-project }}
           CONFIGURATION: ${{ inputs.configuration }}
-        run: ./.github/workflows/RunTest.sh
+        run: ./scripts/RunTest.sh
 
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
