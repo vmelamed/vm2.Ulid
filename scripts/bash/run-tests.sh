@@ -1,8 +1,11 @@
 #!/bin/bash
 set -euo pipefail
 
+bash_source=${BASH_SOURCE[0]}
+declare -r bash_source
+
 declare script_dir
-script_dir=$(realpath -e "$(dirname "${BASH_SOURCE[0]}")")
+script_dir=$(realpath -e "$(dirname "$bash_source")")
 declare -r script_dir
 
 declare solution_dir
@@ -32,6 +35,7 @@ dump_vars \
     min_coverage_pct \
     ARTIFACTS_DIR \
     --header other globals: \
+    bash_source \
     solution_dir \
     script_dir \
     COVERAGE_RESULTS_DIR
