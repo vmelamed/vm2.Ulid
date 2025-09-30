@@ -21,15 +21,6 @@ source "$script_dir/run-test-utils.sh"
 
 get_arguments "$@"
 
-dump_vars \
-    script_dir \
-    solution_dir \
-    test_project \
-    configuration \
-    min_coverage_pct \
-    ARTIFACTS_DIR \
-    COVERAGE_RESULTS_DIR
-
 renamed_results_dir="$ARTIFACTS_DIR-$(date -u +"%Y%m%dT%H%M%S")"
 declare -r renamed_results_dir
 
@@ -75,7 +66,7 @@ coverage_summary_fileName="$base_name-TextSummary.txt"                          
 coverage_summary_path="$coverage_summary_dir/$coverage_summary_fileName"        # the path to the coverage summary artifact file
 coverage_summary_html_dir="$ARTIFACTS_DIR/coverage/html"                        # the directory for the coverage html artifacts
 
-dump_variables
+dump_all_variables
 
 trace "Creating directories..."
 execute mkdir -p "$test_results_results_dir"

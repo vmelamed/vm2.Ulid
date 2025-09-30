@@ -62,7 +62,7 @@ jobs:
         env:
           SHELLCHECK_OPTS: --external-sources --check-sourced
         with:
-          scandir: scripts/bash
+          scandir: ./scripts/bash
           check_together: true
           ignore_names: |
             scratch-test.sh
@@ -76,11 +76,7 @@ jobs:
           TEST_PROJECT: ${{ inputs.test-project }}
           CONFIGURATION: ${{ inputs.configuration }}
         run: |
-          ./scripts/bash/run-tests.sh ${{ inputs.test-project }} \
-            -q \
-            -c ${{ inputs.configuration }} \
-            -d ${{ env.ARTIFACTS_DIR }} \
-            -t ${{ inputs.min_coverage_pct }}
+          ./scripts/bash/run-tests.sh ${{ inputs.test-project }} --verbose
 
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4

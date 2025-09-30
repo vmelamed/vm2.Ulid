@@ -148,17 +148,22 @@ function get_arguments()
     done
 }
 
-dump_variables()
+dump_all_variables()
 {
     dump_vars \
-        -h "Variables:" \
+        --header "Script Arguments:" \
         test_project \
-        min_coverage_pct \
+        debugger \
+        dry_run \
+        verbose \
+        quiet \
+        trace_enabled \
         configuration \
-        --line \
+        min_coverage_pct \
+        ARTIFACTS_DIR \
+        --header other globals: \
         solution_dir \
         script_dir \
-        ARTIFACTS_DIR \
         COVERAGE_RESULTS_DIR \
         --line \
         base_name \
