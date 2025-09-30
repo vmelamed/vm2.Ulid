@@ -25,6 +25,7 @@ declare -i min_coverage_pct=${MIN_COVERAGE_PCT:-80}
 source "$script_dir/_common.sh"
 source "$script_dir/run-test-utils.sh"
 
+# to remove
 trace_enabled=true
 dump_vars \
     --header "Script Arguments:" \
@@ -42,9 +43,7 @@ dump_vars \
     solution_dir \
     script_dir
 trace_enabled=false
-
-'/home/runner/work/vm2.Ulid/vm2.Ulid/test/UlidType.Tests/UlidType.Tests.csproj' and
-'/home/runner/work/vm2.Ulid/vm2.Ulid/test/UlidType.Tests'
+# to remove
 
 get_arguments "$@"
 
