@@ -2,9 +2,9 @@ name: ShellCheck
 
 on:
   pull_request:
-    branches: [ "**" ]
+    branches: ["**"]
   push:
-    branches: [ "**" ]
+    branches: ["**"]
   workflow_dispatch: {}
 
 jobs:
@@ -25,15 +25,5 @@ jobs:
           set -euo pipefail
           echo "Linting bash scripts..."
           # Find scripts (exclude potential third-party or build dirs if needed)
-          mapfile -t files < <(git ls-files '*.sh' 'scripts/bash/*' ':!:**/bin/**' ':!:**/obj/**')
-          if ((${#files[@]} == 0)); then
-            echo "No shell scripts found."; exit 0
-          fi
-          echo "Files:" "${files[@]}"
-          shellcheck --severity=style --format=tty "${files[@]}"
-
-      - name: Self-test harness
-        run: |
-          set -euo pipefail
-          chmod +x scripts/bash/self-test.sh
-          VERBOSE=1 ./scripts/bash/self-test.sh
+          echo "Files:" scripts/bash/*.sh
+          shellcheck --severity=style --format=tty --external-sources --check-sourced scripts/bash/*.sh

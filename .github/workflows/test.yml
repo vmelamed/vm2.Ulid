@@ -55,7 +55,7 @@ jobs:
             **/*.csproj
 
       - name: Make Scripts Executable
-        run: chmod u+x ./.github/scripts/bash/*.sh
+        run: chmod u+x ./scripts/bash/*.sh
 
       - name: ShellCheck
         uses: ludeeus/action-shellcheck@master
