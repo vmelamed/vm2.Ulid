@@ -116,7 +116,7 @@ function get_arguments()
             --min_coverage_pct|-t )
                 value="$1"; shift
                 if ! [[ "$value" =~ ^[0-9]+$ ]] || (( value < 0 || value > 100 )); then
-                    usage "The coverage threshold must be an integer between 0 and 100. Got \"$value\"."
+                    usage "The coverage threshold must be an integer between 0 and 100. Got '$value'."
                     exit 2
                 fi
                 min_coverage_pct=$((value + 0))  # ensure it's an integer
@@ -125,7 +125,7 @@ function get_arguments()
             --configuration|-c )
                 value="${1,,}"; shift
                 if ! is_in "$value" "release" "debug"; then
-                    usage "The coverage threshold must be either 'Release' or 'Debug'. Got \"$value\"."
+                    usage "The coverage threshold must be either 'Release' or 'Debug'. Got '$value'."
                     exit 2
                 fi
                 configuration="${value^}"
@@ -135,10 +135,10 @@ function get_arguments()
                 local p
                 p="$(realpath -m "$value")"
                 if [[ -n "$test_project" && "$test_project" != "$p" ]]; then
-                    usage "More than one test project specified."
+                    usage "More than one test project specified: '$test_project' and '$p'."
                     exit 2
                 elif [[ ! -f "$p" ]]; then
-                    usage "The specified test project file \"$p\" does not exist."
+                    usage "The specified test project file '$p' does not exist."
                     exit 2
                 else
                     test_project="$p"

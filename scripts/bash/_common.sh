@@ -44,7 +44,7 @@ function on_exit() {
     # echo an error message before exiting
     local x=$?
     if (( x != 0)); then
-        echo "\"$last_command\" command failed with exit code $x" >&2
+        echo "'$last_command' command failed with exit code $x" >&2
     fi
     if [[ "$initial_dir" ]]; then
         cd "$initial_dir" || exit
@@ -316,7 +316,7 @@ function dump_vars() {
                 printf "│ "
                 if [[ "$1" =~ ^[_a-zA-Z][_a-zA-Z0-9]*$ ]]; then
                     if ! declare -p "$1" &> /dev/null; then
-                        printf "\$%-40s\"undefined/unbound\"\n" "$1"
+                        printf "\$%-40s'undefined/unbound'\n" "$1"
                     elif [[ "$(declare -p "$1")" =~ 'declare -a' ]]; then
                         declare -n v="$1"
                         printf "\$%-40s%s\n" "$1" "(${v[*]})"

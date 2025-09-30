@@ -26,14 +26,14 @@ declare -r renamed_results_dir
 
 if [[ -d "$ARTIFACTS_DIR" && "$(ls -A "$ARTIFACTS_DIR")" ]]; then
     choice=$(choose \
-                "The test results directory \"$ARTIFACTS_DIR\" already exists. What do you want to do?" \
+                "The test results directory '$ARTIFACTS_DIR' already exists. What do you want to do?" \
                 "Delete the directory and continue" \
-                "Rename the directory to \"$renamed_results_dir\" and continue" \
+                "Rename the directory to '$renamed_results_dir' and continue" \
                 "Exit the script") || exit $?
 
     trace "User selected option: $choice"
     case $choice in
-        1)  echo "Deleting the directory \"$ARTIFACTS_DIR\"..." >&2
+        1)  echo "Deleting the directory '$ARTIFACTS_DIR'..." >&2
             execute rm -rf "$ARTIFACTS_DIR" ;;
         2)  execute mv "$ARTIFACTS_DIR" "$renamed_results_dir"
             ;;
@@ -77,7 +77,7 @@ execute mkdir -p "$coverage_summary_dir"
 # display_all_vars
 # exit 0
 
-trace "Running tests in project \"$test_project\" with configuration \"$configuration\"..."
+trace "Running tests in project '$test_project' with configuration '$configuration'..."
 execute dotnet test "$test_project" \
     --configuration "$configuration" -- \
     --results-directory "$test_results_results_dir" \
@@ -126,12 +126,12 @@ if [[ ! "$dry_run" ]]; then
 fi
 
 # Copy the coverage report summary to the artifact directory
-trace "Copying coverage summary to \"$coverage_summary_path\"..."
+trace "Copying coverage summary to '$coverage_summary_path'..."
 execute mv "$coverage_reports_path" "$coverage_summary_path"
 execute mv "$coverage_reports_dir"  "$coverage_summary_html_dir"
 
 # Extract the coverage percentage from the summary file
-trace "Extracting coverage percentage from \"$coverage_summary_path\"..."
+trace "Extracting coverage percentage from '$coverage_summary_path'..."
 if [[ ! "$dry_run" ]]; then
     pct=$(sed -nE 's/Method coverage: ([0-9]+)(\.[0-9]+)?%.*/\1/p' "$coverage_summary_path" | head -n1)
     if [ -z "$pct" ]; then
