@@ -1,28 +1,31 @@
 #!/bin/bash
 set -euo pipefail
 
+# get the default values from environment variables etc.
 bash_source=${BASH_SOURCE[0]}
 declare -r bash_source
 
-declare script_dir
 script_dir=$(realpath -e "$(dirname "$bash_source")")
 declare -r script_dir
 
-declare solution_dir
 solution_dir=$(realpath -e "$(dirname "$script_dir/../../.")")
 declare -r solution_dir
 
 declare test_project=${TEST_PROJECT:="$solution_dir/test/UlidType.Tests/UlidType.Tests.csproj"}
+test_project=$(realpath -e "$test_project")  # ensure it's an absolute path
+declare -r test_project
+
+declare -x ARTIFACTS_DIR=${ARTIFACTS_DIR:="$solution_dir/TestResults"}
+ARTIFACTS_DIR=$(realpath -m "$ARTIFACTS_DIR")  # ensure it's an absolute path
+declare -x COVERAGE_RESULTS_DIR
+
 declare configuration=${CONFIGURATION:="Release"}
 declare -i min_coverage_pct=${MIN_COVERAGE_PCT:-80}
-declare -x ARTIFACTS_DIR=${ARTIFACTS_DIR:="$solution_dir/TestResults"}
-declare -x COVERAGE_RESULTS_DIR="$ARTIFACTS_DIR/CoverageResults"
 
 source "$script_dir/_common.sh"
 source "$script_dir/run-test-utils.sh"
 
 trace_enabled=true
-quiet=true
 dump_vars \
     --header "Script Arguments:" \
     test_project \
@@ -34,13 +37,12 @@ dump_vars \
     configuration \
     min_coverage_pct \
     ARTIFACTS_DIR \
-    --header other globals: \
+    --header "other globals:" \
     bash_source \
     solution_dir \
     script_dir \
     COVERAGE_RESULTS_DIR
 trace_enabled=false
-quiet=false
 
 get_arguments "$@"
 

@@ -160,7 +160,7 @@ dump_all_variables()
         configuration \
         min_coverage_pct \
         ARTIFACTS_DIR \
-        --header other globals: \
+        --header "other globals:" \
         solution_dir \
         script_dir \
         COVERAGE_RESULTS_DIR \
