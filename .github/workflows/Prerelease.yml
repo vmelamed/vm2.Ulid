@@ -1,0 +1,120 @@
+name: Prerelease Auto Tag & Publish
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Why run?'
+      dotnet-version:
+        description: 'Version of .NET SDK to use'
+        default: '9.0.x'
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_VERSION: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
+  REASON: ${{ inputs.reason || 'manual run' }}
+
+permissions:
+  contents: write
+
+jobs:
+  prerelease:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Skip if commit already tagged (any v* tag)
+        id: tagcheck
+        run: |
+          if git tag --points-at HEAD | grep -E '^v[0-9]'; then
+            printf 'already_tagged=%s\n' "true" >> "$GITHUB_OUTPUT"
+          else
+            printf 'already_tagged=%s\n' "false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Stop (already tagged)
+        if: steps.tagcheck.outputs.already_tagged == 'true'
+        run: echo "Commit already has version tag – nothing to do."
+
+      - name: Compute prerelease tag
+        if: steps.tagcheck.outputs.already_tagged == 'false'
+        id: compute
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Find latest stable (no hyphen) tag like v1.2.3
+          LATEST_STABLE=$(git tag --list 'v*' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n1 || true)
+          if [ -n "$LATEST_STABLE" ]; then
+            IFS='.' read -r MAJOR MINOR PATCH <<< "${LATEST_STABLE#v}"
+            NEXT_PATCH=$((PATCH+1))
+          else
+            # No stable tag yet
+            MAJOR=0
+            MINOR=1
+            NEXT_PATCH=0
+          fi
+
+          DATE=$(date -u +%Y%m%d)
+          RUN=${GITHUB_RUN_NUMBER}
+          PRERELEASE_TAG="v${MAJOR}.${MINOR}.${NEXT_PATCH}-preview.${DATE}.${RUN}"
+          printf 'prerelease_tag=%s\n' "$PRERELEASE_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Log the reason for workflow dispatch
+        if: ${{ fromJSON(inputs.reason) && inputs.reason != '' }}
+        run: |
+          {
+              echo "Prerelease reason:"
+              echo
+              echo "${{ inputs.reason }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Create & push prerelease tag
+        if: steps.tagcheck.outputs.already_tagged == 'false'
+        env:
+          TAG: ${{ steps.compute.outputs.prerelease_tag }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "Automated prerelease $TAG" -m "Reason: $REASON" || echo "Tag exists, continuing"
+          git push origin "$TAG"
+
+      - name: Setup .NET
+        if: steps.tagcheck.outputs.already_tagged == 'false'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          cache: true
+          cache-dependency-path: |
+            **/packages.lock.json
+            **/*.csproj
+
+      - name: Build
+        if: steps.tagcheck.outputs.already_tagged == 'false'
+        run: dotnet build -c Release
+
+      - name: Pack (MinVer consumes the just-pushed prerelease tag)
+        if: steps.tagcheck.outputs.already_tagged == 'false'
+        run: |
+          mkdir -p artifacts/pack
+          dotnet pack -c Release --no-build -o artifacts/pack /p:MinVerTagPrefix=${MINVER_TAG_PREFIX} "/p:PackageReleaseNotes=Prerelease: ${REASON:-N/A}"
+          ls -1 artifacts/pack
+
+      - name: Publish prerelease to NuGet
+        if: steps.tagcheck.outputs.already_tagged == 'false'
+        env:
+            NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          if [ -z "${NUGET_API_KEY}" ]; then
+            echo "NUGET_API_KEY not configured"; exit 1
+          fi
+          dotnet nuget push artifacts/pack/*.nupkg  --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push artifacts/pack/*.snupkg --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
