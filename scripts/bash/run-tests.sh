@@ -1,9 +1,11 @@
 #!/bin/bash
 set -euo pipefail
 
+declare script_dir
 script_dir=$(realpath -e "$(dirname "${BASH_SOURCE[0]}")")
 declare -r script_dir
 
+declare solution_dir
 solution_dir=$(realpath -e "$(dirname "$script_dir/../../.")")
 declare -r solution_dir
 

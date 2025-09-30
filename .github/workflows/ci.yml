@@ -81,7 +81,7 @@ jobs:
       dotnet-version: ${{ inputs.dotnet-version     || vars.DOTNET_VERSION               || '9.0.x' }}
       os: ${{ inputs.os                 || vars.MATRIX_OS                    || '["ubuntu-latest"]' }}
       test-project: ${{ inputs.test-project       || vars.TEST_PROJECT                 || './test/UlidType.Tests/UlidType.Tests.csproj' }}
-      min_coverage_pct: ${{ inputs.min_coverage_pct || fromJSON(vars.MIN_COVERAGE_PCT) || 75 }}
+      min_coverage_pct: ${{ inputs.min_coverage_pct   || fromJSON(vars.MIN_COVERAGE_PCT)   || 75 }}
 
   benchmarks:
     name: Benchmarks (Linux only)

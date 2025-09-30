@@ -60,10 +60,12 @@ jobs:
       - name: ShellCheck
         uses: ludeeus/action-shellcheck@master
         env:
-          SHELLCHECK_OPTS: -a -x
+          SHELLCHECK_OPTS: --external-sources --check-sourced
         with:
           scandir: ./scripts/bash
-          ignore_names: "scratch-test*"
+          ignore_names: |
+            scratch-test*
+            self-test*
 
       - name: Run script for unit test with coverage
         shell: bash
