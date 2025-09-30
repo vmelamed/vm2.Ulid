@@ -18,8 +18,8 @@ declare -x COVERAGE_RESULTS_DIR="$ARTIFACTS_DIR/CoverageResults"
 source "$script_dir/_common.sh"
 source "$script_dir/run-test-utils.sh"
 
-verbose=${VERBOSE:-true}
-quiet=${QUIET:-true}
+trace_enabled=true
+quiet=true
 dump_vars \
     --header "Script Arguments:" \
     test_project \
@@ -35,8 +35,8 @@ dump_vars \
     solution_dir \
     script_dir \
     COVERAGE_RESULTS_DIR
-verbose=${VERBOSE:-false}
-quiet=${QUIET:-false}
+trace_enabled=false
+quiet=false
 
 get_arguments "$@"
 
