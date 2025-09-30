@@ -331,7 +331,7 @@ function dump_vars() {
         top=false
     done
     echo "└───────────────────────────────────────────────────────────"
-
+    echo
     press_any_key
 }
 

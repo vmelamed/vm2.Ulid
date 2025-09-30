@@ -145,7 +145,7 @@ if [[ ! "$dry_run" ]]; then
         exit 2
     fi
 
-    echo "Coverage: $pct% (threshold: $min_coverage_pct%)" >&2
+    echo "Coverage: $pct% (threshold: $min_coverage_pct%)"
 
     # Compare the coverage percentage against the threshold
     if (( pct < min_coverage_pct )); then
