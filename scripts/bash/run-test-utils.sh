@@ -98,7 +98,6 @@ function get_arguments()
 
     while [[ "${#}" -gt 0 ]]; do
         # get the flag and convert it to lower case
-        flag=$(to_lower "$1")
         shift
         case "$flag" in
             --help|-h|'-?' ) usage; exit 0 ;;
