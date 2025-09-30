@@ -40,8 +40,7 @@ dump_vars \
     --header "other globals:" \
     bash_source \
     solution_dir \
-    script_dir \
-    COVERAGE_RESULTS_DIR
+    script_dir
 trace_enabled=false
 
 get_arguments "$@"
