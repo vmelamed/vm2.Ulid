@@ -9,15 +9,30 @@ declare solution_dir
 solution_dir=$(realpath -e "$(dirname "$script_dir/../../.")")
 declare -r solution_dir
 
-source "$script_dir/_common.sh"
-
 declare test_project=${TEST_PROJECT:="$solution_dir/test/UlidType.Tests/UlidType.Tests.csproj"}
 declare configuration=${CONFIGURATION:="Release"}
 declare -i min_coverage_pct=${MIN_COVERAGE_PCT:-80}
 declare -x ARTIFACTS_DIR=${ARTIFACTS_DIR:="$solution_dir/TestResults"}
 declare -x COVERAGE_RESULTS_DIR="$ARTIFACTS_DIR/CoverageResults"
 
+source "$script_dir/_common.sh"
 source "$script_dir/run-test-utils.sh"
+
+dump_vars \
+    --header "Script Arguments:" \
+    test_project \
+    debugger \
+    dry_run \
+    verbose \
+    quiet \
+    trace_enabled \
+    configuration \
+    min_coverage_pct \
+    ARTIFACTS_DIR \
+    --header other globals: \
+    solution_dir \
+    script_dir \
+    COVERAGE_RESULTS_DIR
 
 get_arguments "$@"
 
