@@ -5,35 +5,36 @@
 # When fatal parameter errors are detected, the script invokes exit, which leads to exiting the current shell.
 
 # commonly used variables
-initial_directory=$(pwd)
-readonly initial_directory
+initial_dir=$(pwd)
+declare -xr initial_dir
 
 _output=${_output:="/dev/null"}
 
+declare -x trace_enabled=${TRACE_ENABLED:-false}
 declare -x verbose=${VERBOSE:-false}
-declare -x debugger="false"
-declare -x trace_enabled=false
+declare -x debugger=${DEBUGGER:-false}
 declare -x dry_run=${DRY_RUN:-false}
 declare -x quiet=${QUIET:-false}
+declare -x ci=${CI:-false}
 
-[[ -n "${CI:-}" ]] && quiet=true
+[[ "$ci" == "true" ]] && quiet=true
 
 declare last_command
-declare current_command="${BASH_COMMAND}"
-# on_debug when specified as a handler of the DEBUG trap, remembers the last invoked bash command in ${last_command}.
+declare current_command="$BASH_COMMAND"
+# on_debug when specified as a handler of the DEBUG trap, remembers the last invoked bash command in $last_command.
 # on_debug and on_exit are trying to cooperatively do error handling when exit is invoked. To be effective, after
 # sourcing this script, set these signal traps:
 #   trap on_debug DEBUG
 #   trap on_exit EXIT
 function on_debug() {
     # keep track of the last executed command
-    last_command="${current_command}"
-    current_command="${BASH_COMMAND}"
+    last_command="$current_command"
+    current_command="$BASH_COMMAND"
 }
 
 # on_exit when specified as a handler of the EXIT trap
 #   * if on_debug handles the DEBUG trap, displays the failed command
-#   * if ${initial_directory} is defined, changes the current working directory to it
+#   * if $initial_dir is defined, changes the current working directory to it
 #   * does `set +x`.
 # on_debug and on_exit are trying to cooperatively do error handling when exit is invoked. To be effective, after
 # sourcing this script, set these signal traps:
@@ -43,16 +44,16 @@ function on_exit() {
     # echo an error message before exiting
     local x=$?
     if (( x != 0)); then
-        echo "\"${last_command}\" command failed with exit code $x" >&2
+        echo "\"$last_command\" command failed with exit code $x" >&2
     fi
-    if [[ "${initial_directory}" ]]; then
-        cd "${initial_directory}" || exit
+    if [[ "$initial_dir" ]]; then
+        cd "$initial_dir" || exit
     fi
     set +x
 }
 
 function trace() {
-    if [[ "$verbose" == true || "$trace_enabled" == true ]]; then
+    if [[ "$trace_enabled" == true ]]; then
         echo "Trace: $*" >&2
     fi
 }
@@ -60,16 +61,11 @@ function trace() {
 # Depending on the value of $dry_run either executes or just displays what would have been executed.
 function execute() {
     if [[ "$dry_run" == "true" ]]; then
-        printf 'dry-run$'
-        local a
-        for a in "$@"; do
-            printf ' %q' "$a"
-        done
-        echo >&2
+        echo "dry-run$ $*" >&2
         return 0
     fi
-    trace "$@"
-    "$@" > "${_output}"
+    trace "$*"
+    "$@" > "$_output"
     return $?
 }
 
@@ -87,32 +83,32 @@ function to_upper() {
 
 # is_positive tests if its parameter represents a valid positive, integer number (aka natural number): {1, 2, 3, ...}
 function is_positive() {
-    [[ "${1}" =~ ^[+]?[0-9]+$  && ! "${1}" =~ ^[+]?0+$ ]]
+    [[ "$1" =~ ^[+]?[0-9]+$  && ! "$1" =~ ^[+]?0+$ ]]
 }
 
 # is_non_negative tests if its parameter represents a valid non-negative integer number: {0, +0, 1, 2, 3, ...}
 function is_non_negative() {
-    [[ "${1}" =~ ^[+]?[0-9]+$ ]]
+    [[ "$1" =~ ^[+]?[0-9]+$ ]]
 }
 
 # is_non_positive tests if its parameter represents a valid non-positive integer number: {0, -0, -1, -2, -3, ...}
 function is_non_positive() {
-    [[ "${1}" =~ ^-[0-9]+$ || "${1}" =~ ^[-]?0+$ ]]
+    [[ "$1" =~ ^-[0-9]+$ || "$1" =~ ^[-]?0+$ ]]
 }
 
 # is_negative tests if its parameter represents a valid negative integer number: {-1, -2, -3, ...}
 function is_negative() {
-    [[ ${1} =~ ^-[0-9]+$ && ! "${1}" =~ ^[-]?0+$ ]]
+    [[ $1 =~ ^-[0-9]+$ && ! "$1" =~ ^[-]?0+$ ]]
 }
 
 # is_integer tests if its parameter represents a valid integer number: {..., -2, -1, 0, 1, 2, ...}
 function is_integer() {
-    [[ "${1}" =~ ^[-+]?[0-9]+$ ]]
+    [[ "$1" =~ ^[-+]?[0-9]+$ ]]
 }
 
 # is_decimal tests if its parameter represents a valid decimal number
 function is_decimal() {
-    [[ "${1}" =~ ^[-+]?[0-9]*(\.[0-9]*)?$ ]]
+    [[ "$1" =~ ^[-+]?[0-9]*(\.[0-9]*)?$ ]]
 }
 
 # is_in tests if the first parameter is equal to one of the following parameters.
@@ -125,33 +121,33 @@ function is_in() {
     local sought="$1"; shift
     local v
     for v in "$@"; do
-        [[ "${sought}" == "${v}" ]] && return 0
+        [[ "$sought" == "$v" ]] && return 0
     done
     return 1
 }
 
-# confirm asks the script user to respond yes or no to some prompt. If there is a defined variable ${quiet} with
+# confirm asks the script user to respond yes or no to some prompt. If there is a defined variable $quiet with
 # value "true", the function will not display the prompt and will assume the default response or 'y'.
 # Parameter 1 - the prompt to confirm.
 # Parameter 2 - the default response if the user presses [Enter]. When specified should be either 'y' or 'n'. Optional.
 # Outputs the result to stdout as 'y' or 'n'.
 function confirm() {
-    if [[ ! "${1}" ]]; then
+    if [[ ! "$1" ]]; then
         echo "The function confirm() requires at least one parameter: the prompt." >&2
         exit 2
     fi
-    if [[ "${2}" && ! "${2}" =~ ^[ynYN]$ ]]; then
+    if [[ "$2" && ! "$2" =~ ^[ynYN]$ ]]; then
         echo "If a default response parameter is specified for the function confirm(), it must be either 'y' or 'n'" >&2
         exit 2
     fi
 
     local default
-    local prompt="${1}"
+    local prompt="$1"
 
     default=$(to_lower "${2:-y}")
 
-    if [[ "${quiet}" == true ]]; then
-        print '%s' "${default}"
+    if [[ "$quiet" == true ]]; then
+        print '%s' "$default"
         return 0
     fi
 
@@ -233,19 +229,19 @@ declare return_passwd
 # Parameter 2 - the prompt for getting the password. Default "Enter the user password: "
 # Parameter 3 - the prompt to confirm that the input is correct. If empty the function will not ask the user to confirm
 # their input.
-# The user ID and the password will be held in ${return_userid} and ${return_passwd} until the next invocation of the
+# The user ID and the password will be held in $return_userid and $return_passwd until the next invocation of the
 # function.
 function get_credentials() {
     local promptUserID=${1:-"Enter the user ID: "}
     local promptPassword=${2:-"Enter the password: "}
-    local promptConfirm=${3}
+    local promptConfirm=$3
     return_userid=""
     return_passwd=""
-    until [[ ${return_userid}  &&  ${return_passwd} ]]; do
-        read -rp "${promptUserID}" return_userid >&2
-        read -rsp "${promptPassword}" return_passwd >&2
+    until [[ $return_userid  &&  $return_passwd ]]; do
+        read -rp "$promptUserID" return_userid >&2
+        read -rsp "$promptPassword" return_passwd >&2
         echo >&2
-        if [[ "${promptConfirm}" && $(confirm "${promptConfirm}") != "y" ]]; then
+        if [[ "$promptConfirm" && $(confirm "$promptConfirm") != "y" ]]; then
             return_userid=""
             return_passwd=""
         fi
@@ -279,23 +275,23 @@ function get_from_yaml()
 }
 
 # press_any_key displays a prompt, followed by "Press any key to continue..." and returns only after the script user
-# presses a key. If there is defined variable ${quiet} with value "true", the function will not display prompt and will
+# presses a key. If there is defined variable $quiet with value "true", the function will not display prompt and will
 # not wait for response.
 function press_any_key() {
-    if [[ "${quiet}" != true ]]; then
+    if [[ "$quiet" != true ]]; then
         read -n 1 -rsp 'Press any key to continue...' >&2
         echo
     fi
 }
 
 # Dumps a table of variables and in the end asks the user to press any key to continue.
-# The variables are specified by name only - no leading $. Optionally the caller can specify flags like:
-# -h or --header will display a header string and dividing line in the table
+# The names of the variables must be specified as strings - no leading $.
+# Optionally the caller can specify flags like:
+# -h or --header <text> will display the header text and the dividing lines in the table
 # -b or --blank will display an empty line in the table
 # -l or --line will display a dividing line
-# -q or --quiet will suppress the "Press any key to continue..." prompt.
 function dump_vars() {
-    if [[ $# -eq 0 || $quiet == true ]]; then
+    if [[ $# -eq 0 || $trace_enabled != true ]]; then
         return;
     fi
 
@@ -303,23 +299,22 @@ function dump_vars() {
     local top="true"
     until [[ $# = 0 ]]; do
         case $1 in
-            -b|--blank )
-                echo "│"
-                ;;
             -h|--header )
                 shift
                 if [[ $top != "true" ]]; then
                 echo "├───────────────────────────────────────────────────────────"
                 fi
-                echo "│ ${1}"
+                echo "│ $1"
                 echo "├───────────────────────────────────────────────────────────"
                 ;;
-            -l|--line )
-                echo "├───────────────────────────────────────────────────────────"
-                ;;
+
+            -b|--blank ) echo "│" ;;
+
+            -l|--line ) echo "├───────────────────────────────────────────────────────────" ;;
+
             * )
                 printf "│ "
-                if [[ "${1}" =~ ^[_a-zA-Z][_a-zA-Z0-9]*$ ]]; then
+                if [[ "$1" =~ ^[_a-zA-Z][_a-zA-Z0-9]*$ ]]; then
                     if ! declare -p "$1" &> /dev/null; then
                         printf "\$%-40s\"undefined/unbound\"\n" "$1"
                     elif [[ "$(declare -p "$1")" =~ 'declare -a' ]]; then
@@ -327,7 +322,7 @@ function dump_vars() {
                         printf "\$%-40s%s\n" "$1" "(${v[*]})"
                     else
                         declare -n v="$1"
-                        printf "\$%-40s%s\n" "$1" "${v}"
+                        printf "\$%-40s%s\n" "$1" "$v"
                     fi
                 else
                     printf "\$%-40s???\n" "$1"
@@ -343,7 +338,7 @@ function dump_vars() {
 
 # scp_retry tries the SSH copy command up to three times with timeout of 10sec timeout between retries.
 # Parameters - the same parameters as the scp command, this is there must be at least 2 arguments.
-# If the operation is successful it will set ${return_copied} to 'true' until the next invocation.
+# If the operation is successful it will set $return_copied to 'true' until the next invocation.
 function scp_retry() {
     local try=0
     local retry_after=10
@@ -394,10 +389,10 @@ function assert_true() {
   (( TOTAL++ ))
   if "$@"; then
     (( PASS++ ))
-    ([[ $VERBOSE == true ]] && echo "[OK] ${msg}" >&2) || true
+    ([[ $VERBOSE == true ]] && echo "[OK] $msg" >&2) || true
   else
     (( FAIL++ ))
-    echo "[FAIL] ${msg}" >&2
+    echo "[FAIL] $msg" >&2
     exit 1
   fi
 }
@@ -407,10 +402,10 @@ assert_false() {
   (( TOTAL++ ))
   if "$@"; then
     (( FAIL++ ))
-    echo "[FAIL] ${msg} (expected false)" >&2
+    echo "[FAIL] $msg (expected false)" >&2
     exit 1
   else
     (( PASS++ ))
-    ([[ $VERBOSE == true ]] && echo "[OK] ${msg}" >&2) || true
+    ([[ $VERBOSE == true ]] && echo "[OK] $msg" >&2) || true
   fi
 }

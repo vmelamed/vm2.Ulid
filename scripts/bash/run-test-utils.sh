@@ -13,57 +13,62 @@ function usage()
     echo "
 Usage:
 
-    $0 [<test-project-path> |
-       --<long option> <value>|-<short option> <value> |
-       --<long switch>|-<short switch> ]*
+    $0 [<test-project-path>] |
+       [--<long option> <value>|-<short option> <value> |
+        --<long switch>|-<short switch> ]*
 
-    The script runs the tests in the specified test project and collects code
-    coverage information. It assumes that the scripts directory is located in
-    the root directory of the solution.
+    This script runs the tests in the specified test project and collects code
+    coverage information. It assumes that the directory 'scripts/bash' is located
+    in the root directory of the solution (here: $solution_dir).
 
 Parameters:
     <test-project-path>     The path to the test project file. Optional.
-                            Default: ${test_project}
+                            Initial value from \$TEST_PROJECT or
+                            $test_project
 
 Switches:
-    --debugger              The script is running under a debugger, e.g. 'lldb'
-                            or 'gdb'. If specified, the script will not set traps
-                            for DEBUG and EXIT, so that the debugger can be used
-                            to step through the script. It will also set the
-                            '--quiet' option to true. These need to be handled
-                            as early as possible, therefore it the option must
-                            be specified, it has to be the first argument.
-                            Default ${debugger}.
+    --debugger              Set when the script is running under a debugger, e.g.
+                            'gdb'. If specified, the script will not set traps
+                            for DEBUG and EXIT, and will set the '--quiet'
+                            switch. If needed, this option must be specified as
+                            the first argument.
+                            Initial value from \$DEBUGGER or 'false'
 
-    --help | -h             Displays this usage text and exits.
-
-    --trace | -x            Sets the Bash trace option 'set -x'.
-                            Default ${trace_enabled}.
+    --help | -h | -?        Displays this usage text and exits.
 
     --dry-run | -y          Runs the script without executing any commands but
-                            shows what would have been executed. Default ${dry_run}.
+                            shows what would have been executed.
+                            Initial value from \$DRY_RUN or 'false'
 
-    --quiet | -q            Suppresses all prompts, and assumes the default
-                            answers.  Default ${quiet}.
+    --quiet | -q            Suppresses all prompts for input from the user, and
+                            assumes the default answers.
+                            Initial value from \$QUIET or 'false'
 
-    --verbose | -v          Enables verbose output. Default ${verbose}.
+    --verbose | -v          Enables verbose output all output from the invoked
+                            commands (e.g. dotnet, reportgenerator) to be sent
+                            to 'stdout' instead of '/dev/null'. I also enables
+                            the output from the script function trace().
+                            Initial value from \$VERBOSE or 'false'
+
+    --trace | -x            Sets the Bash trace option 'set -x' and enables the
+                            output from the functions 'trace' and 'dump_vars'.
+                            Initial value from \$TRACE_ENABLED or 'false'
 
 Options:
-    --coverage-threshold | -t
+    --min_coverage_pct | -t
                             Specifies the minimum acceptable code coverage
-                            percentage (0-100). Default: ${coverage_threshold}
+                            percentage (0-100).
+                            Initial value from \$MIN_COVERAGE_PCT or 80
 
-    --configuration | -c    Specifies the build configuration to use (Debug or
-                            Release). Default: ${configuration}
+    --configuration | -c    Specifies the build configuration to use ('Debug' or
+                            'Release').
+                            Initial value from \$CONFIGURATION or 'Release'
 
     --artifacts | -a        Specifies the directory where to create the script's
-                            output summary and report files. If not specified the
-                            artifacts are created in the test results directory
-                            from the environment variable TEST_RESULTS_DIR.
-                            If the environment variable is not set, it is set to
-                            a 'TestResults' subdirectory in the solution
-                            directory.
-                            Default: ${TEST_RESULTS_DIRECTORY}
+                            artifacts: summary, report files, etc.
+                            Initial value from \$ARTIFACTS_DIR or
+                            '\$solution_dir/TestResults'
+                            ($solution_dir/TestResults)
 
 "
     if [[ "${#}" -gt 0 && "$1" ]]; then
@@ -79,7 +84,7 @@ function get_arguments()
     if [[ "${#}" -eq 0 ]]; then
         return
     fi
-    if [[ "$1" == "--debugger" ]]; then
+    if [[ "$1" == "--debugger" || $debugger == "true" ]]; then
         debugger="true"
         quiet="true"
         shift
@@ -87,64 +92,56 @@ function get_arguments()
         trap on_debug DEBUG
         trap on_exit EXIT
     fi
-    if [[ $CI == "true" ]]; then
-        quiet="true"
-    fi
 
     local flag
     local value
 
     while [[ "${#}" -gt 0 ]]; do
         # get the flag and convert it to lower case
-        flag=$(to_lower "${1}")
+        flag=$(to_lower "$1")
         shift
         case "$flag" in
-            --help|-h ) usage; exit 0 ;;
-
-            --trace|-x )
-                if [[ ! "${CI}" || "${CI}" != "true" ]]; then
-                    trace_enabled=true
-                    set -x
-                fi
-                ;;
+            --help|-h|'-?' ) usage; exit 0 ;;
 
             --dry-run|-y ) dry_run=true ;;
 
             --quiet|-q ) quiet=true ;;
 
-            --verbose|-v ) verbose=true; _output="/dev/stdout" ;;
+            --verbose|-v ) verbose=true; trace_enabled=true; _output="/dev/stdout" ;;
 
-            --coverage-threshold|-t )
+            --trace|-x ) trace_enabled=true; set -x; ;;
+
+            --artifacts|-a ) value="$1"; shift; ARTIFACTS_DIR=$(realpath -m "$value") ;;
+
+            --min_coverage_pct|-t )
                 value="$1"; shift
-                if ! [[ "${value}" =~ ^[0-9]+$ ]] || (( value < 0 || value > 100 )); then
-                    usage "The coverage threshold must be an integer between 0 and 100. Got \"${value}\"."
+                if ! [[ "$value" =~ ^[0-9]+$ ]] || (( value < 0 || value > 100 )); then
+                    usage "The coverage threshold must be an integer between 0 and 100. Got \"$value\"."
                     exit 2
                 fi
-                coverage_threshold=$((value + 0))  # ensure it's an integer
+                min_coverage_pct=$((value + 0))  # ensure it's an integer
                 ;;
 
             --configuration|-c )
                 value="${1,,}"; shift
                 if ! is_in "$value" "release" "debug"; then
-                    usage "The coverage threshold must be either 'Release' or 'Debug'. Got \"${value}\"."
+                    usage "The coverage threshold must be either 'Release' or 'Debug'. Got \"$value\"."
                     exit 2
                 fi
                 configuration="${value^}"
                 ;;
 
-            --artifacts|-a ) value="$1"; shift; TEST_RESULTS_DIRECTORY=$(realpath -m "${value}") ;;
-
             *)  value="$flag"
                 local p
-                p="$(realpath -m "${value}")"
+                p="$(realpath -m "$value")"
                 if [[ -n "$test_project" && "$test_project" != "$p" ]]; then
                     usage "More than one test project specified."
                     exit 2
-                elif [[ ! -f "${p}" ]]; then
-                    usage "The specified test project file \"${p}\" does not exist."
+                elif [[ ! -f "$p" ]]; then
+                    usage "The specified test project file \"$p\" does not exist."
                     exit 2
                 else
-                    test_project="${p}"
+                    test_project="$p"
                 fi
                 ;;
         esac
@@ -156,13 +153,13 @@ dump_variables()
     dump_vars \
         -h "Variables:" \
         test_project \
-        coverage_threshold \
+        min_coverage_pct \
         configuration \
         --line \
-        solution_directory \
-        script_directory \
-        TEST_RESULTS_DIRECTORY \
-        COVERAGE_RESULTS_DIRECTORY \
+        solution_dir \
+        script_dir \
+        ARTIFACTS_DIR \
+        COVERAGE_RESULTS_DIR \
         --line \
         base_name \
         --blank \

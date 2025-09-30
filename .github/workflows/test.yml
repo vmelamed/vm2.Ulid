@@ -11,7 +11,7 @@ on:
         description: "Path to test project"
         type: string
         required: false
-      coverage-threshold:
+      min_coverage_pct:
         type: number
         required: true
         default: 75
@@ -30,7 +30,7 @@ permissions:
 
 env:
   CI: "true"
-  TEST_RESULTS_DIR: "TestResults"
+  ARTIFACTS_DIR: "Artifacts"
 
 jobs:
   test:
@@ -68,18 +68,18 @@ jobs:
       - name: Run script for unit test with coverage
         shell: bash
         env:
-          COVERAGE_THRESHOLD: ${{ inputs.coverage-threshold }}
+          MIN_COVERAGE_PCT: ${{ inputs.min_coverage_pct }}
           TEST_PROJECT: ${{ inputs.test-project }}
           CONFIGURATION: ${{ inputs.configuration }}
         run: |
           ./scripts/bash/run-tests.sh ${{ inputs.test-project }} \
             -q \
             -c ${{ inputs.configuration }} \
-            -d ${{ env.TEST_RESULTS_DIR }} \
-            -t ${{ inputs.coverage-threshold }}
+            -d ${{ env.ARTIFACTS_DIR }} \
+            -t ${{ inputs.min_coverage_pct }}
 
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         with:
           name: coverage-${{ matrix.os }}
-          path: ${{ env.TEST_RESULTS_DIR }}
+          path: ${{ env.ARTIFACTS_DIR }}
