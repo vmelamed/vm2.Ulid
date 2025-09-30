@@ -95,6 +95,7 @@ function get_arguments()
 
     local flag
     local value
+    local p
 
     while [[ "${#}" -gt 0 ]]; do
         # get the flag and convert it to lower case
@@ -132,9 +133,8 @@ function get_arguments()
                 ;;
 
             *)  value="$flag"
-                local p
-                if ! p=$(realpath -e "$(dirname "$value")"); then
-                    usage "The specified test project file '$p' does not exist."
+                if ! p=$(realpath -e "$value"); then
+                    usage "The specified test project file '$value' does not exist."
                     exit 2
                 elif [[ -n "$test_project" && "$test_project" != "$p" ]]; then
                     usage "More than one test project specified: '$test_project' and '$p'."

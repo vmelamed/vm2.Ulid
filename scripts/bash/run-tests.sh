@@ -43,6 +43,9 @@ dump_vars \
     script_dir
 trace_enabled=false
 
+'/home/runner/work/vm2.Ulid/vm2.Ulid/test/UlidType.Tests/UlidType.Tests.csproj' and
+'/home/runner/work/vm2.Ulid/vm2.Ulid/test/UlidType.Tests'
+
 get_arguments "$@"
 
 renamed_results_dir="$ARTIFACTS_DIR-$(date -u +"%Y%m%dT%H%M%S")"
