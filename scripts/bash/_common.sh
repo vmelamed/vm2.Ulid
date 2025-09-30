@@ -296,13 +296,14 @@ function dump_vars() {
     fi
 
     echo "┌───────────────────────────────────────────────────────────"
-    local top="true"
+    local top=true
+    local v
     until [[ $# = 0 ]]; do
         case $1 in
             -h|--header )
                 shift
                 if [[ $top != "true" ]]; then
-                echo "├───────────────────────────────────────────────────────────"
+                    echo "├───────────────────────────────────────────────────────────"
                 fi
                 echo "│ $1"
                 echo "├───────────────────────────────────────────────────────────"
@@ -312,25 +313,22 @@ function dump_vars() {
 
             -l|--line ) echo "├───────────────────────────────────────────────────────────" ;;
 
-            * )
-                printf "│ "
-                if [[ "$1" =~ ^[_a-zA-Z][_a-zA-Z0-9]*$ ]]; then
-                    if ! declare -p "$1" &> /dev/null; then
-                        printf "\$%-40s'undefined/unbound'\n" "$1"
-                    elif [[ "$(declare -p "$1")" =~ 'declare -a' ]]; then
-                        declare -n v="$1"
-                        printf "\$%-40s%s\n" "$1" "(${v[*]})"
-                    else
-                        declare -n v="$1"
-                        printf "\$%-40s%s\n" "$1" "$v"
-                    fi
+            * ) printf "│ "
+                if [[ ! "$1" =~ ^[_a-zA-Z][_a-zA-Z0-9]*$ ]]; then
+                    printf "\$%-40s'invalid variable name'\n" "$1"
+                elif ! declare -p "$1" &> /dev/null; then
+                    printf "\$%-40s'unbound'\n" "$1"
+                elif ! declare -n v="$1" &> /dev/null; then
+                     printf "\$%-40s'unbound reference'\n" "$1"
+                elif [[ "$(declare -p "$1")" =~ 'declare -a' ]]; then
+                     printf "\$%-40s%s\n" "$1" "(${v[*]})"
                 else
-                    printf "\$%-40s???\n" "$1"
+                     printf "\$%-40s%s\n" "$1" "$v"
                 fi
                 ;;
         esac
         shift
-        top=""
+        top=false
     done
     echo "└───────────────────────────────────────────────────────────"
 
