@@ -5,10 +5,10 @@ set -euo pipefail
 bash_source=${BASH_SOURCE[0]}
 declare -r bash_source
 
-script_dir=$(realpath -e "$(dirname "$bash_source")")
+script_dir="$(dirname "$(realpath -e "$bash_source")")"
 declare -r script_dir
 
-solution_dir=$(realpath -e "$(dirname "$script_dir/../../.")")
+solution_dir="$(dirname "$(realpath -e "$script_dir/..")")"
 declare -r solution_dir
 
 declare test_project=${TEST_PROJECT:="$solution_dir/test/UlidType.Tests/UlidType.Tests.csproj"}
