@@ -1,19 +1,22 @@
-# #!/bin/bash
+#!/bin/bash
 
 # This script defines a number of general purpose functions.
-# For the functions to be invokable by other sripts, this script needs to be sourced.
+# For the functions to be invocable by other scripts, this script needs to be sourced.
 # When fatal parameter errors are detected, the script invokes exit, which leads to exiting the current shell.
 
 # commonly used variables
-readonly initial_directory=$(pwd)
-readonly timestamp=$(date +%Y%m%d-%H%M%S)
+initial_directory=$(pwd)
+readonly initial_directory
 
 _output=${_output:="/dev/null"}
-debug=${DEBUG:-false}
-trace=${TRACE:-false}
-dry_run=${DRY_RUN:-false}
-quiet=${QUIET:-false}
-debugger=${DEBUGGER:-false}
+
+declare -x verbose=${VERBOSE:-false}
+declare -x debugger="false"
+declare -x trace_enabled=false
+declare -x dry_run=${DRY_RUN:-false}
+declare -x quiet=${QUIET:-false}
+
+[[ -n "${CI:-}" ]] && quiet=true
 
 declare last_command
 declare current_command="${BASH_COMMAND}"
@@ -39,222 +42,192 @@ function on_debug() {
 function on_exit() {
     # echo an error message before exiting
     local x=$?
-    if [[ ! $x ]]; then
-        echo "\"${last_command}\" command failed with exit code $x"
+    if (( x != 0)); then
+        echo "\"${last_command}\" command failed with exit code $x" >&2
     fi
     if [[ "${initial_directory}" ]]; then
-        cd "${initial_directory}"
+        cd "${initial_directory}" || exit
     fi
     set +x
 }
 
 function trace() {
-    if [[ $debug ]]; then
-        echo "Trace: $@" 1>&2
+    if [[ "$verbose" == true || "$trace_enabled" == true ]]; then
+        echo "Trace: $*" >&2
     fi
 }
 
 # Depending on the value of $dry_run either executes or just displays what would have been executed.
-function execute()
-{
-    if [[ $dry_run == "true" ]]; then
-        echo "dry-run$ $@"
+function execute() {
+    if [[ "$dry_run" == "true" ]]; then
+        printf 'dry-run$'
+        local a
+        for a in "$@"; do
+            printf ' %q' "$a"
+        done
+        echo >&2
         return 0
-    else
-        trace "$@"
-        eval "$@" && return 0 || return $?
     fi
+    trace "$@"
+    "$@" > "${_output}"
+    return $?
 }
 
-declare return_lower
-# to_lower converts all characters in the passed in value to lowercase.
-# The result will be held in ${return_lower} until the next invocation of the function.
+# to_lower converts all characters in the passed in value to lowercase and prints the to stdout.
+# Usage example: local a="$(to_lower "$1")"
 function to_lower() {
-    return_lower="$(echo "${1}" | awk '{print tolower($0)}')"
+    printf "%s" "${1,,}"
 }
 
-declare return_upper
-# to_upper converts all characters in the passed in value to lowercase.
-# The result will be held in ${return_upper} until the next invocation of the function.
+# to_upper converts all characters in the passed in value to uppercase and prints the to stdout.
+# Usage example: local a="$(to_upper "$1")"
 function to_upper() {
-    return_upper="$(echo "${1}" | awk '{print toupper($0)}')"
+    printf "%s" "${1^^}"
 }
 
 # is_positive tests if its parameter represents a valid positive, integer number (aka natural number): {1, 2, 3, ...}
 function is_positive() {
-    if [[ "${1}" =~ ^[0-9]+$  && ! "${1}" =~ ^0+$ ]]; then
-        return 0
-    else
-        return 1
-    fi
+    [[ "${1}" =~ ^[+]?[0-9]+$  && ! "${1}" =~ ^[+]?0+$ ]]
 }
 
-# is_non_negative tests if its parameter represents a valid non-negative integer number: {0, 1, 2, 3, ...}
+# is_non_negative tests if its parameter represents a valid non-negative integer number: {0, +0, 1, 2, 3, ...}
 function is_non_negative() {
-    if [[ "${1}" =~ ^[0-9]+$ ]]; then
-        return 0
-    else
-        return 1
-    fi
+    [[ "${1}" =~ ^[+]?[0-9]+$ ]]
 }
 
-# is_non_positive tests if its parameter represents a valid non-positive integer number: {0, -1, -2, -3, ...}
+# is_non_positive tests if its parameter represents a valid non-positive integer number: {0, -0, -1, -2, -3, ...}
 function is_non_positive() {
-    if [[ "${1}" =~ ^-[0-9]+$ || "${1}" =~ ^0+$ ]]; then
-        return 0
-    else
-        return 1
-    fi
+    [[ "${1}" =~ ^-[0-9]+$ || "${1}" =~ ^[-]?0+$ ]]
 }
 
 # is_negative tests if its parameter represents a valid negative integer number: {-1, -2, -3, ...}
 function is_negative() {
-    [[ ${1} =~ ^-[0-9]+$ && ! "${1}" =~ ^-0+$ ]] && return 0 || return 1
+    [[ ${1} =~ ^-[0-9]+$ && ! "${1}" =~ ^[-]?0+$ ]]
 }
 
 # is_integer tests if its parameter represents a valid integer number: {..., -2, -1, 0, 1, 2, ...}
 function is_integer() {
-    if [[ "${1}" =~ ^[-+]?[0-9]+$ ]]; then
-        return 0
-    else
-        return 1
-    fi
+    [[ "${1}" =~ ^[-+]?[0-9]+$ ]]
 }
 
 # is_decimal tests if its parameter represents a valid decimal number
 function is_decimal() {
-    if [[ "${1}" =~ ^[-+]?[0-9]*(\.[0-9]*)?$ ]]; then
-        return 0
-    else
-        return 1
-    fi
+    [[ "${1}" =~ ^[-+]?[0-9]*(\.[0-9]*)?$ ]]
 }
 
 # is_in tests if the first parameter is equal to one of the following parameters.
 function is_in() {
-    if [[ $# < 2 ]]; then
-        echo "At least 2 parameters required"
+    if [[ $# -lt 2 ]]; then
+        echo "The function is_in() requires at least 2 arguments: the value to test and at least one valid option." >&2
         return 2
     fi
 
-    sought="$1"
-    shift
-
+    local sought="$1"; shift
+    local v
     for v in "$@"; do
-        if [[ "${sought}" == "${v}" ]]; then
-            return 0
-        fi
+        [[ "${sought}" == "${v}" ]] && return 0
     done
     return 1
 }
 
-declare return_yes_no
-# confirm asks the script user to answer yes or no to some prompt. If there is a defined variable ${quiet} with
-# value "true", the function will not display the prompt and will assume the default answer. If no default answer is
-# specified, it will assume answer 'y'.
+# confirm asks the script user to respond yes or no to some prompt. If there is a defined variable ${quiet} with
+# value "true", the function will not display the prompt and will assume the default response or 'y'.
 # Parameter 1 - the prompt to confirm.
-# Parameter 2 - the default answer if the user presses [Enter]. When specified should be either 'y' or 'n'. Optional.
-# Returns 0, if the reply is 'y'; otherwise 1.
-# The result will be held in ${return_yes_no} as 'y' or 'n' until the next invocation of the function.
+# Parameter 2 - the default response if the user presses [Enter]. When specified should be either 'y' or 'n'. Optional.
+# Outputs the result to stdout as 'y' or 'n'.
 function confirm() {
     if [[ ! "${1}" ]]; then
-        echo "Parameter 1 - prompt - is mandatory"
-        exit 1
+        echo "The function confirm() requires at least one parameter: the prompt." >&2
+        exit 2
+    fi
+    if [[ "${2}" && ! "${2}" =~ ^[ynYN]$ ]]; then
+        echo "If a default response parameter is specified for the function confirm(), it must be either 'y' or 'n'" >&2
+        exit 2
     fi
 
+    local default
     local prompt="${1}"
-    to_lower "${2}"
-    local default="${return_lower}"
-    if [[ "${default}" && "${default}" != 'y' && "${default}" != 'n' ]]; then
-        echo "Parameter 2 - default answer - if specified must be either 'y' or 'n'"
-        exit 1
-    fi
 
-    if [[ "${quiet}" == "true" ]]; then
-        return_yes_no="${default:-y}"
+    default=$(to_lower "${2:-y}")
+
+    if [[ "${quiet}" == true ]]; then
+        print '%s' "${default}"
         return 0
     fi
 
-    return_yes_no=""
+    local suffix
 
-    local p=""
-    until [[ "${return_yes_no}" == "y"  ||  "${return_yes_no}" == "n" ]]; do
-        if [[ "${default}" == "y" ]]; then
-            p="${prompt} [Y/n]: "
-        elif [[ "${default}" == "n" ]]; then
-            p="${prompt} [y/N]: "
-        else
-            p="${prompt} [y/n]: "
-        fi
-        read -p "${p}" -n 1 return_yes_no
-        echo
-
-        to_lower "${return_yes_no}"
-        return_yes_no="${return_lower}"
-        if [[ ! "${return_yes_no}" ]]; then
-            return_yes_no="${default}"
-        fi
-    done
-    if [[ "${return_yes_no}" == 'y' ]]; then
-        return 0;
+    if [[ "$default" == y ]]; then
+        suffix="[Y/n]"
     else
-        return 1;
+        suffix="[y/N]"
     fi
+
+    local response
+    while true; do
+        read -rp "$prompt $suffix: " response >&2
+        response=${response:-$default}
+        response=${response,,}
+        if [[ "$response" =~ ^[yn]$ ]]; then
+            printf '%s' "$response"
+            return 0;
+        fi
+        echo "Please enter y or n." >&2
+    done
 }
 
-declare -i choice_option
 # choose displays a prompt and a list of options to the script user and asks them to choose one of the options.
 # Parameter 1 - the prompt to display before the options.
 # Parameter 2 - the text of the first option.
 # Parameter 3 - the text of the second option.
 # Parameter 4, ... - the text of more options.
 # The first option is the default one.
-# The result will be held in ${choice_option} as the number of the chosen option until the next invocation of the function.
-# The function will exit with code 1 if less than 3 parameters are specified.
+# The result will be printed in stdout as the number of the chosen option.
+# The function will exit with code 2 if less than 3 parameters are specified.
 function choose() {
-    if [[ $# < 3 ]]; then
-        echo "choose <Parameter1> (prompt), <Parameter2> (option1), <Parameter3> (option2) are mandatory. You can specify more options."
-        exit 1
+    if [[ $# -lt 3 ]]; then
+        echo "The function choose() requires 3 or more arguments: a prompt and at least two choices." >&2;
+        return 2;
     fi
 
-    if [[ "${quiet}" == "true" ]]; then
-        choice_option=1
-        return 1
+    local prompt=$1; shift
+    local options=("$@")
+
+    if [[ "$quiet" == true ]]; then
+        printf '1'
+        return 0
     fi
 
-    choice_option=0
+    echo "$prompt" >&2
 
     local i=1
-    local options=()
 
-    echo "${1}"; shift
-    for o in "$@"; do
-        if (($i == 1)); then
-            echo "  ${i}. ${o} (the default!)"
+    for o in "${options[@]}"; do
+        if [[ $i -eq 1 ]]; then
+            echo "  $i) $o (default)" >&2
         else
-            echo "  ${i}. ${o}"
+            echo "  $i) $o" >&2
         fi
-        options+=("$i")
-        let i++
+        ((i++))
     done
 
-    local ch
+    local selection
 
-    until is_positive "${ch}" && (( ch >= 1 && ch <= ${#options[@]} )); do
-        read -p "Enter ch [1-${#options[@]}]: " ch
-        if [[ ! "${ch}" ]]; then
-            ch=1
-        elif ! is_positive "${ch}" || (( ch < 1 || ch > ${#options[@]} )); then
-            echo "Invalid ch: ${ch}"
+    while true; do
+        read -rp "Enter choice [1-${#options[@]}]: " selection >&2
+        selection=${selection:-1}
+        if [[ $selection =~ ^[0-9]+$ && $selection -ge 1 && $selection -le ${#options[@]} ]]; then
+            printf '%s' "$selection"
+            echo >&2
+            return 0
         fi
+        echo "Invalid choice: $selection" >&2
     done
-
-    choice_option=$((ch + 0))    # ensure it's an integer
 }
 
 declare return_userid
 declare return_passwd
-# get_credentials gets a user ID and a password from the script user. In the end the scfunction will ask the user to
+# get_credentials gets a user ID and a password from the script user. In the end the script will ask the user to
 # confirm their entries.
 # Parameter 1 - the prompt for getting the user ID. Default "Enter the user ID: "
 # Parameter 2 - the prompt for getting the password. Default "Enter the user password: "
@@ -269,55 +242,51 @@ function get_credentials() {
     return_userid=""
     return_passwd=""
     until [[ ${return_userid}  &&  ${return_passwd} ]]; do
-        read -p "${promptUserID}" return_userid
-        read -p "${promptPassword}" -s return_passwd
-        echo
-        if [[ "${promptConfirm}" ]]; then
-            confirm "${promptConfirm}" "y"
-            if [[ "${return_yesNo}" != "y" ]]; then
-                return_userid=""
-                return_passwd=""
-            fi
+        read -rp "${promptUserID}" return_userid >&2
+        read -rsp "${promptPassword}" return_passwd >&2
+        echo >&2
+        if [[ "${promptConfirm}" && $(confirm "${promptConfirm}") != "y" ]]; then
+            return_userid=""
+            return_passwd=""
         fi
     done
 }
 
-declare return_yqResult
 # get_from_yaml gets the result of executing JSON query expression on YAML file.
 # Requires "yq".
 # Param 1 - the JSON query expression to execute
 # Param 2 - the YAML file
 # Return 0 if the result is not null and not empty; otherwise 1
-# The query result will be held in the variable ${return_yqResult} until the next invokation of the function.
+# The query result will be output to stdout.
 function get_from_yaml()
 {
-    return_yqResult=""
-    if [[ -s $1 ]]; then
-        local r=$(yq eval $1 $2)
-
-        if [[ $r != "null" ]]; then
-            return_yqResult="$r"
-            return [[ -n ${return_yqResult} ]]
-        else
-            return 1
-        fi
+    if [[ $# -lt 2 ]]; then
+        echo "The function get_from_yaml() requires two parameters: the query and the yaml file name." >&2
+        return 2
     fi
+
+    local query="$1";
+    local file="$2"
+    if [[ ! -s "$file" ]]; then
+        echo "The file '$file' is empty or does not exist." >&2
+        return 1
+    fi
+    local r
+    r=$(yq eval "$query" "$file") || return 1
+    [[ "$r" == "null" ]] && return 1
+    printf '%s' "$r"
+    return 0
 }
 
 # press_any_key displays a prompt, followed by "Press any key to continue..." and returns only after the script user
 # presses a key. If there is defined variable ${quiet} with value "true", the function will not display prompt and will
 # not wait for response.
 function press_any_key() {
-    if [[ "${quiet}" != "true" ]]; then
-        read -n 1 -r -s -p $'Press any key continue...\n'
+    if [[ "${quiet}" != true ]]; then
+        read -n 1 -rsp 'Press any key to continue...' >&2
+        echo
     fi
 }
-
-readonly ul_corner="┌"
-readonly ll_corner="└"
-readonly h_line="─"
-readonly v_line="│"
-readonly vh_line="├"
 
 # Dumps a table of variables and in the end asks the user to press any key to continue.
 # The variables are specified by name only - no leading $. Optionally the caller can specify flags like:
@@ -326,7 +295,7 @@ readonly vh_line="├"
 # -l or --line will display a dividing line
 # -q or --quiet will suppress the "Press any key to continue..." prompt.
 function dump_vars() {
-    if [[ "$#" -eq 0 || $quiet ]]; then
+    if [[ $# -eq 0 || $quiet == true ]]; then
         return;
     fi
 
@@ -350,13 +319,15 @@ function dump_vars() {
                 ;;
             * )
                 printf "│ "
-                if echo "$1" | grep -qiE '^[_a-z][_a-z0-9]*$'; then
-                    if ! declare -p $1 &> /dev/null; then
-                        printf "\$%-40s\"\"\n" "$1"
-                    elif echo "$(declare -p $1)" | grep -q "declare -a" ; then
-                        eval "printf" "\$%-40s%s\\\n" "$1" "\"(\${$1[*]})\""
+                if [[ "${1}" =~ ^[_a-zA-Z][_a-zA-Z0-9]*$ ]]; then
+                    if ! declare -p "$1" &> /dev/null; then
+                        printf "\$%-40s\"undefined/unbound\"\n" "$1"
+                    elif [[ "$(declare -p "$1")" =~ 'declare -a' ]]; then
+                        declare -n v="$1"
+                        printf "\$%-40s%s\n" "$1" "(${v[*]})"
                     else
-                        eval "printf" "\$%-40s%s\\\n" "$1" "\"\$$1\""
+                        declare -n v="$1"
+                        printf "\$%-40s%s\n" "$1" "${v}"
                     fi
                 else
                     printf "\$%-40s???\n" "$1"
@@ -370,26 +341,76 @@ function dump_vars() {
     press_any_key
 }
 
-declare return_copied
 # scp_retry tries the SSH copy command up to three times with timeout of 10sec timeout between retries.
-# Parameters - the same parameters as the scp command, this is there must be at least 2 parameters.
+# Parameters - the same parameters as the scp command, this is there must be at least 2 arguments.
 # If the operation is successful it will set ${return_copied} to 'true' until the next invocation.
 function scp_retry() {
     local try=0
     local retry_after=10
-    return_copied="false"
-    until [[ ${return_copied} == "true" || $try -ge 3 ]]; do
+    while true; do
         if execute scp "$@"; then
-            return_copied="true"
+            printf 'true'
             return 0
         fi
-        if [[ $i -lt 3 ]]; then
-            echo "  - will try scp again in ${retry_after}sec..."
-            sleep retry_after
+        if ((try < 3)); then
+            echo "  - will try scp again in ${retry_after}sec..." >&2
+            sleep $retry_after
+        else
+            break
         fi
-        let try++
+        ((try++))
     done
 
-    echo "FAILED: scp $@"
+    echo "FAILED: scp $*" >&2
     return 1
+}
+
+# --- test harness' assertion helpers -------------------------------------------------------
+
+PASS=0
+FAIL=0
+TOTAL=0
+
+function fail() {
+  echo "[FAIL] $1" >&2
+  exit 1;
+}
+
+function assert_eq() {
+  local exp=$1 got=$2 msg=${3:-}
+  (( TOTAL++ ))
+  if [[ "$exp" == "$got" ]]; then
+    (( PASS++ ))
+    ([[ $VERBOSE == true ]] && echo "[OK] ${msg:-eq}" >&2) || true
+  else
+    (( FAIL++ ))
+    echo "[FAIL] ${msg:-eq}: expected='$exp' got='$got'" >&2
+    exit 1
+  fi
+}
+
+function assert_true() {
+  local msg=$1; shift || true
+  (( TOTAL++ ))
+  if "$@"; then
+    (( PASS++ ))
+    ([[ $VERBOSE == true ]] && echo "[OK] ${msg}" >&2) || true
+  else
+    (( FAIL++ ))
+    echo "[FAIL] ${msg}" >&2
+    exit 1
+  fi
+}
+
+assert_false() {
+  local msg=$1; shift || true
+  (( TOTAL++ ))
+  if "$@"; then
+    (( FAIL++ ))
+    echo "[FAIL] ${msg} (expected false)" >&2
+    exit 1
+  else
+    (( PASS++ ))
+    ([[ $VERBOSE == true ]] && echo "[OK] ${msg}" >&2) || true
+  fi
 }

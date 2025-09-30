@@ -411,3 +411,14 @@ report.txt
 # Coverage files
 *.cobertura.xml
 .coverage/
+
+# Others
+*.vsix
+*.db
+*.db-shm
+*.db-wal
+*.bak
+*.backup
+*.BLOB
+*scratch*
+*scratch*/

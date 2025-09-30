@@ -29,7 +29,9 @@ permissions:
   contents: read
 
 env:
+  CI: "true"
   TEST_RESULTS_DIR: "TestResults"
+
 jobs:
   test:
     name: Test on ${{ matrix.os }}
@@ -43,9 +45,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Make Script Executable
-        run: chmod +x ./.github/workflows/RunTest.sh
-
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -55,13 +54,29 @@ jobs:
             **/packages.lock.json
             **/*.csproj
 
+      - name: Make Scripts Executable
+        run: chmod u+x ./.github/scripts/bash/*.sh
+
+      - name: ShellCheck
+        uses: ludeeus/action-shellcheck@master
+        env:
+          SHELLCHECK_OPTS: -a -x
+        with:
+          scandir: ./scripts/bash
+          ignore_names: "scratch-test*"
+
       - name: Run script for unit test with coverage
         shell: bash
         env:
           COVERAGE_THRESHOLD: ${{ inputs.coverage-threshold }}
           TEST_PROJECT: ${{ inputs.test-project }}
           CONFIGURATION: ${{ inputs.configuration }}
-        run: ./scripts/RunTest.sh
+        run: |
+          ./scripts/bash/run-tests.sh ${{ inputs.test-project }} \
+            -q \
+            -c ${{ inputs.configuration }} \
+            -d ${{ env.TEST_RESULTS_DIR }} \
+            -t ${{ inputs.coverage-threshold }}
 
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
