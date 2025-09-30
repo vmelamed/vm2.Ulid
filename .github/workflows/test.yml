@@ -65,9 +65,9 @@ jobs:
           scandir: scripts/bash
           check_together: true
           ignore_names: |
-            scratch-test*
-            self-test*
-          severity: error
+            scratch-test.sh
+            self-test.sh
+          severity: warning
 
       - name: Run script for unit test with coverage
         shell: bash
