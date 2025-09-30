@@ -133,12 +133,11 @@ function get_arguments()
 
             *)  value="$flag"
                 local p
-                p="$(realpath -m "$value")"
-                if [[ -n "$test_project" && "$test_project" != "$p" ]]; then
-                    usage "More than one test project specified: '$test_project' and '$p'."
-                    exit 2
-                elif [[ ! -f "$p" ]]; then
+                if ! p=$(realpath -e "$(dirname "$value")"); then
                     usage "The specified test project file '$p' does not exist."
+                    exit 2
+                elif [[ -n "$test_project" && "$test_project" != "$p" ]]; then
+                    usage "More than one test project specified: '$test_project' and '$p'."
                     exit 2
                 else
                     test_project="$p"
