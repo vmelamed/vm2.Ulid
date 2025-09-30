@@ -77,6 +77,7 @@ Options:
     if [[ "$trace_enabled" == "true" ]]; then
         set -x
     fi
+    flush_stdout
 }
 
 function get_arguments()

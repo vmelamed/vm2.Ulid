@@ -107,7 +107,7 @@ fi
 trace "Generating coverage reports..."
 uninstall_reportgenerator=false
 if ! dotnet tool list dotnet-reportgenerator-globaltool --tool-path ./tools > _output 2>&1; then
-    echo "Installing the tool 'reportgenerator'..." >&2
+    echo "Installing the tool 'reportgenerator'..."; flush_stdout
     execute mkdir -p ./tools
     execute dotnet tool install dotnet-reportgenerator-globaltool --tool-path ./tools --version 5.*
     uninstall_reportgenerator=true
@@ -119,7 +119,7 @@ execute ./tools/reportgenerator \
     -targetdir:"$coverage_reports_dir" \
     -reporttypes:TextSummary,html
 if [[ "$uninstall_reportgenerator" = "true" ]]; then
-    echo "Uninstalling the tool 'reportgenerator'..." >&2
+    echo "Uninstalling the tool 'reportgenerator'..."; flush_stdout
     execute dotnet tool uninstall dotnet-reportgenerator-globaltool --tool-path ./tools
     execute rm -rf ./tools
 fi
@@ -145,7 +145,7 @@ if [[ ! "$dry_run" ]]; then
         exit 2
     fi
 
-    echo "Coverage: $pct% (threshold: $min_coverage_pct%)"
+    echo "Coverage: $pct% (threshold: $min_coverage_pct%)"; flush_stdout
 
     # Compare the coverage percentage against the threshold
     if (( pct < min_coverage_pct )); then

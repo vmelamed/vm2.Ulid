@@ -54,14 +54,14 @@ function on_exit() {
 
 function trace() {
     if [[ "$trace_enabled" == true ]]; then
-        echo "Trace: $*" >&2
+        echo "Trace: $*" | tee /dev/null
     fi
 }
 
 # Depending on the value of $dry_run either executes or just displays what would have been executed.
 function execute() {
     if [[ "$dry_run" == "true" ]]; then
-        echo "dry-run$ $*" >&2
+        echo "dry-run$ $*" | tee /dev/null
         return 0
     fi
     trace "$*"
@@ -124,6 +124,10 @@ function is_in() {
         [[ "$sought" == "$v" ]] && return 0
     done
     return 1
+}
+
+function flush_stdout() {
+    printf "" > /dev/stdout
 }
 
 # confirm asks the script user to respond yes or no to some prompt. If there is a defined variable $quiet with
@@ -194,18 +198,19 @@ function choose() {
         return 0
     fi
 
-    echo "$prompt" >&2
+    echo "$prompt"
 
     local i=1
 
     for o in "${options[@]}"; do
         if [[ $i -eq 1 ]]; then
-            echo "  $i) $o (default)" >&2
+            echo "  $i) $o (default)"
         else
-            echo "  $i) $o" >&2
+            echo "  $i) $o"
         fi
         ((i++))
     done
+    flush_stdout
 
     local selection
 
@@ -330,7 +335,8 @@ function dump_vars() {
         shift
         top=false
     done
-    echo "└───────────────────────────────────────────────────────────" | tee /dev/null
+    echo "└───────────────────────────────────────────────────────────"
+    flush_stdout
     press_any_key
 }
 
