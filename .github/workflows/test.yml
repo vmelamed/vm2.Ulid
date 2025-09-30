@@ -62,10 +62,12 @@ jobs:
         env:
           SHELLCHECK_OPTS: --external-sources --check-sourced
         with:
-          scandir: ./scripts/bash
+          scandir: scripts/bash
+          check_together: true
           ignore_names: |
             scratch-test*
             self-test*
+          severity: error
 
       - name: Run script for unit test with coverage
         shell: bash
