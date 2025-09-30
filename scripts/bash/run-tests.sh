@@ -13,7 +13,6 @@ declare -r solution_dir
 
 declare test_project=${TEST_PROJECT:="$solution_dir/test/UlidType.Tests/UlidType.Tests.csproj"}
 test_project=$(realpath -e "$test_project")  # ensure it's an absolute path
-declare -r test_project
 
 declare -x ARTIFACTS_DIR=${ARTIFACTS_DIR:="$solution_dir/TestResults"}
 ARTIFACTS_DIR=$(realpath -m "$ARTIFACTS_DIR")  # ensure it's an absolute path
@@ -25,27 +24,9 @@ declare -i min_coverage_pct=${MIN_COVERAGE_PCT:-80}
 source "$script_dir/_common.sh"
 source "$script_dir/run-test-utils.sh"
 
-# to remove
-trace_enabled=true
-dump_vars \
-    --header "Script Arguments:" \
-    test_project \
-    debugger \
-    dry_run \
-    verbose \
-    quiet \
-    trace_enabled \
-    configuration \
-    min_coverage_pct \
-    ARTIFACTS_DIR \
-    --header "other globals:" \
-    bash_source \
-    solution_dir \
-    script_dir
-trace_enabled=false
-# to remove
-
 get_arguments "$@"
+declare -r test_project
+declare -ri min_coverage_pct
 
 renamed_results_dir="$ARTIFACTS_DIR-$(date -u +"%Y%m%dT%H%M%S")"
 declare -r renamed_results_dir
@@ -59,21 +40,20 @@ if [[ -d "$ARTIFACTS_DIR" && "$(ls -A "$ARTIFACTS_DIR")" ]]; then
 
     trace "User selected option: $choice"
     case $choice in
-        1)  echo "Deleting the directory '$ARTIFACTS_DIR'..." >&2
-            execute rm -rf "$ARTIFACTS_DIR" ;;
-        2)  execute mv "$ARTIFACTS_DIR" "$renamed_results_dir"
-            ;;
+        1)  echo "Deleting the directory '$ARTIFACTS_DIR'..." >&2; execute rm -rf "$ARTIFACTS_DIR" ;;
+        2)  execute mv "$ARTIFACTS_DIR" "$renamed_results_dir" ;;
         3)  echo "Exiting the script."; exit 0 ;;
         *)  echo "Invalid option. Exiting." >&2; exit 2 ;;
     esac
 fi
 
 COVERAGE_RESULTS_DIR="$ARTIFACTS_DIR/CoverageResults"                           # the directory for the coverage results. We do
-                                                                                # it here again in case the user changed the test
+declare -r COVERAGE_RESULTS_DIR                                                 # it here again in case the user changed the test
                                                                                 # results directory.
 
 test_results_results_dir="$ARTIFACTS_DIR/Results"                               # the directory for the log files from the test
-                                                                                # run
+declare -r test_results_results_dir                                             # run
+
 
 coverage_source_dir="$COVERAGE_RESULTS_DIR/coverage"                            # the directory for the raw coverage files
 coverage_source_fileName="coverage.cobertura.xml"                               # the name of the raw coverage file
