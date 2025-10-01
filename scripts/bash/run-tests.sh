@@ -16,6 +16,7 @@ test_project=$(realpath -e "$test_project")  # ensure it's an absolute path
 
 declare -x ARTIFACTS_DIR=${ARTIFACTS_DIR:="$solution_dir/TestResults"}
 ARTIFACTS_DIR=$(realpath -m "$ARTIFACTS_DIR")  # ensure it's an absolute path
+
 declare -x COVERAGE_RESULTS_DIR
 
 declare configuration=${CONFIGURATION:="Release"}
@@ -80,9 +81,6 @@ execute mkdir -p "$coverage_source_dir"
 execute mkdir -p "$coverage_reports_dir"
 execute mkdir -p "$coverage_summary_dir"
 
-# display_all_vars
-# exit 0
-
 trace "Running tests in project '$test_project' with configuration '$configuration'..."
 execute dotnet test "$test_project" \
     --configuration "$configuration" -- \
@@ -106,7 +104,7 @@ fi
 
 trace "Generating coverage reports..."
 uninstall_reportgenerator=false
-if ! dotnet tool list dotnet-reportgenerator-globaltool --tool-path ./tools > _output 2>&1; then
+if ! dotnet tool list dotnet-reportgenerator-globaltool --tool-path ./tools > _output >&2; then
     echo "Installing the tool 'reportgenerator'..."; flush_stdout
     execute mkdir -p ./tools
     execute dotnet tool install dotnet-reportgenerator-globaltool --tool-path ./tools --version 5.*

@@ -8,22 +8,23 @@ on:
         default: "9.0.x"
         required: true
       test-project:
-        description: "Path to test project"
+        description: "Path to the test project"
         type: string
         required: false
-      min_coverage_pct:
-        type: number
-        required: true
-        default: 75
-      os:
-        type: string
-        required: false
-        default: '["ubuntu-latest"]'
       configuration:
         description: "The type of build to produce, e.g. Release vs Debug"
         type: string
         required: false
         default: "Release"
+      min_coverage_pct:
+        type: number
+        required: true
+        default: 75
+      os:
+        description: "Runner OS-s"
+        type: string
+        required: true
+        default: '["ubuntu-latest"]'
 
 permissions:
   contents: read
@@ -63,11 +64,13 @@ jobs:
           MIN_COVERAGE_PCT: ${{ inputs.min_coverage_pct }}
           TEST_PROJECT: ${{ inputs.test-project }}
           CONFIGURATION: ${{ inputs.configuration }}
-        run: |
-          ./scripts/bash/run-tests.sh ${{ inputs.test-project }}
+        run: ./scripts/bash/run-tests.sh ${{ inputs.test-project }}
 
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         with:
           name: coverage-${{ matrix.os }}
           path: ${{ env.ARTIFACTS_DIR }}
+          if-no-files-found: error
+          overwrite: true
+          retention-days: 90

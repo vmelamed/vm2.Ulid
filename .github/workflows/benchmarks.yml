@@ -8,35 +8,53 @@ on:
         type: string
         default: "9.0.x"
         required: true
+
       benchmark-project:
-        description: "Path to benchmark project"
+        description: "Path to the benchmark project"
         type: string
-        required: true
+        required: false
+
+      configuration:
+        description: "The type of build to produce, e.g. Release vs Debug"
+        type: string
+        required: false
+        default: "Release"
+
       force-new-baseline:
-        description: "Whether to force new baseline (if true, no regression check is done)"
+        description: "Ignore the existing baseline and force a new baseline"
         type: boolean
         required: true
         default: false
-      regression-threshold:
+
+      max-regression-pct:
         description: "Maximum acceptable performance regression percentage"
         type: number
         required: true
         default: 10 # percent
 
+      os:
+        description: "Runner OS-s"
+        type: string
+        required: true
+        default: '["ubuntu-latest"]'
+
 permissions:
   contents: read
 
 env:
+  # these must be the same across all jobs and steps
   CI: true
-  BM_ARTIFACTS_DIR: "benchmarks/artifacts"
-  BM_SUMMARIES_DIR: "benchmarks/summaries"
-  BM_BASELINE_DIR: "benchmarks/baseline"
-  FORCE_NEW_BASELINE: false
+  ARTIFACTS_DIR: BmResults
+  SUMMARIES_DIR: BmResults/summaries
+  BASELINE_DIR: BmResults/baseline
 
 jobs:
   benchmarks:
-    name: Benchmarks (Linux only)
-    runs-on: ubuntu-latest
+    name: Benchmarks (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: ${{ fromJSON(inputs.os) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -55,46 +73,15 @@ jobs:
       - name: Run benchmarks
         shell: bash
         env:
-          BENCHMARK_PROJECT: ${{ inputs.benchmark-project }}
-        run: |
-          set -euo pipefail
-
-          mkdir -p "${BM_ARTIFACTS_DIR}"
-          dotnet run \
-            --project "${BENCHMARK_PROJECT}" \
-            --configuration Release \
-            --filter '*' \
-            --memory \
-            --exporters JSON \
-            --artifacts "${BM_ARTIFACTS_DIR}"
-
-          if ! command -v jq >/dev/null 2>&1; then
-            sudo apt-get update && sudo apt-get install -y jq
-            echo "jq successfully installed."
-          fi
-
-          shopt -s nullglob
-          # if a glob pattern does not match any files,
-          # it expands to an empty string instead of the default to leaving the pattern unchanged,
-          # i.e. ${BM_ARTIFACTS_DIR}/results/*-report.json - we don't want that
-          files=(${BM_ARTIFACTS_DIR}/results/*-report.json)
-          shopt -u nullglob
-
-          if [ ${#files[@]} -eq 0 ]; then
-            echo "No report JSON found."
-            exit 2
-          fi
-          mkdir -p "${BM_SUMMARIES_DIR}"
-          for f in "${files[@]}"; do
-            sf=$(echo $(basename "${f}") | sed -nE 's/(.*)-report.json/\1-summary.json/p')
-            jq -f .github/workflows/summary.jq "${f}" > "${BM_SUMMARIES_DIR}/${sf}"
-          done
+          FORCE_NEW_BASELINE: ${{ inputs.force-new-baseline }}
+          CONFIGURATION: ${{ inputs.configuration }}
+        run: ./scripts/bash/run-benchmarks.sh ${{ inputs.benchmark-project }}
 
       - name: Upload benchmark summaries artifact
         uses: actions/upload-artifact@v4
         with:
-          name: benchmark-summaries
-          path: ${{ env.BM_SUMMARIES_DIR }}
+          name: summaries-${{ matrix.os }}
+          path: ${{ env.SUMMARIES_DIR }}
           if-no-files-found: error
           overwrite: true
           retention-days: 90
@@ -104,18 +91,18 @@ jobs:
         uses: actions/download-artifact@v4
         continue-on-error: true
         with:
-          name: benchmark-summaries
-          path: ${{ env.BM_BASELINE_DIR }}
+          name: benchmark-baseline-${{ matrix.os }}
+          path: ${{ env.BASELINE_DIR }}
 
       - name: Compare benchmarks against baseline
         if: ${{ !inputs.force-new-baseline }}
         shell: bash
         env:
-          REGRESSION_THRESHOLD: ${{ inputs.regression-threshold }}
+          MAX_REGRESSION_PCT: ${{ inputs.max-regression-pct }}
         run: |
           set -euo pipefail
 
-          fs=$(ls ${BM_SUMMARIES_DIR}/*-summary.json 2>/dev/null || true)
+          fs=$(ls ${SUMMARIES_DIR}/*-summary.json 2>/dev/null || true)
           if [ -z "${fs}" ]; then
             echo "No current benchmark result JSON files found."
             exit 2
@@ -130,9 +117,9 @@ jobs:
             exit 2
           fi
 
-          fs=$(ls "${BM_BASELINE_DIR}"/*-summary.json 2>/dev/null || true)
+          fs=$(ls "${BASELINE_DIR}"/*-summary.json 2>/dev/null || true)
           if [[ -z "${fs}" ]]; then
-            echo "Baseline reports were not found at ${BM_BASELINE_DIR}."
+            echo "Baseline reports were not found at ${BASELINE_DIR}."
             echo "FORCE_NEW_BASELINE=true" >> "$GITHUB_ENV"
             exit 0
           fi
@@ -147,16 +134,16 @@ jobs:
           fi
 
           pct=$(( (SUM_CUR - SUM_BASE) * 100 / SUM_BASE ))
-          echo "Percent change vs baseline: ${pct}% (allowed: ${REGRESSION_THRESHOLD}%)"
+          echo "Percent change vs baseline: ${pct}% (allowed: ${MAX_REGRESSION}%)"
 
-          if (( pct > REGRESSION_THRESHOLD )); then
+          if (( pct > MAX_REGRESSION )); then
             echo "Performance regression exceeds threshold"
             exit 2
           elif (( pct > 0 )); then
             echo "Performance regression within acceptable threshold."
           elif (( pct < 0 )); then
             pct_abs=$(( -pct ))
-            if (( pct_abs >= REGRESSION_THRESHOLD )); then
+            if (( pct_abs >= MAX_REGRESSION )); then
               echo "Significant improvement of ${pct_abs}% over baseline. Updating the baseline."
               echo "FORCE_NEW_BASELINE=true" >> "$GITHUB_ENV"
             else
@@ -165,11 +152,11 @@ jobs:
           fi
 
       - name: Upload benchmark results artifact as a new baseline
-        if: ${{ inputs.force-new-baseline || env.FORCE_NEW_BASELINE || false }}
+        if: ${{ inputs.force-new-baseline || false }}
         uses: actions/upload-artifact@v4
         with:
-          name: benchmark-baseline
-          path: ${{ env.BM_SUMMARIES_DIR }}
+          name: benchmark-baseline-${{ matrix.os }}
+          path: ${{ env.SUMMARIES_DIR }}
           if-no-files-found: error
           overwrite: true
           retention-days: 90

@@ -21,6 +21,12 @@ on:
         default: "9.0.x"
         required: true
 
+      build-configuration:
+        description: "The type of builds to produce, e.g. Release vs Debug"
+        type: string
+        required: false
+        default: "Release"
+
       test-project:
         description: "Path to test project"
         type: string
@@ -45,10 +51,10 @@ on:
         default: "./benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj"
         required: true
 
-      regression-threshold:
+      max-regression-pct:
         description: "Maximum acceptable performance regression percentage"
         type: number
-        default: 10
+        default: 10 # percent
         required: true
 
       force-new-baseline:
@@ -72,6 +78,7 @@ jobs:
     with:
       dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
       os: ${{ inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]' }}
+      configuration: ${{ inputs.build-configuration ||vars.BUILD_CONFIGURATION || 'Release' }}
 
   test:
     name: Test
@@ -81,6 +88,7 @@ jobs:
       dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
       os: ${{ inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]' }}
       test-project: ${{ inputs.test-project || vars.TEST_PROJECT || './test/UlidType.Tests/UlidType.Tests.csproj' }}
+      configuration: ${{ inputs.build-configuration ||vars.BUILD_CONFIGURATION || 'Release' }}
       min_coverage_pct: ${{ inputs.min_coverage_pct || fromJSON(vars.MIN_COVERAGE_PCT) || 75 }}
 
   benchmarks:
@@ -90,6 +98,8 @@ jobs:
     uses: ./.github/workflows/benchmarks.yml
     with:
       dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
+      os: ${{ inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]' }}
       benchmark-project: ${{ inputs.benchmark-project || vars.BENCHMARK_PROJECT || './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj' }}
+      configuration: ${{ inputs.build-configuration ||vars.BUILD_CONFIGURATION || 'Release' }}
       force-new-baseline: ${{ inputs.force-new-baseline || fromJSON(vars.FORCE_NEW_BASELINE) || false }}
-      regression-threshold: ${{ inputs.regression-threshold || fromJSON(vars.REGRESSION_THRESHOLD) || 10 }}
+      max-regression-pct: ${{ inputs.max-regression-pct || fromJSON(vars.MAX_REGRESSION_PCT) || 10 }}

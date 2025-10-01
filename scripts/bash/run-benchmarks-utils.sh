@@ -6,16 +6,16 @@ function usage()
     echo "
 Usage:
 
-    $0 [<test-project-path>] |
+    $0 [<bm-project-path>] |
        [--<long option> <value>|-<short option> <value> |
         --<long switch>|-<short switch> ]*
 
-    This script runs the tests in the specified test project and collects code
-    coverage information. It assumes that the directory 'scripts/bash' is located
-    in the root directory of the solution (here: $solution_dir).
+    This script runs the benchmark tests in the specified project. It assumes
+    that the directory 'scripts/bash' is located in the root directory of the
+    solution (here: $solution_dir).
 
 Parameters:
-    <test-project-path>     The path to the test project file. Optional.
+    <bm-project-path>       The path to the benchmark project file. Optional.
                             Initial value from \$TEST_PROJECT or
                             $test_project
 
@@ -38,9 +38,9 @@ Switches:
                             Initial value from \$QUIET or 'false'
 
     --verbose | -v          Enables verbose output: all output from the invoked
-                            commands (e.g. dotnet, reportgenerator) to be sent
-                            to 'stdout' instead of '/dev/null'. It also enables
-                            the output from the script function trace().
+                            commands (e.g. dotnet, jq, etc.) to be sent to
+                            'stdout' instead of '/dev/null'. It also enables the
+                            output from the script function trace().
                             Initial value from \$VERBOSE or 'false'
 
     --trace | -x            Sets the Bash trace option 'set -x' and enables the
@@ -48,20 +48,22 @@ Switches:
                             Initial value from \$TRACE_ENABLED or 'false'
 
 Options:
-    --min_coverage_pct | -t
-                            Specifies the minimum acceptable code coverage
-                            percentage (0-100).
-                            Initial value from \$MIN_COVERAGE_PCT or 80
+    --max_regression_pct | -r
+                            Specifies the maximum acceptable regression percentage
+                            (0-100) when comparing to a previous, base-line
+                            benchmark results.
+                            Initial value from \$MAX_REGRESSION_PCT or 10
 
     --configuration | -c    Specifies the build configuration to use ('Debug' or
                             'Release').
                             Initial value from \$CONFIGURATION or 'Release'
 
-    --artifacts | -a        Specifies the directory where to create the script's
-                            artifacts: summary, report files, etc.
+    --artifacts | -a        Specifies the directory where to create the
+                            benchmark artifacts: results, summaries, base lines,
+                            etc.
                             Initial value from \$ARTIFACTS_DIR or
-                            '\$solution_dir/TestResults'
-                            ($solution_dir/TestResults)
+                            '\$solution_dir/BmResults'
+                            ($solution_dir/BmResults)
 
 "
     if [[ "${#}" -gt 0 && "$1" ]]; then
@@ -72,6 +74,7 @@ Options:
     fi
     flush_stdout
 }
+
 
 function get_arguments()
 {
@@ -104,17 +107,17 @@ function get_arguments()
 
             --verbose|-v ) verbose=true; trace_enabled=true; _output="/dev/stdout" ;;
 
-            --trace|-x ) trace_enabled=true; set -x; ;;
+            --trace|-x ) trace_enabled=true; set -x ;;
 
             --artifacts|-a ) value="$1"; shift; ARTIFACTS_DIR=$(realpath -m "$value") ;;
 
-            --min_coverage_pct|-t )
+            --max_regression_pct|-r )
                 value="$1"; shift
                 if ! [[ "$value" =~ ^[0-9]+$ ]] || (( value < 0 || value > 100 )); then
-                    usage "The coverage threshold must be an integer between 0 and 100. Got '$value'."
+                    usage "The regression threshold must be an integer between 0 and 100. Got '$value'."
                     exit 2
                 fi
-                min_coverage_pct=$((value + 0))  # ensure it's an integer
+                max_regression_pct=$((value + 0))  # ensure it's an integer
                 ;;
 
             --configuration|-c )
@@ -145,34 +148,19 @@ dump_all_variables()
 {
     dump_vars \
         --header "Script Arguments:" \
-        test_project \
+        bm_project \
         debugger \
         dry_run \
         verbose \
         quiet \
         trace_enabled \
         configuration \
-        min_coverage_pct \
+        max_regression_pct \
         ARTIFACTS_DIR \
         --header "other globals:" \
         solution_dir \
         script_dir \
-        COVERAGE_RESULTS_DIR \
+        SUMMARIES_DIR \
         --line \
-        base_name \
-        --blank \
-        test_results_results_dir \
-        --blank \
-        coverage_source_dir \
-        coverage_source_fileName \
-        coverage_source_path \
-        --blank \
-        coverage_reports_dir \
-        coverage_reports_fileName \
-        coverage_reports_path \
-        --blank \
-        coverage_summary_dir \
-        coverage_summary_fileName \
-        coverage_summary_path \
-        coverage_summary_html_dir
+        base_name
 }
