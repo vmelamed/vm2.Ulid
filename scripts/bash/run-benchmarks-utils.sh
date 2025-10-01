@@ -162,5 +162,7 @@ dump_all_variables()
         script_dir \
         SUMMARIES_DIR \
         --line \
-        base_name
+        results_dir \
+        summaries_dir \
+        baseline_dir
 }

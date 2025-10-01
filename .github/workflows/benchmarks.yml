@@ -47,6 +47,7 @@ env:
   ARTIFACTS_DIR: BmResults
   SUMMARIES_DIR: BmResults/summaries
   BASELINE_DIR: BmResults/baseline
+  FORCE_NEW_BASELINE: false
 
 jobs:
   benchmarks:
@@ -70,12 +71,21 @@ jobs:
             **/packages.lock.json
             **/*.csproj
 
-      - name: Run benchmarks
+      - name: Download baseline benchmark summaries artifact
+        if: ${{ !inputs.force-new-baseline }}
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: benchmark-baseline-${{ matrix.os }}
+          path: ${{ env.BASELINE_DIR }}
+
+      - name: Run the benchmarks
         shell: bash
         env:
           FORCE_NEW_BASELINE: ${{ inputs.force-new-baseline }}
           CONFIGURATION: ${{ inputs.configuration }}
-        run: ./scripts/bash/run-benchmarks.sh ${{ inputs.benchmark-project }}
+        run: |
+          ./scripts/bash/run-benchmarks.sh ${{ inputs.benchmark-project }}
 
       - name: Upload benchmark summaries artifact
         uses: actions/upload-artifact@v4
@@ -86,73 +96,8 @@ jobs:
           overwrite: true
           retention-days: 90
 
-      - name: Download baseline benchmark summaries artifact
-        if: ${{ !inputs.force-new-baseline }}
-        uses: actions/download-artifact@v4
-        continue-on-error: true
-        with:
-          name: benchmark-baseline-${{ matrix.os }}
-          path: ${{ env.BASELINE_DIR }}
-
-      - name: Compare benchmarks against baseline
-        if: ${{ !inputs.force-new-baseline }}
-        shell: bash
-        env:
-          MAX_REGRESSION_PCT: ${{ inputs.max-regression-pct }}
-        run: |
-          set -euo pipefail
-
-          fs=$(ls ${SUMMARIES_DIR}/*-summary.json 2>/dev/null || true)
-          if [ -z "${fs}" ]; then
-            echo "No current benchmark result JSON files found."
-            exit 2
-          fi
-          SUM_CUR=0
-          for f in ${fs}; do
-            VAL=$(jq '( .Totals.Mean // 0)' "${f}")
-            SUM_CUR=$(( SUM_CUR + VAL ))
-          done
-          if (( SUM_CUR == 0 )); then
-            echo "Current sum is invalid (${SUM_CUR})."
-            exit 2
-          fi
-
-          fs=$(ls "${BASELINE_DIR}"/*-summary.json 2>/dev/null || true)
-          if [[ -z "${fs}" ]]; then
-            echo "Baseline reports were not found at ${BASELINE_DIR}."
-            echo "FORCE_NEW_BASELINE=true" >> "$GITHUB_ENV"
-            exit 0
-          fi
-          SUM_BASE=0
-          for f in ${fs}; do
-            VAL=$(jq '( .Totals.Mean // 0)' "${f}")
-            SUM_BASE=$(( SUM_BASE + VAL ))
-          done
-          if (( SUM_BASE == 0 )); then
-            echo "Baseline sum is invalid (${SUM_BASE})."
-            exit 2
-          fi
-
-          pct=$(( (SUM_CUR - SUM_BASE) * 100 / SUM_BASE ))
-          echo "Percent change vs baseline: ${pct}% (allowed: ${MAX_REGRESSION}%)"
-
-          if (( pct > MAX_REGRESSION )); then
-            echo "Performance regression exceeds threshold"
-            exit 2
-          elif (( pct > 0 )); then
-            echo "Performance regression within acceptable threshold."
-          elif (( pct < 0 )); then
-            pct_abs=$(( -pct ))
-            if (( pct_abs >= MAX_REGRESSION )); then
-              echo "Significant improvement of ${pct_abs}% over baseline. Updating the baseline."
-              echo "FORCE_NEW_BASELINE=true" >> "$GITHUB_ENV"
-            else
-              echo "Improvement of ${pct_abs}% over baseline."
-            fi
-          fi
-
       - name: Upload benchmark results artifact as a new baseline
-        if: ${{ inputs.force-new-baseline || false }}
+        if: ${{ inputs.force-new-baseline || env.FORCE_NEW_BASELINE || false }}
         uses: actions/upload-artifact@v4
         with:
           name: benchmark-baseline-${{ matrix.os }}
