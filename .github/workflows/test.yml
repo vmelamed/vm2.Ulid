@@ -78,7 +78,7 @@ jobs:
           TEST_PROJECT: ${{ inputs.test-project }}
           CONFIGURATION: ${{ inputs.configuration }}
         run: |
-          ./scripts/bash/run-tests.sh ${{ inputs.test-project }} --verbose
+          ./scripts/bash/run-tests.sh ${{ inputs.test-project }}
 
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
