@@ -34,9 +34,9 @@ declare -r renamed_results_dir
 if [[ -d "$ARTIFACTS_DIR" && "$(ls -A "$ARTIFACTS_DIR")" ]]; then
     choice=$(choose \
                 "The test results directory '$ARTIFACTS_DIR' already exists. What do you want to do?" \
-                "Delete the directory and continue" \
-                "Rename the directory to '$renamed_results_dir' and continue" \
-                "Exit the script") || exit $?
+                    "Delete the directory and continue" \
+                    "Rename the directory to '$renamed_results_dir' and continue" \
+                    "Exit the script") || exit $?
 
     trace "User selected option: $choice"
     case $choice in
@@ -91,7 +91,7 @@ execute dotnet test "$test_project" \
     --coverage-output-format cobertura \
     --coverage-output "$coverage_source_path"
 
-if [[ ! "$dry_run" ]]; then
+if [[ $dry_run != "true" ]]; then
     f=$(find "$(pwd)" -type f -path "*/$coverage_source_fileName" -print -quit || true)
     if [ -z "$f" ]; then
         echo "Coverage file not found." >&2
@@ -124,7 +124,7 @@ if [[ "$uninstall_reportgenerator" = "true" ]]; then
     execute rm -rf ./tools
 fi
 
-if [[ ! "$dry_run" ]]; then
+if [[ $dry_run != "true" ]]; then
     if [ ! -s "$coverage_reports_path" ]; then
         echo "Coverage summary not found." >&2
         exit 2
@@ -138,7 +138,7 @@ execute mv "$coverage_reports_dir"  "$coverage_summary_html_dir"
 
 # Extract the coverage percentage from the summary file
 trace "Extracting coverage percentage from '$coverage_summary_path'..."
-if [[ ! "$dry_run" ]]; then
+if [[ $dry_run != "true" ]]; then
     pct=$(sed -nE 's/Method coverage: ([0-9]+)(\.[0-9]+)?%.*/\1/p' "$coverage_summary_path" | head -n1)
     if [ -z "$pct" ]; then
         echo "Could not parse coverage percent from $coverage_summary_path" >&2
@@ -152,6 +152,6 @@ if [[ ! "$dry_run" ]]; then
         echo "Coverage $pct% is below threshold $min_coverage_pct%" >&2
         exit 2
     else
-        echo "Coverage $pct% meets threshold $min_coverage_pct%" >&2
+        echo "Coverage $pct% meets threshold $min_coverage_pct%"; flush_stdout
     fi
 fi
