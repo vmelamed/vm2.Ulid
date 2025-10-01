@@ -4,21 +4,21 @@ on:
   workflow_call:
     inputs:
       dotnet-version:
-        description: 'Version of .NET SDK to use'
+        description: "Version of .NET SDK to use"
         type: string
-        default: '9.0.x'
+        default: "9.0.x"
         required: true
       benchmark-project:
-        description: 'Path to benchmark project'
+        description: "Path to benchmark project"
         type: string
         required: true
       force-new-baseline:
-        description: 'Whether to force new baseline (if true, no regression check is done)'
+        description: "Whether to force new baseline (if true, no regression check is done)"
         type: boolean
         required: true
         default: false
       regression-threshold:
-        description: 'Maximum acceptable performance regression percentage'
+        description: "Maximum acceptable performance regression percentage"
         type: number
         required: true
         default: 10 # percent
@@ -27,9 +27,11 @@ permissions:
   contents: read
 
 env:
-  BM_ARTIFACTS_DIR: 'benchmarks/artifacts'
-  BM_SUMMARIES_DIR: 'benchmarks/summaries'
-  BM_BASELINE_DIR:  'benchmarks/baseline'
+  CI: true
+  BM_ARTIFACTS_DIR: "benchmarks/artifacts"
+  BM_SUMMARIES_DIR: "benchmarks/summaries"
+  BM_BASELINE_DIR: "benchmarks/baseline"
+  FORCE_NEW_BASELINE: false
 
 jobs:
   benchmarks:
@@ -163,7 +165,7 @@ jobs:
           fi
 
       - name: Upload benchmark results artifact as a new baseline
-        if: ${{ inputs.force-new-baseline || env.FORCE_NEW_BASELINE }}
+        if: ${{ inputs.force-new-baseline || env.FORCE_NEW_BASELINE || false }}
         uses: actions/upload-artifact@v4
         with:
           name: benchmark-baseline

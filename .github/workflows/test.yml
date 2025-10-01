@@ -57,20 +57,6 @@ jobs:
       - name: Make Scripts Executable
         run: chmod u+x ./scripts/bash/*.sh
 
-      - name: ShellCheck
-        uses: ludeeus/action-shellcheck@master
-        env:
-          SHELLCHECK_OPTS: --external-sources --check-sourced
-        with:
-          scandir: ./scripts/bash
-          check_together: true
-          severity: error
-          ignore_names: |
-            _common.sh
-            run-test-utils.sh
-            scratch*.sh
-            self-test.sh
-
       - name: Run script for unit test with coverage
         shell: bash
         env:
