@@ -168,11 +168,11 @@ function get_arguments()
                 if ! p=$(realpath -e "$value"); then
                     usage "The specified test project file '$value' does not exist."
                     exit 2
-                elif [[ -n "$test_project" && "$test_project" != "$p" ]]; then
-                    usage "More than one test project specified: '$test_project' and '$p'."
+                elif [[ -n "$bm_project" && "$bm_project" != "$p" ]]; then
+                    usage "More than one test project specified: '$bm_project' and '$p'."
                     exit 2
                 else
-                    test_project="$p"
+                    bm_project="$p"
                 fi
                 ;;
         esac
