@@ -3,21 +3,29 @@ name: Reusable - Builds the .NET project in the current workspace
 on:
   workflow_call:
     inputs:
-      dotnet-version:
-        description: "Version of .NET SDK to use"
-        type: string
-        required: false
-        default: "9.0.x"
       os:
         description: "JSON array of runners"
         type: string
         required: false
         default: '["ubuntu-latest"]'
+
+      dotnet-version:
+        description: "Version of .NET SDK to use"
+        type: string
+        required: false
+        default: "9.0.x"
+
       configuration:
         description: "The type of build to produce, e.g. Release vs Debug"
         type: string
         required: false
         default: "Release"
+
+      define:
+        description: "Define constants to pass to the compiler"
+        type: string
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -45,7 +53,10 @@ jobs:
             **/*.csproj
 
       - name: Build (${{ inputs.configuration }})
-        run: dotnet build --configuration ${{ inputs.configuration }}
+        run: >-
+          dotnet build
+          --configuration ${{ inputs.configuration }}
+          --define "${{ inputs.define }}"
 
       - name: ShellCheck
         uses: ludeeus/action-shellcheck@master

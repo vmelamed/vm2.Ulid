@@ -3,15 +3,22 @@ name: Reusable - Test .NET
 on:
   workflow_call:
     inputs:
+      os:
+        description: "Runner OS-s"
+        type: string
+        required: true
+        default: '["ubuntu-latest"]'
+
       dotnet-version:
         type: string
-        default: "9.0.x"
         required: true
+        default: "9.0.x"
 
       test-project:
         description: "Path to the test project"
         type: string
         required: false
+        default: "./test/UlidType.Tests/UlidType.Tests.csproj"
 
       configuration:
         description: "The type of build to produce, e.g. Release vs Debug"
@@ -22,25 +29,19 @@ on:
       define:
         description: "Define constants to pass to the compiler"
         type: string
-        default: ""
         required: false
+        default: ""
 
       verbose:
         description: "Whether to enable verbose logging"
         type: boolean
-        default: false
         required: false
+        default: false
 
       min_coverage_pct:
         type: number
         required: true
         default: 75
-
-      os:
-        description: "Runner OS-s"
-        type: string
-        required: true
-        default: '["ubuntu-latest"]'
 
 permissions:
   contents: read
@@ -77,15 +78,13 @@ jobs:
       - name: Run script for unit test with coverage
         shell: bash
         env:
-          MIN_COVERAGE_PCT: ${{ inputs.min_coverage_pct }}
-          TEST_PROJECT: ${{ inputs.test-project }}
-          CONFIGURATION: ${{ inputs.configuration }}
+          VERBOSE: ${{ inputs.verbose || false }}
         run: >-
           ./scripts/bash/run-tests.sh
-          --verbose "${{ inputs.verbose }}"
+          ${{ inputs.test-project }}
           --min-coverage-pct "${{ inputs.min_coverage_pct }}"
-          --define "${{ inputs.define }}"
           --configuration "${{ inputs.configuration }}"
+          --define "${{ inputs.define }}"
 
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4

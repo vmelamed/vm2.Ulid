@@ -76,17 +76,18 @@ jobs:
           (!contains(github.event.head_commit.message, '[skip ci]')) &&
           (!contains(github.event.head_commit.message, '[no ci]'  ))    }}
     with:
-      dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
       os: ${{ inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]' }}
+      dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
       configuration: ${{ inputs.build-configuration ||vars.BUILD_CONFIGURATION || 'Release' }}
+      define: ${{ inputs.define || vars.DEFINE || '' }}
 
   test:
     name: Test
     needs: build
     uses: ./.github/workflows/test.yml
     with:
-      dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
       os: ${{ inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]' }}
+      dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
       test-project: ${{ inputs.test-project || vars.TEST_PROJECT || './test/UlidType.Tests/UlidType.Tests.csproj' }}
       configuration: ${{ inputs.build-configuration ||vars.BUILD_CONFIGURATION || 'Release' }}
       define: ${{ inputs.define || vars.DEFINE || '' }}
@@ -99,8 +100,8 @@ jobs:
     if: ${{ inputs.run-benchmarks || fromJSON(vars.RUN_BENCHMARKS) || true }}
     uses: ./.github/workflows/benchmarks.yml
     with:
-      dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
       os: ${{ inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]' }}
+      dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
       benchmark-project: ${{ inputs.benchmark-project || vars.BENCHMARK_PROJECT || './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj' }}
       configuration: ${{ inputs.build-configuration ||vars.BUILD_CONFIGURATION || 'Release' }}
       define: ${{ inputs.define || vars.DEFINE || '' }}

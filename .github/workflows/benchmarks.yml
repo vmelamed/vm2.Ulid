@@ -3,16 +3,23 @@ name: Reusable - Benchmarks
 on:
   workflow_call:
     inputs:
+      os:
+        description: "Runner OS-s"
+        type: string
+        required: true
+        default: '["ubuntu-latest"]'
+
       dotnet-version:
         description: "Version of .NET SDK to use"
         type: string
-        default: "9.0.x"
         required: true
+        default: "9.0.x"
 
       benchmark-project:
         description: "Path to the benchmark project"
         type: string
         required: false
+        default: "./benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj"
 
       configuration:
         description: "The type of build to produce, e.g. Release vs Debug"
@@ -23,19 +30,13 @@ on:
       define:
         description: "Define constants to pass to the compiler"
         type: string
-        default: ""
         required: false
+        default: ""
 
       verbose:
         description: "Whether to enable verbose logging"
         type: boolean
-        default: false
         required: false
-
-      force-new-baseline:
-        description: "Ignore the existing baseline and force a new baseline"
-        type: boolean
-        required: true
         default: false
 
       max-regression-pct:
@@ -44,11 +45,11 @@ on:
         required: true
         default: 10 # percent
 
-      os:
-        description: "Runner OS-s"
-        type: string
+      force-new-baseline:
+        description: "Ignore the existing baseline and force a new baseline"
+        type: boolean
         required: true
-        default: '["ubuntu-latest"]'
+        default: false
 
 permissions:
   contents: read
@@ -95,9 +96,9 @@ jobs:
         shell: bash
         env:
           FORCE_NEW_BASELINE: ${{ inputs.force-new-baseline }}
+          VERBOSE: ${{ inputs.verbose || false }}
         run: >-
           ./scripts/bash/run-benchmarks.sh ${{ inputs.benchmark-project }}
-          --verbose "${{ inputs.verbose }}"
           --max_regression_pct "${{ inputs.max-regression-pct }}"
           --define "${{ inputs.define }}"
           --configuration "${{ inputs.configuration }}"
