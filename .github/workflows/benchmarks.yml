@@ -99,7 +99,7 @@ jobs:
           VERBOSE: ${{ inputs.verbose || false }}
         run: >-
           ./scripts/bash/run-benchmarks.sh ${{ inputs.benchmark-project }}
-          --max_regression_pct "${{ inputs.max-regression-pct }}"
+          --max-regression-pct "${{ inputs.max-regression-pct }}"
           --define "${{ inputs.define }}"
           --configuration "${{ inputs.configuration }}"
 
