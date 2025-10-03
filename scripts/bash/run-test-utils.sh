@@ -50,7 +50,7 @@ Switches:
                             Initial value from \$TRACE_ENABLED or 'false'
 
 Options:
-    --min_coverage_pct | -t
+    --min-coverage-pct | -t
                             Specifies the minimum acceptable code coverage
                             percentage (0-100).
                             Initial value from \$MIN_COVERAGE_PCT or 80
@@ -119,7 +119,7 @@ function get_arguments()
 
             --artifacts|-a ) value="$1"; shift; ARTIFACTS_DIR=$(realpath -m "$value") ;;
 
-            --min_coverage_pct|-t )
+            --min-coverage-pct|-t )
                 value="$1"; shift
                 if ! [[ "$value" =~ ^[0-9]+$ ]] || (( value < 0 || value > 100 )); then
                     usage "The coverage threshold must be an integer between 0 and 100. Got '$value'."

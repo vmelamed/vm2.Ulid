@@ -80,7 +80,12 @@ jobs:
           MIN_COVERAGE_PCT: ${{ inputs.min_coverage_pct }}
           TEST_PROJECT: ${{ inputs.test-project }}
           CONFIGURATION: ${{ inputs.configuration }}
-        run: ./scripts/bash/run-tests.sh ${{ inputs.test-project }}
+        run: >-
+          ./scripts/bash/run-tests.sh
+              --verbose "${{ inputs.verbose }}"
+              --min-coverage-pct "${{ inputs.min_coverage_pct }}"
+              --define "${{ inputs.define }}"
+              --configuration "${{ inputs.configuration }}"
 
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
