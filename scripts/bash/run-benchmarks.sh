@@ -83,14 +83,14 @@ execute mkdir -p "$summaries_dir"
 
 trace "Running benchmark tests in project '$bm_project' with configuration '$configuration'..."
 execute mkdir -p "$ARTIFACTS_DIR"
-# execute dotnet run \
-#     /p:DefineConstants="$DEFINE" \
-#     --project "$bm_project" \
-#     --configuration "$configuration" \
-#     --filter '*' \
-#     --memory \
-#     --exporters JSON \
-#     --artifacts "$ARTIFACTS_DIR"
+execute dotnet run \
+    /p:DefineConstants="$DEFINE" \
+    --project "$bm_project" \
+    --configuration "$configuration" \
+    --filter '*' \
+    --memory \
+    --exporters JSON \
+    --artifacts "$ARTIFACTS_DIR"
 
 if ! command -v jq >/dev/null 2>&1; then
     execute sudo apt-get update && sudo apt-get install -y jq
