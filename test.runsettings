@@ -5,7 +5,7 @@ For more information on using a .runsettings file, see https://aka.ms/vstest-run
 -->
 <RunSettings>
     <RunConfiguration>
-        <!--<ResultsDirectory>../../../TestResults</ResultsDirectory> relative to the test project file, not the solution -->
+        <!--<ResultsDirectory>../../../TestArtifacts</ResultsDirectory> relative to the test project file, not the solution -->
         <CollectSourceInformation>true</CollectSourceInformation>
         <MaxCpuCount>0</MaxCpuCount>
     </RunConfiguration>

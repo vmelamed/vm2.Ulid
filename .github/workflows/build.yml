@@ -4,20 +4,20 @@ on:
   workflow_call:
     inputs:
       dotnet-version:
-        description: 'Version of .NET SDK to use'
+        description: "Version of .NET SDK to use"
         type: string
         required: false
-        default: '9.0.x'
+        default: "9.0.x"
       os:
-        description: 'JSON array of runners'
+        description: "JSON array of runners"
         type: string
         required: false
         default: '["ubuntu-latest"]'
       configuration:
-        description: 'The type of build to produce, e.g. Release vs Debug'
+        description: "The type of build to produce, e.g. Release vs Debug"
         type: string
         required: false
-        default: 'Release'
+        default: "Release"
 
 permissions:
   contents: read
@@ -30,7 +30,6 @@ jobs:
       matrix:
         os: ${{ fromJSON(inputs.os) }}
     steps:
-
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -55,9 +54,6 @@ jobs:
         with:
           scandir: ./scripts/bash
           check_together: true
-          severity: error
-          ignore_names: |
-            _common.sh
-            run-test-utils.sh
-            scratch*.sh
-            self-test.sh
+          severity: warning
+          format: tty
+          ignore_names: self-test.sh

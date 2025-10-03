@@ -3,6 +3,8 @@
 function usage()
 {
     set +x
+
+    # shellcheck disable=SC2154 # solution_dir is referenced but not assigned.
     echo "
 Usage:
 
@@ -11,8 +13,8 @@ Usage:
         --<long switch>|-<short switch> ]*
 
     This script runs the tests in the specified test project and collects code
-    coverage information. It assumes that the directory 'scripts/bash' is located
-    in the root directory of the solution (here: $solution_dir).
+    coverage information. It assumes that the directory 'scripts/bash' is
+    located in the root directory of the solution (here: $solution_dir).
 
 Parameters:
     <test-project-path>     The path to the test project file. Optional.
@@ -20,9 +22,9 @@ Parameters:
                             $test_project
 
 Switches:
-    --debugger              Set when the script is running under a debugger, e.g.
-                            'gdb'. If specified, the script will not set traps
-                            for DEBUG and EXIT, and will set the '--quiet'
+    --debugger              Set when the script is running under a debugger,
+                            e.g. 'gdb'. If specified, the script will not set
+                            traps for DEBUG and EXIT, and will set the '--quiet'
                             switch. If needed, this option must be specified as
                             the first argument.
                             Initial value from \$DEBUGGER or 'false'
@@ -60,11 +62,11 @@ Options:
     --artifacts | -a        Specifies the directory where to create the script's
                             artifacts: summary, report files, etc.
                             Initial value from \$ARTIFACTS_DIR or
-                            '\$solution_dir/TestResults'
-                            ($solution_dir/TestResults)
+                            '\$solution_dir/TestArtifacts'
+                            ($solution_dir/TestArtifacts)
 
 "
-    if [[ "${#}" -gt 0 && "$1" ]]; then
+    if [[ "${#}" -gt 0 && -n "$1" ]]; then
         echo "$1" >&2
     fi
     if [[ "$trace_enabled" == "true" ]]; then
@@ -73,6 +75,7 @@ Options:
     flush_stdout
 }
 
+# shellcheck disable=SC2034 # xyz appears unused. Verify use (or export if used externally).
 function get_arguments()
 {
     if [[ "${#}" -eq 0 ]]; then
@@ -96,13 +99,13 @@ function get_arguments()
         flag="$1"
         shift
         case "$flag" in
-            --help|-h|'-?' ) usage; exit 0 ;;
+            --help|-h ) usage; exit 0 ;;
 
             --dry-run|-y ) dry_run=true ;;
 
             --quiet|-q ) quiet=true ;;
 
-            --verbose|-v ) verbose=true; trace_enabled=true; _output="/dev/stdout" ;;
+            --verbose|-v ) verbose=true; trace_enabled=true; _ignore="/dev/stdout" ;;
 
             --trace|-x ) trace_enabled=true; set -x; ;;
 

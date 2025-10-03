@@ -13,7 +13,8 @@
             "args": [],
             "env": {
                 "QUIET": false,
-                "VERBOSE": 1
+                "VERBOSE": true,
+                "TRACE_ENABLED": true
             },
         },
         {

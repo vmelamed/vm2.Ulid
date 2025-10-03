@@ -3,6 +3,8 @@
 function usage()
 {
     set +x
+
+    # shellcheck disable=SC2154 # solution_dir is referenced but not assigned.
     echo "
 Usage:
 
@@ -16,8 +18,8 @@ Usage:
 
 Parameters:
     <bm-project-path>       The path to the benchmark project file. Optional.
-                            Initial value from \$TEST_PROJECT or
-                            $test_project
+                            Initial value from \$BM_PROJECT or
+                            $bm_project
 
 Switches:
     --debugger              Set when the script is running under a debugger, e.g.
@@ -47,12 +49,17 @@ Switches:
                             output from the functions 'trace' and 'dump_vars'.
                             Initial value from \$TRACE_ENABLED or 'false'
 
+    --short-run | -s        A shortcut for '--define SHORT_RUN'. See below.
+                            Initial value from \$DEFINE.
+
 Options:
-    --max_regression_pct | -r
-                            Specifies the maximum acceptable regression percentage
-                            (0-100) when comparing to a previous, base-line
-                            benchmark results.
-                            Initial value from \$MAX_REGRESSION_PCT or 10
+    --define | -d           Defines one or more user-defined pre-processor
+                            symbols to be used when building the benchmark
+                            project, e.g. 'SHORT_RUN'. Which generates a shorter
+                            and faster, but less accurate benchmark run. You can
+                            specify this option multiple times to define multiple
+                            symbols.
+                            Initial value from \$DEFINE or ''
 
     --configuration | -c    Specifies the build configuration to use ('Debug' or
                             'Release').
@@ -62,11 +69,17 @@ Options:
                             benchmark artifacts: results, summaries, base lines,
                             etc.
                             Initial value from \$ARTIFACTS_DIR or
-                            '\$solution_dir/BmResults'
-                            ($solution_dir/BmResults)
+                            '\$solution_dir/BmArtifacts'
+                            ($solution_dir/BmArtifacts)
+
+    --max-regression-pct | -r
+                            Specifies the maximum acceptable regression percentage
+                            (0-100) when comparing to a previous, base-line
+                            benchmark results.
+                            Initial value from \$MAX_REGRESSION_PCT or 10
 
 "
-    if [[ "${#}" -gt 0 && "$1" ]]; then
+    if [[ "${#}" -gt 0 && -n "$1" ]]; then
         echo "$1" >&2
     fi
     if [[ "$trace_enabled" == "true" ]]; then
@@ -75,7 +88,9 @@ Options:
     flush_stdout
 }
 
+declare -x DEFINE="${DEFINE:-}"
 
+# shellcheck disable=SC2034 # xyz appears unused. Verify use (or export if used externally).
 function get_arguments()
 {
     if [[ "${#}" -eq 0 ]]; then
@@ -96,28 +111,48 @@ function get_arguments()
 
     while [[ "${#}" -gt 0 ]]; do
         # get the flag and convert it to lower case
-        flag="$1"
-        shift
+        flag="$1"; shift
         case "$flag" in
-            --help|-h|'-?' ) usage; exit 0 ;;
+            --help|-h ) usage; exit 0 ;;
 
             --dry-run|-y ) dry_run=true ;;
 
             --quiet|-q ) quiet=true ;;
 
-            --verbose|-v ) verbose=true; trace_enabled=true; _output="/dev/stdout" ;;
+            --verbose|-v ) verbose=true; trace_enabled=true; _ignore="/dev/stdout" ;;
 
             --trace|-x ) trace_enabled=true; set -x ;;
 
             --artifacts|-a ) value="$1"; shift; ARTIFACTS_DIR=$(realpath -m "$value") ;;
 
-            --max_regression_pct|-r )
+            --max-regression-pct|-r )
                 value="$1"; shift
                 if ! [[ "$value" =~ ^[0-9]+$ ]] || (( value < 0 || value > 100 )); then
                     usage "The regression threshold must be an integer between 0 and 100. Got '$value'."
                     exit 2
                 fi
                 max_regression_pct=$((value + 0))  # ensure it's an integer
+                ;;
+
+            --define|-d )
+                value="$1"; shift
+                if ! [[ "$value" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
+                    usage "The specified pre-processor symbol '$value' is not valid."
+                    exit 2
+                fi
+                if [[ -z "$DEFINE" ]]; then
+                    DEFINE="$value"
+                elif [[ ! "$DEFINE" =~ (^|;)"$value"($|;) ]]; then
+                    DEFINE="$DEFINE;$value"
+                fi
+                ;;
+
+            --short-run|-s )
+                if [[ -z "$DEFINE" ]]; then
+                    DEFINE="SHORT_RUN"
+                elif [[ ! "$DEFINE" =~ (^|;)SHORT_RUN($|;) ]]; then
+                    DEFINE="$DEFINE;SHORT_RUN"
+                fi
                 ;;
 
             --configuration|-c )
@@ -155,12 +190,12 @@ dump_all_variables()
         quiet \
         trace_enabled \
         configuration \
+        DEFINE \
         max_regression_pct \
         ARTIFACTS_DIR \
         --header "other globals:" \
         solution_dir \
         script_dir \
-        SUMMARIES_DIR \
         --line \
         results_dir \
         summaries_dir \

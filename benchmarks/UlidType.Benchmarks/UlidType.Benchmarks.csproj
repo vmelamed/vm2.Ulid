@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <RootNamespace>vm2.UlidType.Benchmark</RootNamespace>
+        <DefineConstants>$(DefineConstants);$(UserDefined)</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>

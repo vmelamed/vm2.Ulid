@@ -402,10 +402,11 @@ launchSettings.json
 
 # benchmarkDotNet results folder(s)
 BenchmarkDotNet.Artifacts/
-Artifacts/
+BmArtifacts/
 
-# unit tests Code Coverage folder
+# unit tests default Code Coverage folder
 TestResults/
+TestArtifacts/
 report.txt
 
 # Coverage files
@@ -422,3 +423,4 @@ report.txt
 *.BLOB
 *scratch*
 *scratch*/
+_ignore

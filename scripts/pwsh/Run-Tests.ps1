@@ -7,8 +7,8 @@ Requires: .NET SDK, reportgenerator global tool (auto installed to a temp tools 
 [CmdletBinding()] param(
     [string]$TestProject = './test/UlidType.Tests/UlidType.Tests.csproj',
     [int]$CoverageThreshold = 80,
-    [ValidateSet('Debug','Release')][string]$Configuration = 'Release',
-    [string]$Artifacts = './TestResults',
+    [ValidateSet('Debug', 'Release')][string]$Configuration = 'Release',
+    [string]$Artifacts = './TestArtifacts',
     [switch]$Quiet,
     [switch]$DryRun,
     [switch]$Trace,
@@ -25,13 +25,13 @@ Set-CommonOptions -Debug:$Debug -Trace:$Trace -DryRun:$DryRun -Quiet:$Quiet
 
 # Resolve full paths
 $TestProject = (Resolve-Path -LiteralPath $TestProject).Path
-$Artifacts    = (Resolve-Path -LiteralPath (New-Item -ItemType Directory -Force -Path $Artifacts)).Path
+$Artifacts = (Resolve-Path -LiteralPath (New-Item -ItemType Directory -Force -Path $Artifacts)).Path
 $CoverageRoot = Join-Path $Artifacts 'CoverageResults'
-$ResultsDir   = Join-Path $Artifacts 'Results'
-$CoverageRaw  = Join-Path $CoverageRoot 'coverage'
+$ResultsDir = Join-Path $Artifacts 'Results'
+$CoverageRaw = Join-Path $CoverageRoot 'coverage'
 $CoverageFile = Join-Path $CoverageRaw 'coverage.cobertura.xml'
-$ReportDir    = Join-Path $CoverageRoot 'coverage_reports'
-$SummaryFile  = Join-Path $ReportDir 'Summary.txt'
+$ReportDir = Join-Path $CoverageRoot 'coverage_reports'
+$SummaryFile = Join-Path $ReportDir 'Summary.txt'
 $ExportTextDir = Join-Path $Artifacts 'coverage/text'
 $ExportHtmlDir = Join-Path $Artifacts 'coverage/html'
 $BaseName = [IO.Path]::GetFileNameWithoutExtension($TestProject)
@@ -42,7 +42,7 @@ if (Test-Path $Artifacts -PathType Container) {
     $hasContent = (Get-ChildItem -Path $Artifacts -Recurse -Force | Select-Object -First 1)
     if ($hasContent -and -not $Quiet) {
         $choice = Select-FromList -Prompt "Artifacts directory '$Artifacts' exists. Action?" -Options @(
-            'Delete and continue','Rename with UTC timestamp and continue','Exit script'
+            'Delete and continue', 'Rename with UTC timestamp and continue', 'Exit script'
         ) -Default 1
         switch ($choice) {
             1 { Invoke-Exec { Remove-Item -Recurse -Force $Artifacts; New-Item -ItemType Directory -Path $Artifacts | Out-Null } -Description 'Remove old artifacts' }
@@ -54,15 +54,15 @@ if (Test-Path $Artifacts -PathType Container) {
 }
 
 # Create required directories
-foreach ($d in @($CoverageRoot,$ResultsDir,$CoverageRaw,$ExportTextDir)) { if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d | Out-Null } }
+foreach ($d in @($CoverageRoot, $ResultsDir, $CoverageRaw, $ExportTextDir)) { if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d | Out-Null } }
 
 Write-Trace "Running tests: $TestProject ($Configuration)"
 Invoke-Exec -Description 'dotnet test' -Script {
     dotnet test $TestProject --configuration $Configuration -- \
-        --results-directory $ResultsDir \
-        --coverage \
-        --coverage-output-format cobertura \
-        --coverage-output $CoverageFile
+    --results-directory $ResultsDir \
+    --coverage \
+    --coverage-output-format cobertura \
+    --coverage-output $CoverageFile
 }
 
 if (-not $DryRun) {
@@ -81,7 +81,7 @@ if (-not (Test-Path $reportExe)) {
 }
 
 Invoke-Exec -Description 'Generate coverage reports' -Script {
-    & $reportExe -reports:$CoverageFile -targetdir:$ReportDir -reporttypes:TextSummary,Html
+    & $reportExe -reports:$CoverageFile -targetdir:$ReportDir -reporttypes:TextSummary, Html
 }
 
 if (-not (Test-Path $SummaryFile)) { throw "Coverage summary not found: $SummaryFile" }
@@ -98,7 +98,7 @@ defaultProgressPreference = $ProgressPreference
 $ProgressPreference = 'SilentlyContinue'
 $summaryContent = Get-Content -Raw $ExportSummary
 $ProgressPreference = $defaultProgressPreference
-$match = [regex]::Match($summaryContent,'Method coverage: ([0-9]+(?:\.[0-9]+)?)%')
+$match = [regex]::Match($summaryContent, 'Method coverage: ([0-9]+(?:\.[0-9]+)?)%')
 if (-not $match.Success) { throw 'Could not parse coverage percent.' }
 $pct = [double]$match.Groups[1].Value
 Write-Host ("Coverage: {0}% (threshold: {1}%)" -f $pct, $CoverageThreshold)

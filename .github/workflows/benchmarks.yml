@@ -44,9 +44,9 @@ permissions:
 env:
   # these must be the same across all jobs and steps
   CI: true
-  ARTIFACTS_DIR: BmResults
-  SUMMARIES_DIR: BmResults/summaries
-  BASELINE_DIR: BmResults/baseline
+  ARTIFACTS_DIR: BmArtifacts
+  SUMMARIES_DIR: BmArtifacts/summaries
+  BASELINE_DIR: BmArtifacts/baseline
   FORCE_NEW_BASELINE: false
 
 jobs:

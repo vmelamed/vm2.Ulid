@@ -30,7 +30,11 @@ class PreGeneratedData<T>
     public T Current => _data[_index];
 }
 
+#if SHORT_RUN
+[ShortRunJob]
+#else
 [SimpleJob(RuntimeMoniker.HostProcess)]
+#endif
 [MemoryDiagnoser]
 [JsonExporter]
 [Orderer(SummaryOrderPolicy.FastestToSlowest, MethodOrderPolicy.Declared)]
@@ -64,7 +68,11 @@ public class NewUlid
     public Ulid Factory_NewUlid() => Factory.NewUlid();
 }
 
+#if SHORT_RUN
+[ShortRunJob]
+#else
 [SimpleJob(RuntimeMoniker.HostProcess)]
+#endif
 [MemoryDiagnoser]
 [JsonExporter]
 [Orderer(SummaryOrderPolicy.FastestToSlowest, MethodOrderPolicy.Declared)]
@@ -91,7 +99,11 @@ public class UlidToString
     public string Ulid_ToString() => _data2.GetNext().ToString();
 }
 
+#if SHORT_RUN
+[ShortRunJob]
+#else
 [SimpleJob(RuntimeMoniker.HostProcess)]
+#endif
 [MemoryDiagnoser]
 [JsonExporter]
 [Orderer(SummaryOrderPolicy.FastestToSlowest, MethodOrderPolicy.Declared)]

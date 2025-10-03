@@ -14,7 +14,7 @@ declare -r solution_dir
 declare test_project=${TEST_PROJECT:="$solution_dir/test/UlidType.Tests/UlidType.Tests.csproj"}
 test_project=$(realpath -e "$test_project")  # ensure it's an absolute path
 
-declare -x ARTIFACTS_DIR=${ARTIFACTS_DIR:="$solution_dir/TestResults"}
+declare -x ARTIFACTS_DIR=${ARTIFACTS_DIR:="$solution_dir/TestArtifacts"}
 ARTIFACTS_DIR=$(realpath -m "$ARTIFACTS_DIR")  # ensure it's an absolute path
 
 declare -x COVERAGE_RESULTS_DIR
@@ -32,7 +32,7 @@ declare -ri min_coverage_pct
 renamed_results_dir="$ARTIFACTS_DIR-$(date -u +"%Y%m%dT%H%M%S")"
 declare -r renamed_results_dir
 
-if [[ -d "$ARTIFACTS_DIR" && "$(ls -A "$ARTIFACTS_DIR")" ]]; then
+if [[ -d "$ARTIFACTS_DIR" && -n "$(ls -A "$ARTIFACTS_DIR")" ]]; then
     choice=$(choose \
                 "The test results directory '$ARTIFACTS_DIR' already exists. What do you want to do?" \
                     "Delete the directory and continue" \
@@ -44,7 +44,7 @@ if [[ -d "$ARTIFACTS_DIR" && "$(ls -A "$ARTIFACTS_DIR")" ]]; then
         1)  echo "Deleting the directory '$ARTIFACTS_DIR'..." >&2; execute rm -rf "$ARTIFACTS_DIR" ;;
         2)  execute mv "$ARTIFACTS_DIR" "$renamed_results_dir" ;;
         3)  echo "Exiting the script."; exit 0 ;;
-        *)  echo "Invalid option. Exiting." >&2; exit 2 ;;
+        *)  echo "Invalid option $choice. Exiting." >&2; exit 2 ;;
     esac
 fi
 
@@ -91,12 +91,12 @@ execute dotnet test "$test_project" \
 
 if [[ $dry_run != "true" ]]; then
     f=$(find "$(pwd)" -type f -path "*/$coverage_source_fileName" -print -quit || true)
-    if [ -z "$f" ]; then
+    if [[ -z "$f" ]]; then
         echo "Coverage file not found." >&2
         exit 2
     fi
 
-    if [ ! -s "$coverage_source_path" ]; then
+    if [[ ! -s "$coverage_source_path" ]]; then
         echo "Coverage file is empty." >&2
         exit 2
     fi
@@ -104,7 +104,7 @@ fi
 
 trace "Generating coverage reports..."
 uninstall_reportgenerator=false
-if ! dotnet tool list dotnet-reportgenerator-globaltool --tool-path ./tools > _output >&2; then
+if ! dotnet tool list dotnet-reportgenerator-globaltool --tool-path ./tools > "$_ignore" >&2; then
     echo "Installing the tool 'reportgenerator'..."; flush_stdout
     execute mkdir -p ./tools
     execute dotnet tool install dotnet-reportgenerator-globaltool --tool-path ./tools --version 5.*
@@ -123,7 +123,7 @@ if [[ "$uninstall_reportgenerator" = "true" ]]; then
 fi
 
 if [[ $dry_run != "true" ]]; then
-    if [ ! -s "$coverage_reports_path" ]; then
+    if [[ ! -s "$coverage_reports_path" ]]; then
         echo "Coverage summary not found." >&2
         exit 2
     fi
@@ -138,7 +138,7 @@ execute mv "$coverage_reports_dir"  "$coverage_summary_html_dir"
 trace "Extracting coverage percentage from '$coverage_summary_path'..."
 if [[ $dry_run != "true" ]]; then
     pct=$(sed -nE 's/Method coverage: ([0-9]+)(\.[0-9]+)?%.*/\1/p' "$coverage_summary_path" | head -n1)
-    if [ -z "$pct" ]; then
+    if [[ -z "$pct" ]]; then
         echo "Could not parse coverage percent from $coverage_summary_path" >&2
         exit 2
     fi

@@ -8,7 +8,7 @@
 initial_dir=$(pwd)
 declare -xr initial_dir
 
-_output=${_output:="/dev/null"}
+_ignore=${_ignore:="/dev/null"}
 
 declare -x trace_enabled=${TRACE_ENABLED:-false}
 declare -x verbose=${VERBOSE:-false}
@@ -46,7 +46,7 @@ function on_exit() {
     if (( x != 0)); then
         echo "'$last_command' command failed with exit code $x" >&2
     fi
-    if [[ "$initial_dir" ]]; then
+    if [[ -n "$initial_dir" ]]; then
         cd "$initial_dir" || exit
     fi
     set +x
@@ -65,7 +65,7 @@ function execute() {
         return 0
     fi
     trace "$*"
-    "$@" > "$_output"
+    "$@" > "$_ignore"
     return $?
 }
 
@@ -126,8 +126,42 @@ function is_in() {
     return 1
 }
 
+function is_defined() {
+    if [[ $# -ne 1 ]]; then
+        echo "The function is_defined() requires exactly one argument: the name of the variable to test." >&2
+        return 2
+    fi
+
+    if [[ -v "$1" ]] && declare -p "$1" > "$_ignore"; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 function flush_stdout() {
-    printf "" > /dev/stdout
+    printf "" | tee > /dev/null
+    return 0
+}
+
+function list_of_files() {
+    if [[ $# -lt 1 ]]; then
+        echo "The function list_ofFiles() requires at least one parameter: the file pattern." >&2
+        return 2
+    fi
+
+    local pattern="$1"
+
+    # by default, if a glob pattern does not match any files, it expands to an empty string instead of the default to leaving
+    # the pattern unchanged, e.g. ${ARTIFACTS_DIR}/results/*-report.json - we don't want that
+    shopt -s nullglob
+    shopt -s globstar || true
+    # shellcheck disable=SC2206
+    local list=($pattern)
+    shopt -u nullglob
+    shopt -u globstar || true
+    printf "%s" "${list[*]}"
+    return 0
 }
 
 # confirm asks the script user to respond yes or no to some prompt. If there is a defined variable $quiet with
@@ -136,11 +170,11 @@ function flush_stdout() {
 # Parameter 2 - the default response if the user presses [Enter]. When specified should be either 'y' or 'n'. Optional.
 # Outputs the result to stdout as 'y' or 'n'.
 function confirm() {
-    if [[ ! "$1" ]]; then
+    if [[ -z "$1" ]]; then
         echo "The function confirm() requires at least one parameter: the prompt." >&2
         exit 2
     fi
-    if [[ "$2" && ! "$2" =~ ^[ynYN]$ ]]; then
+    if [[ -n "$2" && ! "$2" =~ ^[ynYN]$ ]]; then
         echo "If a default response parameter is specified for the function confirm(), it must be either 'y' or 'n'" >&2
         exit 2
     fi
@@ -198,32 +232,29 @@ function choose() {
         return 0
     fi
 
-    echo "$prompt"
-
-    local i=1
-
+    echo "$prompt" >&2
+    local -i i=1
     for o in "${options[@]}"; do
         if [[ $i -eq 1 ]]; then
-            echo "  $i) $o (default)"
+            echo "  $i) $o (default)" >&2
         else
-            echo "  $i) $o"
+            echo "  $i) $o" >&2
         fi
         ((i++))
     done
-    flush_stdout
 
-    local selection
-
+    local -i selection=1
     while true; do
-        read -rp "Enter choice [1-${#options[@]}]: " selection >&2
+        read -rp "Enter choice [1-${#options[@]}]: " selection
         selection=${selection:-1}
-        if [[ $selection =~ ^[0-9]+$ && $selection -ge 1 && $selection -le ${#options[@]} ]]; then
-            printf '%s' "$selection"
-            echo >&2
+        [[ $selection = 0 ]] && selection=1
+        if [[ $selection =~ ^[1-9][0-9]*$ && $selection -ge 1 && $selection -le ${#options[@]} ]]; then
+            printf '%d' "$selection"
             return 0
         fi
         echo "Invalid choice: $selection" >&2
     done
+    return 0
 }
 
 declare return_userid
@@ -242,11 +273,11 @@ function get_credentials() {
     local promptConfirm=$3
     return_userid=""
     return_passwd=""
-    until [[ $return_userid  &&  $return_passwd ]]; do
+    until [[ -n $return_userid  &&  -n $return_passwd ]]; do
         read -rp "$promptUserID" return_userid >&2
         read -rsp "$promptPassword" return_passwd >&2
         echo >&2
-        if [[ "$promptConfirm" && $(confirm "$promptConfirm") != "y" ]]; then
+        if [[ -n "$promptConfirm" && $(confirm "$promptConfirm") != "y" ]]; then
             return_userid=""
             return_passwd=""
         fi
@@ -295,14 +326,16 @@ function press_any_key() {
 # -h or --header <text> will display the header text and the dividing lines in the table
 # -b or --blank will display an empty line in the table
 # -l or --line will display a dividing line
+# -q or --quiet will not ask the user to press any key to continue after dumping the variables
 function dump_vars() {
     if [[ $# -eq 0 || $trace_enabled != true ]]; then
         return;
     fi
 
-    echo "┌───────────────────────────────────────────────────────────"
     local top=true
-    local v
+    local decl
+    local quiet=false
+    echo "┌───────────────────────────────────────────────────────────"; flush_stdout
     until [[ $# = 0 ]]; do
         case $1 in
             -h|--header )
@@ -318,34 +351,43 @@ function dump_vars() {
 
             -l|--line ) echo "├───────────────────────────────────────────────────────────" ;;
 
-            * ) printf "│ "
-                if [[ ! "$1" =~ ^[_a-zA-Z][_a-zA-Z0-9]*$ ]]; then
-                    printf "\$%-40s'invalid variable name'\n" "$1"
-                elif ! declare -p "$1" &> /dev/null; then
-                    printf "\$%-40s'unbound'\n" "$1"
-                elif ! declare -n v="$1" &> /dev/null; then
-                     printf "\$%-40s'unbound reference'\n" "$1"
-                elif [[ "$(declare -p "$1")" =~ 'declare -a' ]]; then
-                     printf "\$%-40s%s\n" "$1" "(${v[*]})"
-                else
-                     printf "\$%-40s%s\n" "$1" "$v"
-                fi
-                ;;
+            -q|--quiet ) quiet=true ;;
+
+            * ) write_line "$1" ;;
         esac
         shift
         top=false
     done
     echo "└───────────────────────────────────────────────────────────"
     flush_stdout
-    press_any_key
+    [[ "$quiet" == true ]] || press_any_key
+}
+
+
+
+function write_line() {
+    local -n v="$1"
+    local decl
+    if is_defined "$1"; then
+        decl="$(declare -p "$1" 2> /dev/null)"
+        if [[ $decl =~ 'declare -a' ]]; then
+            printf "│ \$%-40s%s\n" "$1" "${#v[@]}: (${v[*]})"
+        else
+            printf "│ \$%-40s%s\n" "$1" "$v"
+        fi
+        unset -n v
+    else
+        printf "│ \$%-40s%s\n" "$1" "****** unbound, undefined, or invalid"
+    fi
+    return 0
 }
 
 # scp_retry tries the SSH copy command up to three times with timeout of 10sec timeout between retries.
 # Parameters - the same parameters as the scp command, this is there must be at least 2 arguments.
 # If the operation is successful it will set $return_copied to 'true' until the next invocation.
 function scp_retry() {
-    local try=0
-    local retry_after=10
+    local -i try=0
+    local -i retry_after=10
     while true; do
         if execute scp "$@"; then
             printf 'true'
@@ -353,7 +395,7 @@ function scp_retry() {
         fi
         if ((try < 3)); then
             echo "  - will try scp again in ${retry_after}sec..." >&2
-            sleep $retry_after
+            sleep "$retry_after"
         else
             break
         fi
