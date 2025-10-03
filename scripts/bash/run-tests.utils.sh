@@ -8,11 +8,11 @@ function get_arguments()
     # process --debugger first
     for v in "$@"; do
         if [[ "$v" == "--debugger" ]]; then
-            debugger=true
-            quiet="true"
+            get_common_arg "--debugger"
             break
         fi
     done
+    # shellcheck disable=SC2154 # v appears unused. Verify use (or export if used externally).
     if [[ $debugger != "true" ]]; then
         trap on_debug DEBUG
         trap on_exit EXIT
@@ -30,7 +30,7 @@ function get_arguments()
             continue
         fi
         case "$flag" in
-            --debugger     ) ;;  # already processed
+            --debugger     ) ;;  # already processed above
             --help|-h      ) usage; exit 0 ;;
             --artifacts|-a ) value="$1"; shift; ARTIFACTS_DIR=$(realpath -m "$value") ;;
             --define|-d    )

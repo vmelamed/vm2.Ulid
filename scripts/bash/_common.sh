@@ -13,33 +13,90 @@ declare -x trace_enabled=${TRACE_ENABLED:-false}
 declare -x verbose=${VERBOSE:-false}
 declare -x dry_run=${DRY_RUN:-false}
 declare -x quiet=${QUIET:-false}
+declare -xr ci=${CI:-false}
 declare -x _ignore=/dev/null  # the file to redirect unwanted output to
-declare -x ci=${CI:-false}
 
-if [[ $trace_enabled == true ]]; then
-    _ignore=/dev/stdout
-    set -x
-fi
-if [[ $verbose == true ]]; then
-    trace_enabled=true
-    _ignore=/dev/stdout
-fi
-if [[ $debugger == true ]]; then
+function set_ci()
+{
+    ci=true
     quiet=true
-fi
+    dry_run=false
+    trace_enabled=false
+    debugger=false
+    _ignore=/dev/null
+    set +x
+}
 
-function is_defined() {
-    if [[ $# -ne 1 ]]; then
-        echo "The function is_defined() requires exactly one argument: the name of the variable to test." >&2
-        return 2
-    fi
-
-    if [[ -v "$1" ]] && declare -p "$1" > "$_ignore"; then
-        return 0
+function set_debugger()
+{
+    if [[ $ci == true ]]; then
+        # do not allow in CI mode
+        debugger=false
     else
-        return 1
+        debugger=true
+        quiet=true
     fi
 }
+
+function set_trace_enabled()
+{
+    if [[ $ci == true ]]; then
+        # do not allow in CI mode
+        trace_enabled=false
+        _ignore=/dev/null
+        set +x
+    else
+        trace_enabled=true
+        _ignore=/dev/stdout
+        set -x
+    fi
+}
+
+function set_dry_run()
+{
+    if [[ $ci == true ]]; then
+        # do not allow in CI mode
+        dry_run=false
+    else
+        dry_run=true
+    fi
+    dry_run=true
+}
+
+function set_quiet()
+{
+    if [[ $ci == true ]]; then
+        # do not user prompts in CI mode
+        quiet=true
+    else
+        quiet=false
+    fi
+}
+
+function set_verbose()
+{
+    verbose=true
+    trace_enabled=true
+}
+
+if [[ $ci == true ]]; then
+    set_ci
+fi
+if [[ $debugger == true ]]; then
+    set_debugger
+fi
+if [[ $trace_enabled == true ]]; then
+    set_trace_enabled
+fi
+if [[ $dry_run == true ]]; then
+    set_dry_run
+fi
+if [[ $quiet == true ]]; then
+    set_quiet
+fi
+if [[ $verbose == true ]]; then
+    set_verbose
+fi
 
 # Dumps a table of variables and in the end asks the user to press any key to continue.
 # The names of the variables must be specified as strings - no leading $.
@@ -112,6 +169,19 @@ function dump_vars() {
     return 0
 }
 
+function is_defined() {
+    if [[ $# -ne 1 ]]; then
+        echo "The function is_defined() requires exactly one argument: the name of the variable to test." >&2
+        return 2
+    fi
+
+    if [[ -v "$1" ]] && declare -p "$1" > "$_ignore"; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 function write_line() {
     local -n v="$1"
     local decl
@@ -132,16 +202,15 @@ function write_line() {
 function get_common_arg()
 {
     if [[ "${#}" -eq 0 ]]; then
-        return
+        return 2
     fi
-
     # get the flag and convert it to lower case
     case "$1" in
-        --debugger   ) debugger="true"; quiet="true" ;;
-        --dry-run|-y ) dry_run=true ;;
-        --quiet|-q   ) quiet=true ;;
-        --verbose|-v ) verbose=true; trace_enabled=true; _ignore=/dev/stdout ;;
-        --trace|-x   ) trace_enabled=true; _ignore=/dev/stdout; set -x; ;;
+        --debugger   ) set_debugger ;;
+        --dry-run|-y ) set_dry_run ;;
+        --quiet|-q   ) set_quiet ;;
+        --trace|-x   ) set_trace_enabled ;;
+        --verbose|-v ) set_verbose ;;
         *            ) return 1 ;;  # not a common argument
     esac
     return 0 # it was a common argument

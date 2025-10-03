@@ -7,13 +7,14 @@ function get_arguments()
 
     # process --debugger first
     for v in "$@"; do
+        # there is no debugger in CI!
         if [[ "$v" == "--debugger" ]]; then
-            debugger=true
-            quiet="true"
+            set_debugger
             break
         fi
     done
-    if [[ $debugger != "true" ]]; then
+    # shellcheck disable=SC2154 # v appears unused. Verify use (or export if used externally).
+    if [[ $debugger != true ]]; then
         trap on_debug DEBUG
         trap on_exit EXIT
     fi
@@ -74,7 +75,6 @@ function get_arguments()
                 ;;
 
             *)  value="$flag"
-                dump_vars value
                 if ! p=$(realpath -e "$value"); then
                     usage "The specified test project file $value does not exist."
                     exit 2
