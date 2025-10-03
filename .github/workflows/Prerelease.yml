@@ -7,10 +7,10 @@ on:
   workflow_dispatch:
     inputs:
       reason:
-        description: 'Why run?'
+        description: "Why run?"
       dotnet-version:
-        description: 'Version of .NET SDK to use'
-        default: '9.0.x'
+        description: "Version of .NET SDK to use"
+        default: "9.0.x"
 
 env:
   DOTNET_NOLOGO: true
@@ -111,7 +111,7 @@ jobs:
       - name: Publish prerelease to NuGet
         if: steps.tagcheck.outputs.already_tagged == 'false'
         env:
-            NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
           if [ -z "${NUGET_API_KEY}" ]; then
             echo "NUGET_API_KEY not configured"; exit 1

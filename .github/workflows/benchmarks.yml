@@ -56,9 +56,6 @@ permissions:
 
 env:
   CI: true # implies --quiet for the scripts
-  VERBOSE: ${{ inputs.verbose || false }} # enables tracing and dump_vars in the scripts
-  # use ONLY if justified - new functionality, integration, etc.
-  FORCE_NEW_BASELINE: ${{ inputs.force-new-baseline || vars.FORCE_NEW_BASELINE || false }}
   # these must be the same across all jobs and steps below.
   # We must know where to find the artifacts and where to download/upload to/from across all jobs and steps here.
   ARTIFACTS_DIR: BmArtifacts
@@ -98,8 +95,10 @@ jobs:
       - name: Run the benchmarks
         shell: bash
         env:
-          FORCE_NEW_BASELINE: ${{ inputs.force-new-baseline }}
-          VERBOSE: ${{ inputs.verbose || false }}
+          FORCE_NEW_BASELINE: ${{ fromJSON(inputs.force-new-baseline) || false }}
+          VERBOSE: ${{ fromJSON(inputs.verbose) || false }}
+          DEFINE: ${{ inputs.define || '' }}
+          SUMMARIES_DIR: ${{ env.SUMMARIES_DIR }}
         run: >-
           ./scripts/bash/run-benchmarks.sh ${{ inputs.benchmark-project }}
           --max-regression-pct "${{ inputs.max-regression-pct }}"
@@ -116,7 +115,7 @@ jobs:
           retention-days: 5
 
       - name: Upload benchmark results artifact as a new baseline
-        if: ${{ inputs.force-new-baseline || env.FORCE_NEW_BASELINE || false }}
+        if: ${{ inputs.force-new-baseline || false }}
         uses: actions/upload-artifact@v4
         with:
           name: benchmark-baseline-${{ matrix.os }}

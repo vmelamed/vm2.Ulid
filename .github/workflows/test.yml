@@ -48,8 +48,7 @@ permissions:
 
 env:
   CI: true  # implies --quiet for the scripts
-  VERBOSE: ${{ inputs.verbose || false }} # enables tracing and dump_vars in the scripts
-  # these must be the same across all jobs and steps below.
+  # this must be the same across all jobs and steps below.
   # We must know where to find the artifacts and where to download/upload to/from across all jobs and steps here.
   ARTIFACTS_DIR: "TestArtifacts"
 
@@ -82,6 +81,7 @@ jobs:
         shell: bash
         env:
           VERBOSE: ${{ inputs.verbose || false }}
+          DEFINE: ${{ inputs.define || '' }}
         run: >-
           ./scripts/bash/run-tests.sh ${{ inputs.test-project }}
           --min-coverage-pct "${{ inputs.min-coverage-pct }}"
