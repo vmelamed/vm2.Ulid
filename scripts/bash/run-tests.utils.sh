@@ -3,10 +3,16 @@
 # shellcheck disable=SC2034 # xyz appears unused. Verify use (or export if used externally).
 function get_arguments()
 {
-    if [[ "${#}" -eq 0 ]]; then
-        return
-    fi
-    if [[ "$1" == "--debugger" || $debugger == "true" ]]; then
+    if [[ "${#}" -eq 0 ]]; then return; fi
+
+    # process --debugger first
+    for v in "$@"; do
+        if [[ "$v" == "--debugger" ]]; then
+            debugger=true
+            break
+        fi
+    done
+    if [[ $debugger == "true" ]]; then
         debugger="true"
         quiet="true"
         shift
@@ -27,6 +33,7 @@ function get_arguments()
             continue
         fi
         case "$flag" in
+            --debugger ) ;;  # already processed
             --help|-h ) usage; exit 0 ;;
 
             --artifacts|-a ) value="$1"; shift; ARTIFACTS_DIR=$(realpath -m "$value") ;;

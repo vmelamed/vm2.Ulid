@@ -20,6 +20,7 @@ declare -x verbose=${VERBOSE:-false}
 declare -x debugger=${DEBUGGER:-false}
 declare -x dry_run=${DRY_RUN:-false}
 declare -x quiet=${QUIET:-false}
+declare -x _ignore=/dev/null  # the file to redirect unwanted output to
 
 declare -x ci=${CI:-false}
 
@@ -34,13 +35,12 @@ function get_common_arg()
         --debugger ) debugger="true"; quiet="true" ;;
         --dry-run|-y ) dry_run=true ;;
         --quiet|-q ) quiet=true ;;
-        --verbose|-v ) verbose=true; trace_enabled=true ;;
+        --verbose|-v ) verbose=true; trace_enabled=true; _ignore=/dev/stdout ;;
         --trace|-x ) trace_enabled=true; cmd_tracing=true; set -x; ;;
         * ) return 1 ;;
     esac
     return 0
 }
-
 
 function display_usage_msg()
 {
@@ -49,13 +49,25 @@ function display_usage_msg()
         exit 2
     fi
 
-    set +x
-    echo "$1" >&2
-    if [[ "${#}" -gt 1 && -n "$2" ]]; then
-        echo "$2" >&2
+    # save the tracing state and disable tracing
+    local tracing
+    if [[ $- =~ .*x.* ]]; then
+        tracing=1
+    else
+        tracing=0
     fi
+    set +x
 
-    if [[ "$cmd_tracing" == "true" ]]; then
+    echo "$1
+"
+    if [[ "${#}" -gt 1 && -n "$2" ]]; then
+        echo "$2
+"
+    fi
+    flush_stdout
+
+    # restore the tracing state
+    if [[ $tracing == 1 ]]; then
         set -x
     fi
 }
@@ -94,19 +106,17 @@ function on_exit() {
 }
 
 function trace() {
-    if [[ "$trace_enabled" == true ]]; then
-        echo "Trace: $*" | tee /dev/null
-    fi
+    echo "Trace: $*" > "$_ignore"
 }
 
 # Depending on the value of $dry_run either executes or just displays what would have been executed.
 function execute() {
     if [[ "$dry_run" == "true" ]]; then
-        echo "dry-run$ $*" | tee /dev/null
+        echo "dry-run$ $*"
         return 0
     fi
     trace "$*"
-    "$@"
+    "$@" > "$_ignore"
     return $?
 }
 
@@ -173,7 +183,7 @@ function is_defined() {
         return 2
     fi
 
-    if [[ -v "$1" ]] && declare -p "$1" > /dev/null; then
+    if [[ -v "$1" ]] && declare -p "$1" > "$_ignore"; then
         return 0
     else
         return 1
@@ -181,7 +191,7 @@ function is_defined() {
 }
 
 function flush_stdout() {
-    printf "" | tee > /dev/null
+    sync -f /dev/stdout
     return 0
 }
 
@@ -368,17 +378,29 @@ function press_any_key() {
 # -b or --blank will display an empty line in the table
 # -l or --line will display a dividing line
 # -q or --quiet will not ask the user to press any key to continue after dumping the variables
+# -f or --force will dump the variables even if $trace_enabled is not true
 function dump_vars() {
+    local save_trace_enabled=$trace_enabled
+    for v in "$@"; do
+        if [[ "$v" == "-f" || "$v" == "--force" ]]; then
+            trace_enabled=true
+            break
+        fi
+    done
     if [[ $# -eq 0 || $trace_enabled != true ]]; then
         return;
     fi
+    flush_stdout
 
     local top=true
     local decl
-    local quiet=false
-    echo "┌───────────────────────────────────────────────────────────"; flush_stdout
+    local save_ignore=$_ignore
+    _ignore=/dev/null
+
+    echo "┌───────────────────────────────────────────────────────────";
     until [[ $# = 0 ]]; do
         case $1 in
+            -f|--force ) ;;  # already processed
             -h|--header )
                 shift
                 if [[ $top != "true" ]]; then
@@ -401,14 +423,17 @@ function dump_vars() {
     done
     echo "└───────────────────────────────────────────────────────────"
     flush_stdout
-    [[ "$quiet" == true ]] || press_any_key
+    [[ "$quiet" == false ]] || press_any_key
+    _ignore=$save_ignore
+    trace_enabled=$save_trace_enabled
+    return 0
 }
 
 function write_line() {
     local -n v="$1"
     local decl
     if is_defined "$1"; then
-        decl="$(declare -p "$1" 2> /dev/null)"
+        decl="$(declare -p "$1" 2> "$_ignore")"
         if [[ $decl =~ 'declare -a' ]]; then
             printf "│ \$%-40s%s\n" "$1" "${#v[@]}: (${v[*]})"
         else
@@ -494,3 +519,36 @@ assert_false() {
     ([[ $VERBOSE == true ]] && echo "[OK] $msg" >&2) || true
   fi
 }
+
+declare -x common_switches="
+    --help | -h | -?
+        Displays this usage text and exits.
+
+    --debugger
+        Set when the script is running under a debugger, e.g. 'gdb'. If
+        specified, the script will not set traps for DEBUG and EXIT, and will
+        set the '--quiet' switch.
+        Initial value from \$DEBUGGER or 'false'
+
+    --dry-run | -y
+        Runs the script without executing any commands but shows what would have
+        been executed.
+        Initial value from \$DRY_RUN or 'false'
+
+    --quiet | -q
+        Suppresses all prompts for input from the user, and assumes the default
+        answers.
+        Initial value from \$QUIET or 'false'
+
+    --verbose | -v
+        Enables verbose output: all output from the invoked commands (e.g. jq,
+        dotnet, etc.) to be sent to 'stdout' instead of '/dev/null'. It also
+        enables the output from the script function trace() and all other
+        commands and functions that are otherwise silent.
+        Initial value from \$VERBOSE or 'false'
+
+    --trace | -x
+        Sets the Bash trace option 'set -x' and enables the output from the
+        functions 'trace' and 'dump_vars'.
+        Initial value from \$TRACE_ENABLED or 'false'
+"

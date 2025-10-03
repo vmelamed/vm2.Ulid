@@ -57,7 +57,7 @@ fi
  dry_run=$prev_dry_run
 
 # get_from_yaml (only if yq present)
-if command -v yq >/dev/null 2>&1; then
+if command -v yq >"$_ignore" 2>&1; then
   tmp_yaml=$(mktemp)
   printf 'a: 1\nb: { c: 2 }\n' > "$tmp_yaml"
   get_from_yaml '.b.c' "$tmp_yaml"

@@ -113,7 +113,7 @@ fi
 
 trace "Generating coverage reports..."
 uninstall_reportgenerator=false
-if ! dotnet tool list dotnet-reportgenerator-globaltool --tool-path ./tools > /dev/null; then
+if ! dotnet tool list dotnet-reportgenerator-globaltool --tool-path ./tools > "$_ignore"; then
     echo "Installing the tool 'reportgenerator'..."; flush_stdout
     execute mkdir -p ./tools
     execute dotnet tool install dotnet-reportgenerator-globaltool --tool-path ./tools --version 5.*

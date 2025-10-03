@@ -111,7 +111,7 @@ execute dotnet run \
     --exporters JSON \
     --artifacts "$ARTIFACTS_DIR"
 
-if ! command -v jq >/dev/null 2>&1; then
+if ! command -v jq >"$_ignore" 2>&1; then
     execute sudo apt-get update && sudo apt-get install -y jq
     echo "jq successfully installed."
 fi
