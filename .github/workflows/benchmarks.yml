@@ -97,10 +97,10 @@ jobs:
           FORCE_NEW_BASELINE: ${{ inputs.force-new-baseline }}
         run: >-
           ./scripts/bash/run-benchmarks.sh ${{ inputs.benchmark-project }}
-              --verbose "${{ inputs.verbose }}"
-              --max_regression_pct "${{ inputs.max-regression-pct }}"
-              --define "${{ inputs.define }}"
-              --configuration "${{ inputs.configuration }}"
+          --verbose "${{ inputs.verbose }}"
+          --max_regression_pct "${{ inputs.max-regression-pct }}"
+          --define "${{ inputs.define }}"
+          --configuration "${{ inputs.configuration }}"
 
       - name: Upload benchmark summaries artifact
         uses: actions/upload-artifact@v4
