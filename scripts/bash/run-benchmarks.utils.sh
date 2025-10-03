@@ -9,14 +9,11 @@ function get_arguments()
     for v in "$@"; do
         if [[ "$v" == "--debugger" ]]; then
             debugger=true
+            quiet="true"
             break
         fi
     done
-    if [[ $debugger == "true" ]]; then
-        debugger="true"
-        quiet="true"
-        shift
-    else
+    if [[ $debugger != "true" ]]; then
         trap on_debug DEBUG
         trap on_exit EXIT
     fi
@@ -32,8 +29,18 @@ function get_arguments()
             continue
         fi
         case "$flag" in
-            --debugger ) ;;  # already processed
-            --help|-h ) usage; exit 0 ;;
+            --debugger              ) ;;  # already processed
+            --help|-h               ) usage; exit 0 ;;
+            --force-new-baseline|-f ) force_new_baseline=true ;;
+            --artifacts|-a          ) value="$1"; shift; ARTIFACTS_DIR=$(realpath -m "$value") ;;
+            --max-regression-pct|-r )
+                value="$1"; shift
+                if ! [[ "$value" =~ ^[0-9]+$ ]] || (( value < 0 || value > 100 )); then
+                    usage "$(usage_text)" "The regression threshold must be an integer between 0 and 100. Got '$value'."
+                    exit 2
+                fi
+                max_regression_pct=$((value + 0))  # ensure it's an integer
+                ;;
 
             --configuration|-c )
                 value="${1,,}"; shift
@@ -57,20 +64,8 @@ function get_arguments()
                 fi
                 ;;
 
-            --force-new-baseline|-f ) force_new_baseline=true ;;
-
-            --artifacts|-a ) value="$1"; shift; ARTIFACTS_DIR=$(realpath -m "$value") ;;
-
-            --max-regression-pct|-r )
-                value="$1"; shift
-                if ! [[ "$value" =~ ^[0-9]+$ ]] || (( value < 0 || value > 100 )); then
-                    usage "$(usage_text)" "The regression threshold must be an integer between 0 and 100. Got '$value'."
-                    exit 2
-                fi
-                max_regression_pct=$((value + 0))  # ensure it's an integer
-                ;;
-
             --short-run|-s )
+                # Shortcut for --define SHORT_RUN
                 if [[ -z "$define" ]]; then
                     define="SHORT_RUN"
                 elif [[ ! "$define" =~ (^|;)SHORT_RUN($|;) ]]; then
@@ -108,6 +103,7 @@ dump_all_variables()
         DEFINE \
         max_regression_pct \
         ARTIFACTS_DIR \
+        ci \
         --header "other globals:" \
         solution_dir \
         script_dir \

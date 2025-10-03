@@ -10,11 +10,13 @@
             "name": "Bash-Debug (select script from list of sh files)",
             "cwd": "${workspaceFolder}",
             "program": "${command:SelectScriptName}",
-            "args": [],
+            "args": [
+                "-h"
+            ],
             "env": {
-                "QUIET": false,
+                "QUIET": true,
                 "VERBOSE": true,
-                "TRACE_ENABLED": true
+                "TRACE_ENABLED": false
             },
         },
         {

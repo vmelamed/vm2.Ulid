@@ -8,21 +8,126 @@
 initial_dir=$(pwd)
 declare -xr initial_dir
 
-if [[ $- == *x* ]]; then
-    cmd_tracing=true
-else
-    cmd_tracing=false
-fi
-declare -x cmd_tracing
-
+declare -x debugger=${DEBUGGER:-false}
 declare -x trace_enabled=${TRACE_ENABLED:-false}
 declare -x verbose=${VERBOSE:-false}
-declare -x debugger=${DEBUGGER:-false}
 declare -x dry_run=${DRY_RUN:-false}
 declare -x quiet=${QUIET:-false}
 declare -x _ignore=/dev/null  # the file to redirect unwanted output to
-
 declare -x ci=${CI:-false}
+
+if [[ $trace_enabled == true ]]; then
+    _ignore=/dev/stdout
+    set -x
+fi
+if [[ $verbose == true ]]; then
+    trace_enabled=true
+    _ignore=/dev/stdout
+fi
+if [[ $debugger == true ]]; then
+    quiet=true
+fi
+
+function is_defined() {
+    if [[ $# -ne 1 ]]; then
+        echo "The function is_defined() requires exactly one argument: the name of the variable to test." >&2
+        return 2
+    fi
+
+    if [[ -v "$1" ]] && declare -p "$1" > "$_ignore"; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Dumps a table of variables and in the end asks the user to press any key to continue.
+# The names of the variables must be specified as strings - no leading $.
+# Optionally the caller can specify flags like:
+# -h or --header <text> will display the header text and the dividing lines in the table
+# -b or --blank will display an empty line in the table
+# -l or --line will display a dividing line
+# -q or --quiet will not ask the user to press any key to continue after dumping the variables
+# -f or --force will dump the variables even if $trace_enabled is not true
+function dump_vars() {
+    if (( $# == 0 )); then
+        return;
+    fi
+    local force_trace_enabled=false
+    for v in "$@"; do
+        if [[ "$v" == "-f" || "$v" == "--force" ]]; then
+            force_trace_enabled=true
+            break
+        fi
+    done
+    sync
+    if [[ $trace_enabled == false && $force_trace_enabled == false ]]; then
+        return;
+    fi
+
+    local top=true
+    local decl
+    local save_ignore=$_ignore
+    _ignore=/dev/null
+    local tracing_on=0
+    if [[ $- =~ .*x.* ]]; then
+        tracing_on=1
+    fi
+    set +x
+
+    echo "┌───────────────────────────────────────────────────────────";
+    until [[ $# = 0 ]]; do
+        v=$1
+        shift
+        case $v in
+            -f|--force ) continue ;;  # already processed
+            -h|--header )
+                shift
+                v=$1
+                shift
+                if [[ $top != "true" ]]; then
+                    echo "├───────────────────────────────────────────────────────────"
+                fi
+                echo "│ $v"
+                echo "├───────────────────────────────────────────────────────────"
+                ;;
+
+            -b|--blank ) echo "│" ;;
+
+            -l|--line ) echo "├───────────────────────────────────────────────────────────" ;;
+
+            -q|--quiet ) quiet=true ;;
+
+            * ) write_line "$v" ;;
+        esac
+        top=false
+    done
+    echo "└───────────────────────────────────────────────────────────"
+    sync
+    [[ "$quiet" == false ]] || press_any_key
+    _ignore=$save_ignore
+    if ((tracing_on == 1)); then
+        set -x
+    fi
+    return 0
+}
+
+function write_line() {
+    local -n v="$1"
+    local decl
+    if is_defined "$1"; then
+        decl="$(declare -p "$1" 2> "$_ignore")"
+        if [[ $decl =~ 'declare -a' ]]; then
+            printf "│ \$%-40s%s\n" "$1" "${#v[@]}: (${v[*]})"
+        else
+            printf "│ \$%-40s%s\n" "$1" "$v"
+        fi
+        unset -n v
+    else
+        printf "│ \$%-40s%s\n" "$1" "****** unbound, undefined, or invalid"
+    fi
+    return 0
+}
 
 function get_common_arg()
 {
@@ -32,14 +137,14 @@ function get_common_arg()
 
     # get the flag and convert it to lower case
     case "$1" in
-        --debugger ) debugger="true"; quiet="true" ;;
+        --debugger   ) debugger="true"; quiet="true" ;;
         --dry-run|-y ) dry_run=true ;;
-        --quiet|-q ) quiet=true ;;
+        --quiet|-q   ) quiet=true ;;
         --verbose|-v ) verbose=true; trace_enabled=true; _ignore=/dev/stdout ;;
-        --trace|-x ) trace_enabled=true; cmd_tracing=true; set -x; ;;
-        * ) return 1 ;;
+        --trace|-x   ) trace_enabled=true; _ignore=/dev/stdout; set -x; ;;
+        *            ) return 1 ;;  # not a common argument
     esac
-    return 0
+    return 0 # it was a common argument
 }
 
 function display_usage_msg()
@@ -50,11 +155,9 @@ function display_usage_msg()
     fi
 
     # save the tracing state and disable tracing
-    local tracing
+    local tracing_on=0
     if [[ $- =~ .*x.* ]]; then
-        tracing=1
-    else
-        tracing=0
+        tracing_on=1
     fi
     set +x
 
@@ -64,10 +167,10 @@ function display_usage_msg()
         echo "$2
 "
     fi
-    flush_stdout
+    sync
 
     # restore the tracing state
-    if [[ $tracing == 1 ]]; then
+    if ((tracing_on == 1)); then
         set -x
     fi
 }
@@ -175,24 +278,6 @@ function is_in() {
         [[ "$sought" == "$v" ]] && return 0
     done
     return 1
-}
-
-function is_defined() {
-    if [[ $# -ne 1 ]]; then
-        echo "The function is_defined() requires exactly one argument: the name of the variable to test." >&2
-        return 2
-    fi
-
-    if [[ -v "$1" ]] && declare -p "$1" > "$_ignore"; then
-        return 0
-    else
-        return 1
-    fi
-}
-
-function flush_stdout() {
-    sync -f /dev/stdout
-    return 0
 }
 
 function list_of_files() {
@@ -369,81 +454,6 @@ function press_any_key() {
         read -n 1 -rsp 'Press any key to continue...' >&2
         echo
     fi
-}
-
-# Dumps a table of variables and in the end asks the user to press any key to continue.
-# The names of the variables must be specified as strings - no leading $.
-# Optionally the caller can specify flags like:
-# -h or --header <text> will display the header text and the dividing lines in the table
-# -b or --blank will display an empty line in the table
-# -l or --line will display a dividing line
-# -q or --quiet will not ask the user to press any key to continue after dumping the variables
-# -f or --force will dump the variables even if $trace_enabled is not true
-function dump_vars() {
-    local save_trace_enabled=$trace_enabled
-    for v in "$@"; do
-        if [[ "$v" == "-f" || "$v" == "--force" ]]; then
-            trace_enabled=true
-            break
-        fi
-    done
-    if [[ $# -eq 0 || $trace_enabled != true ]]; then
-        return;
-    fi
-    flush_stdout
-
-    local top=true
-    local decl
-    local save_ignore=$_ignore
-    _ignore=/dev/null
-
-    echo "┌───────────────────────────────────────────────────────────";
-    until [[ $# = 0 ]]; do
-        case $1 in
-            -f|--force ) ;;  # already processed
-            -h|--header )
-                shift
-                if [[ $top != "true" ]]; then
-                    echo "├───────────────────────────────────────────────────────────"
-                fi
-                echo "│ $1"
-                echo "├───────────────────────────────────────────────────────────"
-                ;;
-
-            -b|--blank ) echo "│" ;;
-
-            -l|--line ) echo "├───────────────────────────────────────────────────────────" ;;
-
-            -q|--quiet ) quiet=true ;;
-
-            * ) write_line "$1" ;;
-        esac
-        shift
-        top=false
-    done
-    echo "└───────────────────────────────────────────────────────────"
-    flush_stdout
-    [[ "$quiet" == false ]] || press_any_key
-    _ignore=$save_ignore
-    trace_enabled=$save_trace_enabled
-    return 0
-}
-
-function write_line() {
-    local -n v="$1"
-    local decl
-    if is_defined "$1"; then
-        decl="$(declare -p "$1" 2> "$_ignore")"
-        if [[ $decl =~ 'declare -a' ]]; then
-            printf "│ \$%-40s%s\n" "$1" "${#v[@]}: (${v[*]})"
-        else
-            printf "│ \$%-40s%s\n" "$1" "$v"
-        fi
-        unset -n v
-    else
-        printf "│ \$%-40s%s\n" "$1" "****** unbound, undefined, or invalid"
-    fi
-    return 0
 }
 
 # scp_retry tries the SSH copy command up to three times with timeout of 10sec timeout between retries.

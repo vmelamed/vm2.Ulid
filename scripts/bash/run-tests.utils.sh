@@ -9,14 +9,11 @@ function get_arguments()
     for v in "$@"; do
         if [[ "$v" == "--debugger" ]]; then
             debugger=true
+            quiet="true"
             break
         fi
     done
-    if [[ $debugger == "true" ]]; then
-        debugger="true"
-        quiet="true"
-        shift
-    else
+    if [[ $debugger != "true" ]]; then
         trap on_debug DEBUG
         trap on_exit EXIT
     fi
@@ -33,10 +30,21 @@ function get_arguments()
             continue
         fi
         case "$flag" in
-            --debugger ) ;;  # already processed
-            --help|-h ) usage; exit 0 ;;
-
+            --debugger     ) ;;  # already processed
+            --help|-h      ) usage; exit 0 ;;
             --artifacts|-a ) value="$1"; shift; ARTIFACTS_DIR=$(realpath -m "$value") ;;
+            --define|-d    )
+                value="$1"; shift
+                if ! [[ "$value" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
+                    usage "The specified pre-processor symbol '$value' is not valid."
+                    exit 2
+                fi
+                if [[ -z "$define" ]]; then
+                    define="$value"
+                elif [[ ! "$define" =~ (^|;)"$value"($|;) ]]; then
+                    define="$define;$value"
+                fi
+                ;;
 
             --min-coverage-pct|-t )
                 value="$1"; shift
@@ -54,19 +62,6 @@ function get_arguments()
                     exit 2
                 fi
                 configuration="${value^}"
-                ;;
-
-            --define|-d )
-                value="$1"; shift
-                if ! [[ "$value" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
-                    usage "The specified pre-processor symbol '$value' is not valid."
-                    exit 2
-                fi
-                if [[ -z "$define" ]]; then
-                    define="$value"
-                elif [[ ! "$define" =~ (^|;)"$value"($|;) ]]; then
-                    define="$define;$value"
-                fi
                 ;;
 
             *)  value="$flag"
@@ -97,6 +92,7 @@ dump_all_variables()
         configuration \
         min_coverage_pct \
         ARTIFACTS_DIR \
+        ci \
         --header "other globals:" \
         solution_dir \
         script_dir \

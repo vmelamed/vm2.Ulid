@@ -48,7 +48,7 @@ on:
       force-new-baseline:
         description: "Ignore the existing baseline and force a new baseline"
         type: boolean
-        required: true
+        required: false
         default: false
 
 permissions:

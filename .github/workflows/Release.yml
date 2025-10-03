@@ -4,21 +4,76 @@ on:
   push:
     branches:
       - main
-    tags: ['v*', '!v*-*']
+    tags: ["v*", "!v*-*"]
 
   workflow_dispatch:
     inputs:
       reason:
-        description: 'Why run?'
+        description: "Why run?"
+
+      os:
+        description: "JSON array of runners"
+        type: string
+        default: '["ubuntu-latest"]'
+        required: true
+
       dotnet-version:
-        description: 'Version of .NET SDK to use'
-        default: '9.0.x'
+        description: "Version of .NET SDK to use"
+        type: string
+        default: "9.0.x"
+        required: true
+
+      test-project:
+        description: "Path to test project"
+        type: string
+        default: "./test/UlidType.Tests/UlidType.Tests.csproj"
+        required: true
+
+      benchmark-project:
+        description: "Path to benchmark project"
+        type: string
+        default: "./benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj"
+        required: true
 
 env:
+  CI: true
   NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
   REASON: ${{ inputs.reason || 'manual run' }}
 
 jobs:
+  # last time run the gates before release
+  build:
+    name: Build
+    uses: ./.github/workflows/build.yml
+    with:
+      os: ${{ inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]' }}
+      dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
+      configuration: Release
+
+  test:
+    name: Test
+    needs: build
+    uses: ./.github/workflows/test.yml
+    with:
+      os: ${{ inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]' }}
+      dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
+      test-project: ${{ inputs.test-project || vars.TEST_PROJECT || './test/UlidType.Tests/UlidType.Tests.csproj' }}
+      configuration: Release
+      verbose: ${{ fromJSON(vars.VERBOSE) || false }}
+      min-coverage-pct: ${{ fromJSON(vars.MIN_COVERAGE_PCT) || 75 }}
+
+  benchmarks:
+    name: Benchmarks (Linux only)
+    needs: build
+    uses: ./.github/workflows/benchmarks.yml
+    with:
+      os: ${{ inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]' }}
+      dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
+      benchmark-project: ${{ inputs.benchmark-project || vars.BENCHMARK_PROJECT || './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj' }}
+      configuration: Release
+      verbose: ${{ fromJSON(vars.VERBOSE) || false }}
+      max-regression-pct: ${{ fromJSON(vars.MAX_REGRESSION_PCT) || 10 }}
+
   release:
     if: ${{ github.event_name == 'workflow_dispatch' || (startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name,'-')) }}
     runs-on: ubuntu-latest
@@ -39,15 +94,12 @@ jobs:
             **/packages.lock.json
             **/*.csproj
 
-      - name: Test
-        run: dotnet test -c Release
-
       - name: Pack (stable)
         env:
           REASON: ${{ inputs.reason }}
         run: |
           mkdir -p artifacts/pack
-          dotnet pack -c Release --no-build -o artifacts/pack \
+          dotnet pack -c Release -o artifacts/pack \
             "/p:PackageReleaseNotes=Stable: ${REASON:-tag push}"
           ls -1 artifacts/pack
 
@@ -55,19 +107,19 @@ jobs:
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
-            if [ -z "${NUGET_API_KEY}" ]; then
-              echo "NUGET_API_KEY not configured"; exit 1
-            fi
+          if [ -z "${NUGET_API_KEY}" ]; then
+            echo "NUGET_API_KEY not configured"; exit 1
+          fi
 
-            dotnet nuget push artifacts/pack/*.nupkg \
-              --api-key  "${NUGET_API_KEY}" \
-              --source https://api.nuget.org/v3/index.json \
-              --skip-duplicate
+          dotnet nuget push artifacts/pack/*.nupkg \
+            --api-key  "${NUGET_API_KEY}" \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate
 
-            dotnet nuget push artifacts/pack/*.snupkg \
-              --api-key "${NUGET_API_KEY}" \
-              --source https://api.nuget.org/v3/index.json \
-              --skip-duplicate
+          dotnet nuget push artifacts/pack/*.snupkg \
+            --api-key "${NUGET_API_KEY}" \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate
 
       - name: Summary
         env:

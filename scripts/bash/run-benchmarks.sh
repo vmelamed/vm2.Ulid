@@ -172,7 +172,6 @@ fi
 trace "Calculating the percent change vs baseline"
 pct=$(( (sum_cur - sum_base) * 100 / sum_base ))
 echo "Percent change vs baseline: $pct% (allowed: $max_regression_pct%)"
-flush_stdout
 
 if (( pct > max_regression_pct )); then
     echo "Performance regression exceeds threshold" >&2
@@ -180,13 +179,14 @@ if (( pct > max_regression_pct )); then
         echo "Significant regression of $pct% over baseline. Updating the baseline."
         # shellcheck disable=SC2154
         echo "FORCE_NEW_BASELINE=true" >> "$GITHUB_ENV"
+        sync
         exit 0
     fi
     echo "If this is acceptable, please update the baseline by setting the variable 'FORCE_NEW_BASELINE=true'." >&2
+    sync
     exit 2
 elif (( pct > 0 )); then
     echo "Performance regression within acceptable threshold."
-    flush_stdout
 elif (( pct < 0 )); then
     pct_abs=$(( -pct ))
     if (( pct_abs >= max_regression_pct )); then
@@ -198,5 +198,5 @@ elif (( pct < 0 )); then
     else
         echo "Improvement of $pct_abs% over baseline."
     fi
-    flush_stdout
 fi
+sync

@@ -114,19 +114,21 @@ fi
 trace "Generating coverage reports..."
 uninstall_reportgenerator=false
 if ! dotnet tool list dotnet-reportgenerator-globaltool --tool-path ./tools > "$_ignore"; then
-    echo "Installing the tool 'reportgenerator'..."; flush_stdout
+    echo "Installing the tool 'reportgenerator'..."; sync
     execute mkdir -p ./tools
     execute dotnet tool install dotnet-reportgenerator-globaltool --tool-path ./tools --version 5.*
     uninstall_reportgenerator=true
 else
     echo "The tool 'reportgenerator' is already installed." >&2
 fi
+
 execute ./tools/reportgenerator \
     -reports:"$coverage_source_path" \
     -targetdir:"$coverage_reports_dir" \
     -reporttypes:TextSummary,html
+
 if [[ "$uninstall_reportgenerator" = "true" ]]; then
-    echo "Uninstalling the tool 'reportgenerator'..."; flush_stdout
+    echo "Uninstalling the tool 'reportgenerator'..."; sync
     execute dotnet tool uninstall dotnet-reportgenerator-globaltool --tool-path ./tools
     execute rm -rf ./tools
 fi
@@ -149,16 +151,19 @@ if [[ $dry_run != "true" ]]; then
     pct=$(sed -nE 's/Method coverage: ([0-9]+)(\.[0-9]+)?%.*/\1/p' "$coverage_summary_path" | head -n1)
     if [[ -z "$pct" ]]; then
         echo "Could not parse coverage percent from $coverage_summary_path" >&2
+        sync
         exit 2
     fi
 
-    echo "Coverage: $pct% (threshold: $min_coverage_pct%)"; flush_stdout
+    echo "Coverage: $pct% (threshold: $min_coverage_pct%)";
 
     # Compare the coverage percentage against the threshold
     if (( pct < min_coverage_pct )); then
         echo "Coverage $pct% is below threshold $min_coverage_pct%" >&2
+        sync
         exit 2
     else
-        echo "Coverage $pct% meets threshold $min_coverage_pct%"; flush_stdout
+        echo "Coverage $pct% meets threshold $min_coverage_pct%";
     fi
 fi
+sync
