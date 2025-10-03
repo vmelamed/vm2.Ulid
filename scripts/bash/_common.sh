@@ -18,13 +18,14 @@ declare -x _ignore=/dev/null  # the file to redirect unwanted output to
 
 function set_ci()
 {
-    ci=true
-    quiet=true
-    dry_run=false
-    trace_enabled=false
-    debugger=false
-    _ignore=/dev/null
-    set +x
+    if [[ $ci == true ]]; then
+        quiet=true
+        dry_run=false
+        trace_enabled=false
+        debugger=false
+        _ignore=/dev/null
+        set +x
+    fi
 }
 
 function set_debugger()
