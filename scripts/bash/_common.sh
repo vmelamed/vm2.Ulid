@@ -140,7 +140,6 @@ function dump_vars() {
         case $v in
             -f|--force ) continue ;;  # already processed
             -h|--header )
-                shift
                 v=$1
                 shift
                 if [[ $top != "true" ]]; then
