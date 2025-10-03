@@ -173,10 +173,10 @@ function get_arguments()
 
             *)  value="$flag"
                 if ! p=$(realpath -e "$value"); then
-                    usage "The specified test project file '$value' does not exist."
+                    usage "The specified test project file $value does not exist."
                     exit 2
                 elif [[ -n "$bm_project" && "$bm_project" != "$p" ]]; then
-                    usage "More than one test project specified: '$bm_project' and '$p'."
+                    usage "More than one test project specified: $bm_project and $p."
                     exit 2
                 else
                     bm_project="$p"
