@@ -17,7 +17,11 @@ bm_project=$(realpath -e "$bm_project")  # ensure it's an absolute path and exis
 declare -x ARTIFACTS_DIR=${ARTIFACTS_DIR:="$solution_dir/BmArtifacts"}
 ARTIFACTS_DIR=$(realpath -m "$ARTIFACTS_DIR")  # ensure it's an absolute path
 
+declare -x force_new_baseline=${FORCE_NEW_BASELINE:-false}
+
 declare configuration=${CONFIGURATION:="Release"}
+
+declare define=${DEFINE:-}
 
 source "$script_dir/_common.sh"
 source "$script_dir/run-benchmarks-utils.sh"
@@ -25,6 +29,8 @@ source "$script_dir/run-benchmarks-utils.sh"
 get_arguments "$@"
 declare -r bm_project
 declare -r configuration
+declare -r force_new_baseline
+declare -r define
 
 declare -x results_dir=${results_dir:="$ARTIFACTS_DIR/results"}
 results_dir=$(realpath -m "$results_dir")  # ensure it's an absolute path
@@ -38,11 +44,11 @@ declare -x baseline_dir=${baseline_dir:="$ARTIFACTS_DIR/baseline"}
 baseline_dir=$(realpath -m "$baseline_dir")
 declare -r baseline_dir
 
-renamed_artifacts_dir="$ARTIFACTS_DIR-$(date -u +"%Y%m%dT%H%M%S")"
-declare -r renamed_artifacts_dir
-
 max_regression_pct=${MAX_REGRESSION_PCT:-10}
 declare -ri max_regression_pct
+
+renamed_artifacts_dir="$ARTIFACTS_DIR-$(date -u +"%Y%m%dT%H%M%S")"
+declare -r renamed_artifacts_dir
 
 dump_all_variables
 
@@ -84,7 +90,7 @@ execute mkdir -p "$summaries_dir"
 trace "Running benchmark tests in project '$bm_project' with configuration '$configuration'..."
 execute mkdir -p "$ARTIFACTS_DIR"
 execute dotnet run \
-    /p:DefineConstants="$DEFINE" \
+    /p:DefineConstants="$define" \
     --project "$bm_project" \
     --configuration "$configuration" \
     --filter '*' \
@@ -157,6 +163,12 @@ flush_stdout
 
 if (( pct > max_regression_pct )); then
     echo "Performance regression exceeds threshold" >&2
+    if [[ $force_new_baseline == "true" ]] && is_defined "GITHUB_ENV"; then
+        echo "Significant regression of $pct% over baseline. Updating the baseline."
+        # shellcheck disable=SC2154
+        echo "FORCE_NEW_BASELINE=true" >> "$GITHUB_ENV"
+        exit 0
+    fi
     echo "If this is acceptable, please update the baseline by setting the variable 'FORCE_NEW_BASELINE=true'." >&2
     exit 2
 elif (( pct > 0 )); then

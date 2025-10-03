@@ -55,15 +55,23 @@ Options:
                             percentage (0-100).
                             Initial value from \$MIN_COVERAGE_PCT or 80
 
-    --configuration | -c    Specifies the build configuration to use ('Debug' or
-                            'Release').
-                            Initial value from \$CONFIGURATION or 'Release'
-
     --artifacts | -a        Specifies the directory where to create the script's
                             artifacts: summary, report files, etc.
                             Initial value from \$ARTIFACTS_DIR or
                             '\$solution_dir/TestArtifacts'
                             ($solution_dir/TestArtifacts)
+
+    --configuration | -c    Specifies the build configuration to use ('Debug' or
+                            'Release').
+                            Initial value from \$CONFIGURATION or 'Release'
+
+    --define | -d           Defines one or more user-defined pre-processor
+                            symbols to be used when building the benchmark
+                            project, e.g. 'SHORT_RUN'. Which generates a shorter
+                            and faster, but less accurate benchmark run. You can
+                            specify this option multiple times to define multiple
+                            symbols.
+                            Initial value from \$DEFINE or ''
 
 "
     if [[ "${#}" -gt 0 && -n "$1" ]]; then
@@ -127,6 +135,19 @@ function get_arguments()
                     exit 2
                 fi
                 configuration="${value^}"
+                ;;
+
+            --define|-d )
+                value="$1"; shift
+                if ! [[ "$value" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
+                    usage "The specified pre-processor symbol '$value' is not valid."
+                    exit 2
+                fi
+                if [[ -z "$define" ]]; then
+                    define="$value"
+                elif [[ ! "$define" =~ (^|;)"$value"($|;) ]]; then
+                    define="$define;$value"
+                fi
                 ;;
 
             *)  value="$flag"

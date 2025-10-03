@@ -27,6 +27,18 @@ on:
         required: false
         default: "Release"
 
+      define:
+        description: "Define constants to pass to the compiler"
+        type: string
+        default: ""
+        required: false
+
+      verbose:
+        description: "Whether to enable verbose logging"
+        type: boolean
+        default: false
+        required: false
+
       test-project:
         description: "Path to test project"
         type: string
@@ -89,6 +101,8 @@ jobs:
       os: ${{ inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]' }}
       test-project: ${{ inputs.test-project || vars.TEST_PROJECT || './test/UlidType.Tests/UlidType.Tests.csproj' }}
       configuration: ${{ inputs.build-configuration ||vars.BUILD_CONFIGURATION || 'Release' }}
+      define: ${{ inputs.define || vars.DEFINE || '' }}
+      verbose: ${{ inputs.verbose || vars.VERBOSE || false }}
       min_coverage_pct: ${{ inputs.min_coverage_pct || fromJSON(vars.MIN_COVERAGE_PCT) || 75 }}
 
   benchmarks:
@@ -101,5 +115,7 @@ jobs:
       os: ${{ inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]' }}
       benchmark-project: ${{ inputs.benchmark-project || vars.BENCHMARK_PROJECT || './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj' }}
       configuration: ${{ inputs.build-configuration ||vars.BUILD_CONFIGURATION || 'Release' }}
-      force-new-baseline: ${{ inputs.force-new-baseline || fromJSON(vars.FORCE_NEW_BASELINE) || false }}
+      define: ${{ inputs.define || vars.DEFINE || '' }}
+      verbose: ${{ inputs.verbose || vars.VERBOSE || false }}
       max-regression-pct: ${{ inputs.max-regression-pct || fromJSON(vars.MAX_REGRESSION_PCT) || 10 }}
+      force-new-baseline: ${{ inputs.force-new-baseline || fromJSON(vars.FORCE_NEW_BASELINE) || false }}

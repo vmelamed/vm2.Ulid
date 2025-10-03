@@ -7,19 +7,35 @@ on:
         type: string
         default: "9.0.x"
         required: true
+
       test-project:
         description: "Path to the test project"
         type: string
         required: false
+
       configuration:
         description: "The type of build to produce, e.g. Release vs Debug"
         type: string
         required: false
         default: "Release"
+
+      define:
+        description: "Define constants to pass to the compiler"
+        type: string
+        default: ""
+        required: false
+
+      verbose:
+        description: "Whether to enable verbose logging"
+        type: boolean
+        default: false
+        required: false
+
       min_coverage_pct:
         type: number
         required: true
         default: 75
+
       os:
         description: "Runner OS-s"
         type: string

@@ -52,6 +52,11 @@ Switches:
     --short-run | -s        A shortcut for '--define SHORT_RUN'. See below.
                             Initial value from \$DEFINE.
 
+    --force-new-baseline | -f
+                            When specified, a new baseline will be created even
+                            if a previous baseline already exists.
+                            Initial value from \$FORCE_NEW_BASELINE or 'false'
+
 Options:
     --define | -d           Defines one or more user-defined pre-processor
                             symbols to be used when building the benchmark
@@ -123,6 +128,8 @@ function get_arguments()
 
             --trace|-x ) trace_enabled=true; set -x ;;
 
+            --force-new-baseline|-f ) force_new_baseline=true ;;
+
             --artifacts|-a ) value="$1"; shift; ARTIFACTS_DIR=$(realpath -m "$value") ;;
 
             --max-regression-pct|-r )
@@ -140,18 +147,18 @@ function get_arguments()
                     usage "The specified pre-processor symbol '$value' is not valid."
                     exit 2
                 fi
-                if [[ -z "$DEFINE" ]]; then
-                    DEFINE="$value"
-                elif [[ ! "$DEFINE" =~ (^|;)"$value"($|;) ]]; then
-                    DEFINE="$DEFINE;$value"
+                if [[ -z "$define" ]]; then
+                    define="$value"
+                elif [[ ! "$define" =~ (^|;)"$value"($|;) ]]; then
+                    define="$define;$value"
                 fi
                 ;;
 
             --short-run|-s )
-                if [[ -z "$DEFINE" ]]; then
-                    DEFINE="SHORT_RUN"
-                elif [[ ! "$DEFINE" =~ (^|;)SHORT_RUN($|;) ]]; then
-                    DEFINE="$DEFINE;SHORT_RUN"
+                if [[ -z "$define" ]]; then
+                    define="SHORT_RUN"
+                elif [[ ! "$define" =~ (^|;)SHORT_RUN($|;) ]]; then
+                    define="$define;SHORT_RUN"
                 fi
                 ;;
 

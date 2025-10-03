@@ -20,6 +20,18 @@ on:
         required: false
         default: "Release"
 
+      define:
+        description: "Define constants to pass to the compiler"
+        type: string
+        default: ""
+        required: false
+
+      verbose:
+        description: "Whether to enable verbose logging"
+        type: boolean
+        default: false
+        required: false
+
       force-new-baseline:
         description: "Ignore the existing baseline and force a new baseline"
         type: boolean
@@ -47,7 +59,7 @@ env:
   ARTIFACTS_DIR: BmArtifacts
   SUMMARIES_DIR: BmArtifacts/summaries
   BASELINE_DIR: BmArtifacts/baseline
-  FORCE_NEW_BASELINE: false
+  FORCE_NEW_BASELINE: ${{ inputs.force-new-baseline || vars.FORCE_NEW_BASELINE || false }}
 
 jobs:
   benchmarks:
@@ -83,9 +95,12 @@ jobs:
         shell: bash
         env:
           FORCE_NEW_BASELINE: ${{ inputs.force-new-baseline }}
-          CONFIGURATION: ${{ inputs.configuration }}
         run: |
-          ./scripts/bash/run-benchmarks.sh ${{ inputs.benchmark-project }}
+          ./scripts/bash/run-benchmarks.sh ${{ inputs.benchmark-project }} \
+              --verbose "${{ inputs.verbose }}" \
+              --max_regression_pct "${{ inputs.max-regression-pct }}" \
+              --define "${{ inputs.define }}"
+              --configuration "${{ inputs.configuration }}"
 
       - name: Upload benchmark summaries artifact
         uses: actions/upload-artifact@v4
