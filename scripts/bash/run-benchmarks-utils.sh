@@ -172,6 +172,7 @@ function get_arguments()
                 ;;
 
             *)  value="$flag"
+                dump_vars value
                 if ! p=$(realpath -e "$value"); then
                     usage "The specified test project file $value does not exist."
                     exit 2
