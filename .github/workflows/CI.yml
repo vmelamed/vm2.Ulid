@@ -45,12 +45,6 @@ on:
         default: "./test/UlidType.Tests/UlidType.Tests.csproj"
         required: true
 
-      min_coverage_pct:
-        description: "Minimum acceptable code coverage percentage"
-        type: number
-        default: 75
-        required: true
-
       run-benchmarks:
         description: "Whether to run benchmarks and compare against baseline"
         type: boolean
@@ -61,12 +55,6 @@ on:
         description: "Path to benchmark project"
         type: string
         default: "./benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj"
-        required: true
-
-      max-regression-pct:
-        description: "Maximum acceptable performance regression percentage"
-        type: number
-        default: 10 # percent
         required: true
 
       force-new-baseline:
@@ -103,7 +91,7 @@ jobs:
       configuration: ${{ inputs.build-configuration ||vars.BUILD_CONFIGURATION || 'Release' }}
       define: ${{ inputs.define || vars.DEFINE || '' }}
       verbose: ${{ inputs.verbose || vars.VERBOSE || false }}
-      min_coverage_pct: ${{ inputs.min_coverage_pct || fromJSON(vars.MIN_COVERAGE_PCT) || 75 }}
+      min_coverage_pct: ${{ fromJSON(vars.MIN_COVERAGE_PCT) || 75 }}
 
   benchmarks:
     name: Benchmarks (Linux only)
@@ -117,5 +105,5 @@ jobs:
       configuration: ${{ inputs.build-configuration ||vars.BUILD_CONFIGURATION || 'Release' }}
       define: ${{ inputs.define || vars.DEFINE || '' }}
       verbose: ${{ inputs.verbose || vars.VERBOSE || false }}
-      max-regression-pct: ${{ inputs.max-regression-pct || fromJSON(vars.MAX_REGRESSION_PCT) || 10 }}
+      max-regression-pct: ${{ fromJSON(vars.MAX_REGRESSION_PCT) || 10 }}
       force-new-baseline: ${{ inputs.force-new-baseline || fromJSON(vars.FORCE_NEW_BASELINE) || false }}
