@@ -8,16 +8,57 @@
 initial_dir=$(pwd)
 declare -xr initial_dir
 
-_ignore=${_ignore:="/dev/null"}
+if [[ $- == *x* ]]; then
+    cmd_tracing=true
+else
+    cmd_tracing=false
+fi
+declare -x cmd_tracing
 
 declare -x trace_enabled=${TRACE_ENABLED:-false}
 declare -x verbose=${VERBOSE:-false}
 declare -x debugger=${DEBUGGER:-false}
 declare -x dry_run=${DRY_RUN:-false}
 declare -x quiet=${QUIET:-false}
+
 declare -x ci=${CI:-false}
 
-[[ "$ci" == "true" ]] && quiet=true
+function get_common_arg()
+{
+    if [[ "${#}" -eq 0 ]]; then
+        return
+    fi
+
+    # get the flag and convert it to lower case
+    case "$1" in
+        --debugger ) debugger="true"; quiet="true" ;;
+        --dry-run|-y ) dry_run=true ;;
+        --quiet|-q ) quiet=true ;;
+        --verbose|-v ) verbose=true; trace_enabled=true ;;
+        --trace|-x ) trace_enabled=true; cmd_tracing=true; set -x; ;;
+        * ) return 1 ;;
+    esac
+    return 0
+}
+
+
+function display_usage_msg()
+{
+    if [[ "${#}" -eq 0 || -z "$1" ]]; then
+        echo "There must be at least one parameter - the usage text" >&2
+        exit 2
+    fi
+
+    set +x
+    echo "$1" >&2
+    if [[ "${#}" -gt 1 && -n "$2" ]]; then
+        echo "$2" >&2
+    fi
+
+    if [[ "$cmd_tracing" == "true" ]]; then
+        set -x
+    fi
+}
 
 declare last_command
 declare current_command="$BASH_COMMAND"
@@ -65,7 +106,7 @@ function execute() {
         return 0
     fi
     trace "$*"
-    "$@" > "$_ignore"
+    "$@"
     return $?
 }
 
@@ -132,7 +173,7 @@ function is_defined() {
         return 2
     fi
 
-    if [[ -v "$1" ]] && declare -p "$1" > "$_ignore"; then
+    if [[ -v "$1" ]] && declare -p "$1" > /dev/null; then
         return 0
     else
         return 1
@@ -362,8 +403,6 @@ function dump_vars() {
     flush_stdout
     [[ "$quiet" == true ]] || press_any_key
 }
-
-
 
 function write_line() {
     local -n v="$1"

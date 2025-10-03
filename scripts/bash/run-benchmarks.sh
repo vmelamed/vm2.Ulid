@@ -1,15 +1,22 @@
 #!/bin/bash
 set -euo pipefail
 
+this_script=${BASH_SOURCE[0]}
+declare -xr this_script
+
+script_name="$(basename "${this_script%.*}")"
+declare -xr script_name
+
+script_dir="$(dirname "$(realpath -e "$this_script")")"
+declare -xr script_dir
+
+source "$script_dir/_common.sh"
+
 # get the default values from environment variables etc.
-bash_source=${BASH_SOURCE[0]}
-declare -r bash_source
-
-script_dir="$(dirname "$(realpath -e "$bash_source")")"
-declare -r script_dir
-
 solution_dir="$(dirname "$(realpath -e "$script_dir/..")")"
 declare -r solution_dir
+
+declare -x DEFINE="${DEFINE:-}"
 
 declare bm_project=${BM_PROJECT:="$solution_dir/benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj"}
 bm_project=$(realpath -e "$bm_project")  # ensure it's an absolute path and exists
@@ -17,14 +24,20 @@ bm_project=$(realpath -e "$bm_project")  # ensure it's an absolute path and exis
 declare -x ARTIFACTS_DIR=${ARTIFACTS_DIR:="$solution_dir/BmArtifacts"}
 ARTIFACTS_DIR=$(realpath -m "$ARTIFACTS_DIR")  # ensure it's an absolute path
 
+declare -x BASELINE_DIR=${BASELINE_DIR:="$ARTIFACTS_DIR/baseline"}
+BASELINE_DIR=$(realpath -m "$BASELINE_DIR")  # ensure it's an absolute path
+
+declare -x SUMMARIES_DIR=${SUMMARIES_DIR:="$ARTIFACTS_DIR/summaries"}
+SUMMARIES_DIR=$(realpath -m "$SUMMARIES_DIR")  # ensure it's an absolute path
+
 declare -x force_new_baseline=${FORCE_NEW_BASELINE:-false}
 
 declare configuration=${CONFIGURATION:="Release"}
 
 declare define=${DEFINE:-}
 
-source "$script_dir/_common.sh"
-source "$script_dir/run-benchmarks-utils.sh"
+source "$script_dir/run-benchmarks.usage.sh"
+source "$script_dir/run-benchmarks.utils.sh"
 
 get_arguments "$@"
 declare -r bm_project
@@ -36,11 +49,11 @@ declare -x results_dir=${results_dir:="$ARTIFACTS_DIR/results"}
 results_dir=$(realpath -m "$results_dir")  # ensure it's an absolute path
 declare -r results_dir
 
-declare -x summaries_dir=${summaries_dir:="$ARTIFACTS_DIR/summaries"}
+declare -x summaries_dir=${summaries_dir:="$SUMMARIES_DIR"}
 summaries_dir=$(realpath -m "$summaries_dir")
 declare -r summaries_dir
 
-declare -x baseline_dir=${baseline_dir:="$ARTIFACTS_DIR/baseline"}
+declare -x baseline_dir=${baseline_dir:="$BASELINE_DIR"}
 baseline_dir=$(realpath -m "$baseline_dir")
 declare -r baseline_dir
 

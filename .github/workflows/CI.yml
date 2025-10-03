@@ -92,7 +92,7 @@ jobs:
       configuration: ${{ inputs.build-configuration ||vars.BUILD_CONFIGURATION || 'Release' }}
       define: ${{ inputs.define || vars.DEFINE || '' }}
       verbose: ${{ inputs.verbose || fromJSON(vars.VERBOSE) || false }}
-      min_coverage_pct: ${{ fromJSON(vars.MIN_COVERAGE_PCT) || 75 }}
+      min-coverage-pct: ${{ fromJSON(vars.MIN_COVERAGE_PCT) || 75 }}
 
   benchmarks:
     name: Benchmarks (Linux only)

@@ -55,12 +55,15 @@ permissions:
   contents: read
 
 env:
-  # these must be the same across all jobs and steps
-  CI: true
-  ARTIFACTS_DIR: BmArtifacts
-  SUMMARIES_DIR: BmArtifacts/summaries
-  BASELINE_DIR: BmArtifacts/baseline
+  CI: true # implies --quiet for the scripts
+  VERBOSE: ${{ inputs.verbose || false }} # enables tracing and dump_vars in the scripts
+  # use ONLY if justified - new functionality, integration, etc.
   FORCE_NEW_BASELINE: ${{ inputs.force-new-baseline || vars.FORCE_NEW_BASELINE || false }}
+  # these must be the same across all jobs and steps below.
+  # We must know where to find the artifacts and where to download/upload to/from across all jobs and steps here.
+  ARTIFACTS_DIR: BmArtifacts
+  BASELINE_DIR: BmArtifacts/baseline
+  SUMMARIES_DIR: BmArtifacts/summaries
 
 jobs:
   benchmarks:
@@ -106,11 +109,11 @@ jobs:
       - name: Upload benchmark summaries artifact
         uses: actions/upload-artifact@v4
         with:
-          name: summaries-${{ matrix.os }}
+          name: benchmark-summaries-${{ matrix.os }}
           path: ${{ env.SUMMARIES_DIR }}
           if-no-files-found: error
           overwrite: true
-          retention-days: 90
+          retention-days: 5
 
       - name: Upload benchmark results artifact as a new baseline
         if: ${{ inputs.force-new-baseline || env.FORCE_NEW_BASELINE || false }}
@@ -120,4 +123,4 @@ jobs:
           path: ${{ env.SUMMARIES_DIR }}
           if-no-files-found: error
           overwrite: true
-          retention-days: 90
+          retention-days: 5

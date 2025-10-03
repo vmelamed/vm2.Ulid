@@ -1,13 +1,18 @@
 #!/bin/bash
 set -euo pipefail
 
+this_script=${BASH_SOURCE[0]}
+declare -xr this_script
+
+script_name="$(basename "${this_script%.*}")"
+declare -xr script_name
+
+script_dir="$(dirname "$(realpath -e "$this_script")")"
+declare -xr script_dir
+
+source "$script_dir/_common.sh"
+
 # get the default values from environment variables etc.
-bash_source=${BASH_SOURCE[0]}
-declare -r bash_source
-
-script_dir="$(dirname "$(realpath -e "$bash_source")")"
-declare -r script_dir
-
 solution_dir="$(dirname "$(realpath -e "$script_dir/..")")"
 declare -r solution_dir
 
@@ -24,8 +29,8 @@ declare -i min_coverage_pct=${MIN_COVERAGE_PCT:-80}
 
 declare define=${DEFINE:-}
 
-source "$script_dir/_common.sh"
-source "$script_dir/run-test-utils.sh"
+source "$script_dir/run-tests.usage.sh"
+source "$script_dir/run-tests.utils.sh"
 
 get_arguments "$@"
 declare -r test_project
@@ -58,7 +63,6 @@ declare -r COVERAGE_RESULTS_DIR                                                 
 
 test_results_results_dir="$ARTIFACTS_DIR/Results"                               # the directory for the log files from the test
 declare -r test_results_results_dir                                             # run
-
 
 coverage_source_dir="$COVERAGE_RESULTS_DIR/coverage"                            # the directory for the raw coverage files
 coverage_source_fileName="coverage.cobertura.xml"                               # the name of the raw coverage file
@@ -109,7 +113,7 @@ fi
 
 trace "Generating coverage reports..."
 uninstall_reportgenerator=false
-if ! dotnet tool list dotnet-reportgenerator-globaltool --tool-path ./tools > "$_ignore" >&2; then
+if ! dotnet tool list dotnet-reportgenerator-globaltool --tool-path ./tools > /dev/null; then
     echo "Installing the tool 'reportgenerator'..."; flush_stdout
     execute mkdir -p ./tools
     execute dotnet tool install dotnet-reportgenerator-globaltool --tool-path ./tools --version 5.*

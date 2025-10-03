@@ -38,7 +38,7 @@ on:
         required: false
         default: false
 
-      min_coverage_pct:
+      min-coverage-pct:
         type: number
         required: true
         default: 75
@@ -47,8 +47,11 @@ permissions:
   contents: read
 
 env:
-  CI: "true"
-  ARTIFACTS_DIR: "Artifacts"
+  CI: true  # implies --quiet for the scripts
+  VERBOSE: ${{ inputs.verbose || false }} # enables tracing and dump_vars in the scripts
+  # these must be the same across all jobs and steps below.
+  # We must know where to find the artifacts and where to download/upload to/from across all jobs and steps here.
+  ARTIFACTS_DIR: "TestArtifacts"
 
 jobs:
   test:
@@ -80,9 +83,8 @@ jobs:
         env:
           VERBOSE: ${{ inputs.verbose || false }}
         run: >-
-          ./scripts/bash/run-tests.sh
-          ${{ inputs.test-project }}
-          --min-coverage-pct "${{ inputs.min_coverage_pct }}"
+          ./scripts/bash/run-tests.sh ${{ inputs.test-project }}
+          --min-coverage-pct "${{ inputs.min-coverage-pct }}"
           --configuration "${{ inputs.configuration }}"
           --define "${{ inputs.define }}"
 
@@ -93,4 +95,4 @@ jobs:
           path: ${{ env.ARTIFACTS_DIR }}
           if-no-files-found: error
           overwrite: true
-          retention-days: 90
+          retention-days: 5
