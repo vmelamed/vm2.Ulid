@@ -39,10 +39,8 @@ function get_arguments()
                     usage "The specified pre-processor symbol '$value' is not valid."
                     exit 2
                 fi
-                if [[ -z "$define" ]]; then
-                    define="$value"
-                elif [[ ! "$define" =~ (^|;)"$value"($|;) ]]; then
-                    define="$define;$value"
+                if [[ ! "$defined_symbols" =~ (^|;)"$value"($|;) ]]; then
+                    defined_symbols="$value $defined_symbols"   # NOTE: space-separated!
                 fi
                 ;;
 

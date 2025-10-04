@@ -26,8 +26,8 @@ Switches:$common_switches
         Initial value from \$TRACE_ENABLED or 'false'
 
     --short-run | -s
-        A shortcut for '--define SHORT_RUN'. See below.
-        Initial value from \$DEFINE.
+        A shortcut for '--defined_symbols SHORT_RUN'. See below.
+        Initial value from \$DEFINED_SYMBOLS.
 
     --force-new-baseline | -f
         When specified, a new baseline will be created even if a previous
@@ -39,8 +39,8 @@ Options:
         Defines one or more user-defined pre-processor symbols to be used when
         building the benchmark project, e.g. 'SHORT_RUN'. Which generates a
         shorter and faster, but less accurate benchmark run. You can specify
-        this option multiple times to define multiple symbols.
-        Initial value from \$DEFINE or ''
+        this option multiple times to defined multiple symbols.
+        Initial value from \$DEFINED_SYMBOLS or ''
 
     --configuration | -c
         Specifies the build configuration to use ('Debug' or 'Release').

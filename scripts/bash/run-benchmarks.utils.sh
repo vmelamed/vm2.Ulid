@@ -58,19 +58,15 @@ function get_arguments()
                     usage "The specified pre-processor symbol '$value' is not valid."
                     exit 2
                 fi
-                if [[ -z "$define" ]]; then
-                    define="$value"
-                elif [[ ! "$define" =~ (^|;)"$value"($|;) ]]; then
-                    define="$define;$value"
+                if [[ ! "$defined_symbols" =~ (^|;)"$value"($|;) ]]; then
+                    defined_symbols="$value $defined_symbols"  # NOTE: space-separated!
                 fi
                 ;;
 
             --short-run|-s )
-                # Shortcut for --define SHORT_RUN
-                if [[ -z "$define" ]]; then
-                    define="SHORT_RUN"
-                elif [[ ! "$define" =~ (^|;)SHORT_RUN($|;) ]]; then
-                    define="$define;SHORT_RUN"
+                # Shortcut for --defined_symbols SHORT_RUN
+                if [[ ! "$defined_symbols" =~ (^|;)SHORT_RUN($|;) ]]; then
+                    defined_symbols="$defined_symbols SHORT_RUN"  # NOTE: space-separated!
                 fi
                 ;;
 
@@ -100,7 +96,7 @@ dump_all_variables()
         quiet \
         trace_enabled \
         configuration \
-        DEFINE \
+        DEFINED_SYMBOLS \
         max_regression_pct \
         ARTIFACTS_DIR \
         ci \

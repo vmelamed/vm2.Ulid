@@ -16,7 +16,7 @@ source "$script_dir/_common.sh"
 solution_dir="$(dirname "$(realpath -e "$script_dir/..")")"
 declare -r solution_dir
 
-declare -x DEFINE="${DEFINE:-}"
+declare -x DEFINED_SYMBOLS="${DEFINED_SYMBOLS:-}"
 
 declare bm_project=${BM_PROJECT:="$solution_dir/benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj"}
 bm_project=$(realpath -e "$bm_project")  # ensure it's an absolute path and exists
@@ -34,7 +34,7 @@ declare -x force_new_baseline=${FORCE_NEW_BASELINE:-false}
 
 declare configuration=${CONFIGURATION:="Release"}
 
-declare define=${DEFINE:-}
+declare defined_symbols=${DEFINED_SYMBOLS:-}
 
 source "$script_dir/run-benchmarks.usage.sh"
 source "$script_dir/run-benchmarks.utils.sh"
@@ -43,7 +43,7 @@ get_arguments "$@"
 declare -r bm_project
 declare -r configuration
 declare -r force_new_baseline
-declare -r define
+declare -r defined_symbols
 
 declare -x results_dir=${results_dir:="$ARTIFACTS_DIR/results"}
 results_dir=$(realpath -m "$results_dir")  # ensure it's an absolute path
@@ -103,7 +103,7 @@ execute mkdir -p "$summaries_dir"
 trace "Running benchmark tests in project '$bm_project' with configuration '$configuration'..."
 execute mkdir -p "$ARTIFACTS_DIR"
 execute dotnet run \
-    /p:DefineConstants="$define" \
+    /p:DefineConstants="$defined_symbols" \
     --project "$bm_project" \
     --configuration "$configuration" \
     --filter '*' \

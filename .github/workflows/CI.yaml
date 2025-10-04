@@ -27,7 +27,7 @@ on:
         required: false
         default: "Release"
 
-      define:
+      defined_symbols:
         description: "Define constants to pass to the compiler"
         type: string
         default: ""
@@ -70,7 +70,7 @@ concurrency:
 jobs:
   build:
     name: Build
-    uses: ./.github/workflows/build.yml
+    uses: .github/workflows/build.yml
     if: >
       ${{ github.event_name != 'push' ||
           (!contains(github.event.head_commit.message, '[skip ci]')) &&
@@ -79,7 +79,7 @@ jobs:
       os: ${{ inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]' }}
       dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
       configuration: ${{ inputs.build-configuration ||vars.BUILD_CONFIGURATION || 'Release' }}
-      define: ${{ inputs.define || vars.DEFINE || '' }}
+      defined_symbols: ${{ inputs.defined_symbols || vars.DEFINED_SYMBOLS || '' }}
 
   test:
     name: Test
@@ -90,7 +90,7 @@ jobs:
       dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
       test-project: ${{ inputs.test-project || vars.TEST_PROJECT || './test/UlidType.Tests/UlidType.Tests.csproj' }}
       configuration: ${{ inputs.build-configuration ||vars.BUILD_CONFIGURATION || 'Release' }}
-      define: ${{ inputs.define || vars.DEFINE || '' }}
+      defined_symbols: ${{ inputs.defined_symbols || vars.DEFINED_SYMBOLS || '' }}
       verbose: ${{ inputs.verbose || fromJSON(vars.VERBOSE) || false }}
       min-coverage-pct: ${{ fromJSON(vars.MIN_COVERAGE_PCT) || 75 }}
 
@@ -104,7 +104,7 @@ jobs:
       dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
       benchmark-project: ${{ inputs.benchmark-project || vars.BENCHMARK_PROJECT || './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj' }}
       configuration: ${{ inputs.build-configuration ||vars.BUILD_CONFIGURATION || 'Release' }}
-      define: ${{ inputs.define || vars.DEFINE || '' }}
+      defined_symbols: ${{ inputs.defined_symbols || vars.DEFINED_SYMBOLS || '' }}
       verbose: ${{ inputs.verbose || fromJSON(vars.VERBOSE) || false }}
       max-regression-pct: ${{ fromJSON(vars.MAX_REGRESSION_PCT) || 10 }}
       force-new-baseline: ${{ inputs.force-new-baseline || fromJSON(vars.FORCE_NEW_BASELINE) || false }}

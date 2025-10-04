@@ -1,0 +1,87 @@
+name: Download Baseline Artifact
+
+on:
+  workflow_call:
+    inputs:
+      os:
+        description: "Runner OS-s"
+        type: string
+        required: true
+        default: '["ubuntu-latest"]'
+
+      dotnet-version:
+        description: "Version of .NET SDK to use"
+        type: string
+        required: true
+        default: "9.0.x"
+
+      repo:
+        type: string
+        description: "Repository in owner/name format"
+        required: true
+        default: ${{ github.repository }}
+
+      workflow:
+        type: string
+        description: "Workflow file name or ID"
+        required: true
+        default: "benchmarks.yaml"
+
+      artifact-name:
+        type: string
+        description: "Name of the artifact to find"
+        required: true
+        default: "baseline"
+
+      token:
+        type: string
+        description: "GitHub token with actions:read permission"
+        required: true
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  download-baseline:
+    name: Download Baseline Artifact
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: ${{ fromJson(inputs.os) }}
+
+    steps:
+      - name: Install GitHub CLI
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gh jq
+
+      - name: Authenticate GitHub CLI
+        shell: bash
+        run: |
+          echo "${{ inputs.token }}" | gh auth login --with-token
+
+      - name: Find and download baseline artifact
+        shell: bash
+        run: |
+          echo "Searching for artifact '${{ inputs.artifact-name }}' in recent successful runs of '${{ inputs.workflow }}'..."
+
+          RUNS=$(gh run list \
+            --repo "${{ inputs.repo }}" \
+            --workflow "${{ inputs.workflow }}" \
+            --status success \
+            --limit 20 \
+            --json databaseId | jq '.[].databaseId')
+
+          for RUN_ID in $RUNS; do
+            ARTIFACTS=$(gh api repos/${{ inputs.repo }}/actions/runs/$RUN_ID/artifacts --jq '.artifacts[].name')
+            if echo "$ARTIFACTS" | grep -q "^${{ inputs.artifact-name }}$"; then
+              echo "Found '${{ inputs.artifact-name }}' in run $RUN_ID"
+              gh run download --repo "${{ inputs.repo }}" --run-id "$RUN_ID" --name "${{ inputs.artifact-name }}"
+              exit 0
+            fi
+          done
+
+          echo "No successful run found with artifact '${{ inputs.artifact-name }}'"
+          exit 1

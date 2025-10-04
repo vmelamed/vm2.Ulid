@@ -27,7 +27,7 @@ on:
         required: false
         default: "Release"
 
-      define:
+      defined_symbols:
         description: "Define constants to pass to the compiler"
         type: string
         required: false
@@ -97,12 +97,12 @@ jobs:
         env:
           FORCE_NEW_BASELINE: ${{ fromJSON(inputs.force-new-baseline) || false }}
           VERBOSE: ${{ fromJSON(inputs.verbose) || false }}
-          DEFINE: ${{ inputs.define || '' }}
+          DEFINED_SYMBOLS: ${{ inputs.defined_symbols || '' }}
           SUMMARIES_DIR: ${{ env.SUMMARIES_DIR }}
         run: >-
           ./scripts/bash/run-benchmarks.sh ${{ inputs.benchmark-project }}
           --max-regression-pct "${{ inputs.max-regression-pct }}"
-          --define "${{ inputs.define }}"
+          --defined_symbols "${{ inputs.defined_symbols }}"
           --configuration "${{ inputs.configuration }}"
 
       - name: Upload benchmark summaries artifact

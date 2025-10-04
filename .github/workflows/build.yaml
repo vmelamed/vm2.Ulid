@@ -21,7 +21,7 @@ on:
         required: false
         default: "Release"
 
-      define:
+      defined_symbols:
         description: "Define constants to pass to the compiler"
         type: string
         required: false
@@ -56,7 +56,7 @@ jobs:
         run: >-
           dotnet build
           --configuration ${{ inputs.configuration }}
-          /p:DefineConstants="${{ inputs.define }}"
+          /p:DefineConstants="${{ inputs.defined_symbols }}"
 
       - name: ShellCheck
         uses: ludeeus/action-shellcheck@master

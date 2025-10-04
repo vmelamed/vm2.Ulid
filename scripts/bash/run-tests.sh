@@ -27,7 +27,7 @@ declare -x COVERAGE_RESULTS_DIR
 declare configuration=${CONFIGURATION:="Release"}
 declare -i min_coverage_pct=${MIN_COVERAGE_PCT:-80}
 
-declare define=${DEFINE:-}
+declare defined_symbols=${DEFINED_SYMBOLS:-}
 
 source "$script_dir/run-tests.usage.sh"
 source "$script_dir/run-tests.utils.sh"
@@ -36,7 +36,7 @@ get_arguments "$@"
 declare -r test_project
 declare -ri min_coverage_pct
 declare -r configuration
-declare -r define
+declare -r defined_symbols
 
 renamed_results_dir="$ARTIFACTS_DIR-$(date -u +"%Y%m%dT%H%M%S")"
 declare -r renamed_results_dir
@@ -91,7 +91,7 @@ execute mkdir -p "$coverage_summary_dir"
 
 trace "Running tests in project '$test_project' with configuration '$configuration'..."
 execute dotnet test "$test_project" \
-    /p:DefineConstants="$define" \
+    /p:DefineConstants="$defined_symbols" \
     --configuration "$configuration" -- \
     --results-directory "$test_results_results_dir" \
     --coverage \

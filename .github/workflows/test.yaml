@@ -26,7 +26,7 @@ on:
         required: false
         default: "Release"
 
-      define:
+      defined_symbols:
         description: "Define constants to pass to the compiler"
         type: string
         required: false
@@ -44,10 +44,10 @@ on:
         default: 75
 
 permissions:
-  contents: read
+  contents: read # to checkout the code
 
 env:
-  CI: true  # implies --quiet for the scripts
+  CI: true # implies --quiet for the scripts
   # this must be the same across all jobs and steps below.
   # We must know where to find the artifacts and where to download/upload to/from across all jobs and steps here.
   ARTIFACTS_DIR: "TestArtifacts"
@@ -81,12 +81,12 @@ jobs:
         shell: bash
         env:
           VERBOSE: ${{ inputs.verbose || false }}
-          DEFINE: ${{ inputs.define || '' }}
+          DEFINED_SYMBOLS: ${{ inputs.defined_symbols || '' }}
         run: >-
           ./scripts/bash/run-tests.sh ${{ inputs.test-project }}
           --min-coverage-pct "${{ inputs.min-coverage-pct }}"
           --configuration "${{ inputs.configuration }}"
-          --define "${{ inputs.define }}"
+          --defined_symbols "${{ inputs.defined_symbols }}"
 
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4

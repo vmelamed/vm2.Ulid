@@ -40,7 +40,7 @@ Options:
         Defines one or more user-defined pre-processor symbols to be used when
         building the benchmark project, e.g. 'STAGING'. You can specify this
         option multiple times to define multiple symbols.
-        Initial value from \$DEFINE or ''
+        Initial value from \$DEFINED_SYMBOLS or ''
 
 EOF
 }
