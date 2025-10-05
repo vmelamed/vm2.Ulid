@@ -10,8 +10,28 @@
             "name": "Bash-Debug (select script from list of sh files)",
             "cwd": "${workspaceFolder}",
             "program": "${command:SelectScriptName}",
+            "args": [],
+            "env": {
+                "QUIET": true,
+                "VERBOSE": true,
+                "TRACE_ENABLED": false
+            }
+        },
+        {
+            "type": "bashdb",
+            "request": "launch",
+            "name": "Bash-Debug download-artifacts.sh",
+            "cwd": "${workspaceFolder}",
+            "program": "${workspaceFolder}/scripts/bash/download-artifact.sh",
             "args": [
-                "-h"
+                "--debugger",
+                "-v",
+                "-r",
+                "vmelamed/vm2.Ulid",
+                "-p",
+                ".github/workflows/CI.yml",
+                "-a",
+                "benchmark-baseline-ubuntu-latest"
             ],
             "env": {
                 "QUIET": true,

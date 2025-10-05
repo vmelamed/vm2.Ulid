@@ -12,14 +12,14 @@ on:
       os:
         description: "JSON array of runners"
         type: string
-        default: '["ubuntu-latest"]'
         required: true
+        default: '["ubuntu-latest"]'
 
       dotnet-version:
         description: "Version of .NET SDK to use"
         type: string
-        default: "9.0.x"
         required: true
+        default: "9.0.x"
 
       build-configuration:
         description: "The type of builds to produce, e.g. Release vs Debug"
@@ -30,38 +30,38 @@ on:
       defined_symbols:
         description: "Define constants to pass to the compiler"
         type: string
-        default: ""
         required: false
+        default: ""
 
       verbose:
         description: "Whether to enable verbose logging"
         type: boolean
-        default: false
         required: false
+        default: false
 
       test-project:
         description: "Path to test project"
         type: string
-        default: "./test/UlidType.Tests/UlidType.Tests.csproj"
         required: true
+        default: "./test/UlidType.Tests/UlidType.Tests.csproj"
 
       run-benchmarks:
         description: "Whether to run benchmarks and compare against baseline"
         type: boolean
-        default: true
         required: true
+        default: true
 
       benchmark-project:
         description: "Path to benchmark project"
         type: string
-        default: "./benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj"
         required: true
+        default: "./benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj"
 
       force-new-baseline:
         description: "Whether to force new baseline (if true, no regression check is done)"
         type: boolean
-        default: false
         required: true
+        default: false
 
 concurrency:
   group: ci-${{ github.ref }}

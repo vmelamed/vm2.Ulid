@@ -16,31 +16,22 @@ on:
         default: "9.0.x"
 
       repo:
-        type: string
         description: "Repository in owner/name format"
+        type: string
         required: true
         default: ${{ github.repository }}
 
       workflow:
-        type: string
         description: "Workflow file name or ID"
+        type: string
         required: true
         default: "benchmarks.yaml"
 
       artifact-name:
-        type: string
         description: "Name of the artifact to find"
+        type: string
         required: true
         default: "baseline"
-
-      token:
-        type: string
-        description: "GitHub token with actions:read permission"
-        required: true
-
-permissions:
-  actions: read
-  contents: read
 
 jobs:
   download-baseline:
@@ -57,16 +48,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y gh jq
 
-      - name: Authenticate GitHub CLI
+      - name: Authenticate to GitHub CLI
         shell: bash
         run: |
-          echo "${{ inputs.token }}" | gh auth login --with-token
+          gh auth login --with-token "${{ secrets.GITHUB_TOKEN }}"
 
       - name: Find and download baseline artifact
         shell: bash
         run: |
-          echo "Searching for artifact '${{ inputs.artifact-name }}' in recent successful runs of '${{ inputs.workflow }}'..."
-
           RUNS=$(gh run list \
             --repo "${{ inputs.repo }}" \
             --workflow "${{ inputs.workflow }}" \

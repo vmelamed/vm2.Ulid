@@ -401,12 +401,9 @@ FodyWeavers.xsd
 launchSettings.json
 
 # benchmarkDotNet results folder(s)
-BenchmarkDotNet.Artifacts/
-BmArtifacts/
-
-# unit tests default Code Coverage folder
-TestResults/
 TestArtifacts/
+BmArtifacts/
+TestResults/
 report.txt
 
 # Coverage files

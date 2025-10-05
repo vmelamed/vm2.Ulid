@@ -12,81 +12,67 @@ declare -xr script_dir
 
 source "$script_dir/_common.sh"
 
-# get the default values from environment variables etc.
-solution_dir="$(dirname "$(realpath -e "$script_dir/..")")"
-declare -r solution_dir
-
-declare -x DEFINED_SYMBOLS="${DEFINED_SYMBOLS:-}"
-
-declare bm_project=${BM_PROJECT:="$solution_dir/benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj"}
-bm_project=$(realpath -e "$bm_project")  # ensure it's an absolute path and exists
-
-declare -x ARTIFACTS_DIR=${ARTIFACTS_DIR:="$solution_dir/BmArtifacts"}
-ARTIFACTS_DIR=$(realpath -m "$ARTIFACTS_DIR")  # ensure it's an absolute path
-
-declare -x BASELINE_DIR=${BASELINE_DIR:="$ARTIFACTS_DIR/baseline"}
-BASELINE_DIR=$(realpath -m "$BASELINE_DIR")  # ensure it's an absolute path
-
-declare -x SUMMARIES_DIR=${SUMMARIES_DIR:="$ARTIFACTS_DIR/summaries"}
-SUMMARIES_DIR=$(realpath -m "$SUMMARIES_DIR")  # ensure it's an absolute path
-
+declare -x bm_project=${BM_PROJECT:-}
+declare -x configuration=${CONFIGURATION:="Release"}
+declare -x defined_symbols=${DEFINED_SYMBOLS:-}
+declare -ix max_regression_pct=${MAX_REGRESSION_PCT:-10}
 declare -x force_new_baseline=${FORCE_NEW_BASELINE:-false}
-
-declare configuration=${CONFIGURATION:="Release"}
-
-declare defined_symbols=${DEFINED_SYMBOLS:-}
+declare -x artifacts_dir=${ARTIFACTS_DIR:-}
 
 source "$script_dir/run-benchmarks.usage.sh"
 source "$script_dir/run-benchmarks.utils.sh"
 
 get_arguments "$@"
+
+if [[ ! -s "$bm_project" ]]; then
+    usage "The specified benchmark project file '$bm_project' does not exist." >&2
+    exit 2
+fi
 declare -r bm_project
 declare -r configuration
-declare -r force_new_baseline
 declare -r defined_symbols
+declare -r max_regression_pct
+declare -r force_new_baseline
 
-declare -x results_dir=${results_dir:="$ARTIFACTS_DIR/results"}
-results_dir=$(realpath -m "$results_dir")  # ensure it's an absolute path
-declare -r results_dir
+solution_dir="$(realpath -e "$(dirname "$bm_project")/../..")" # assuming <solution-root>/benchmarks/<benchmark-project>/benchmark-project.csproj
+artifacts_dir=$(realpath -m "${artifacts_dir:-"$solution_dir/BmArtifacts"}")  # ensure it's an absolute path
+results_dir="$artifacts_dir/results"
+summaries_dir=$(realpath -m "${SUMMARIES_DIR:-"$artifacts_dir/summaries"}")  # ensure it's an absolute path
+baseline_dir=$(realpath -m "${BASELINE_DIR:-"$artifacts_dir/baseline"}")  # ensure it's an absolute path
 
-declare -x summaries_dir=${summaries_dir:="$SUMMARIES_DIR"}
-summaries_dir=$(realpath -m "$summaries_dir")
+declare -r solution_dir
+declare -r artifacts_dir
+declare -rx results_dir
 declare -r summaries_dir
-
-declare -x baseline_dir=${baseline_dir:="$BASELINE_DIR"}
-baseline_dir=$(realpath -m "$baseline_dir")
 declare -r baseline_dir
 
-max_regression_pct=${MAX_REGRESSION_PCT:-10}
-declare -ri max_regression_pct
-
-renamed_artifacts_dir="$ARTIFACTS_DIR-$(date -u +"%Y%m%dT%H%M%S")"
+renamed_artifacts_dir="$artifacts_dir-$(date -u +"%Y%m%dT%H%M%S")"
 declare -r renamed_artifacts_dir
 
 dump_all_variables
 
-if [[ -d "$ARTIFACTS_DIR" && -n "$(ls -A "$ARTIFACTS_DIR")" ]]; then
+if [[ -d "$artifacts_dir" && -n "$(ls -A "$artifacts_dir")" ]]; then
     choice=$(choose \
-                "The benchmark results directory '$ARTIFACTS_DIR' already exists. What do you want to do?" \
-                    "Overwrite the contents of the directory '$ARTIFACTS_DIR'" \
-                    "Move the contents of the directory to '$renamed_artifacts_dir', except for the base line '$baseline_dir' (if exists), and continue" \
-                    "Delete the contents of the directory, except for the base line '$baseline_dir' (if exists), and continue" \
+                "The benchmark results directory '$artifacts_dir' already exists. What do you want to do?" \
+                    "Clobber the directory '$artifacts_dir' with the new contents" \
+                    "Move the contents of the directory to '$renamed_artifacts_dir', except for the base line '$baseline_dir', and continue" \
+                    "Delete the contents of the directory, except for the base line '$baseline_dir', and continue" \
                     "Exit the script") || exit $?
 
     trace "User selected option: $choice"
     case $choice in
-        1)  echo "Overwriting the contents of the directory '$ARTIFACTS_DIR'..." >&2;
+        1)  echo "Clobbering the directory '$artifacts_dir' with the new contents..."
             ;;
-        2)  echo "Moving the contents of the directory '$ARTIFACTS_DIR' to '$renamed_artifacts_dir', except for the base line '$baseline_dir' (if exists)..." >&2;
+        2)  echo "Moving the contents of the directory '$artifacts_dir' to '$renamed_artifacts_dir', except for the base line '$baseline_dir' (if exists)..."
             execute mkdir -p "$renamed_artifacts_dir"
             execute mv "$summaries_dir" "$renamed_artifacts_dir"
             execute mv "$results_dir" "$renamed_artifacts_dir"
-            execute mv "$ARTIFACTS_DIR/*.log" "$renamed_artifacts_dir"
+            execute mv "$artifacts_dir/*.log" "$renamed_artifacts_dir"
             ;;
-        3)  echo "Delete the contents of the directory, except for the base line '$baseline_dir'";
+        3)  echo "Deleting the contents of the directory, except for the base line '$baseline_dir'...";
             execute rm -rf "$summaries_dir"
             execute rm -rf "$results_dir"
-            execute rm -rf "$ARTIFACTS_DIR/*.log"
+            execute rm -rf "$artifacts_dir/*.log"
             ;;
         4)  echo "Exiting the script.";
             exit 0
@@ -101,7 +87,7 @@ trace "Creating directory(s)..."
 execute mkdir -p "$summaries_dir"
 
 trace "Running benchmark tests in project '$bm_project' with configuration '$configuration'..."
-execute mkdir -p "$ARTIFACTS_DIR"
+execute mkdir -p "$artifacts_dir"
 execute dotnet run \
     /p:DefineConstants="$defined_symbols" \
     --project "$bm_project" \
@@ -109,7 +95,7 @@ execute dotnet run \
     --filter '*' \
     --memory \
     --exporters JSON \
-    --artifacts "$ARTIFACTS_DIR"
+    --artifacts "$artifacts_dir"
 
 if ! command -v jq >"$_ignore" 2>&1; then
     execute sudo apt-get update && sudo apt-get install -y jq
@@ -120,7 +106,7 @@ if [[ $dry_run != "true" ]]; then
 
     declare -a files
 
-    mapfile -t -d " " files < <(list_of_files "$ARTIFACTS_DIR/results/*-report.json")
+    mapfile -t -d " " files < <(list_of_files "$artifacts_dir/results/*-report.json")
 
     if [[ ${#files[@]} == 0 ]]; then
         echo "No JSON reports found." >&2
@@ -128,7 +114,7 @@ if [[ $dry_run != "true" ]]; then
     fi
     for f in "${files[@]}"; do
         sf=$(sed -nE 's/(.*)-report.json/\1-summary.json/p' <<< "$(basename "$f")")
-        jq -f "$solution_dir/.github/workflows/summary.jq" "$f" > "$summaries_dir/$sf"
+        jq -f "$script_dir/summary.jq" "$f" > "$summaries_dir/$sf"
     done
 fi
 

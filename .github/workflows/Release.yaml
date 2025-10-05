@@ -48,7 +48,7 @@ jobs:
   # last time run the gates before release
   build:
     name: Build
-    uses: ./.github/workflows/build.yml
+    uses: ./.github/workflows/build.yaml
     with:
       os: ${{ inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]' }}
       dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
@@ -57,7 +57,7 @@ jobs:
   test:
     name: Test
     needs: build
-    uses: ./.github/workflows/test.yml
+    uses: ./.github/workflows/test.yaml
     with:
       os: ${{ inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]' }}
       dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
@@ -69,7 +69,7 @@ jobs:
   benchmarks:
     name: Benchmarks (Linux only)
     needs: build
-    uses: ./.github/workflows/benchmarks.yml
+    uses: ./.github/workflows/benchmarks.yaml
     with:
       os: ${{ inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]' }}
       dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}

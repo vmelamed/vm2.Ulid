@@ -204,16 +204,16 @@ function get_common_arg()
     if [[ "${#}" -eq 0 ]]; then
         return 2
     fi
-    # get the flag and convert it to lower case
-    case "$1" in
+    # the calling scripts should not use short options -q -v -x -y
+    case "${1,,}" in
         --debugger   ) set_debugger ;;
-        --dry-run|-y ) set_dry_run ;;
         --quiet|-q   ) set_quiet ;;
-        --trace|-x   ) set_trace_enabled ;;
         --verbose|-v ) set_verbose ;;
+        --trace|-x   ) set_trace_enabled ;;
+        --dry-run|-y ) set_dry_run ;;
         *            ) return 1 ;;  # not a common argument
     esac
-    return 0 # it was a common argument
+    return 0 # it was a common argument and was processed
 }
 
 function display_usage_msg()
@@ -288,7 +288,7 @@ function execute() {
         return 0
     fi
     trace "$*"
-    "$@" > "$_ignore"
+    "$@"
     return $?
 }
 
@@ -358,7 +358,7 @@ function list_of_files() {
     local pattern="$1"
 
     # by default, if a glob pattern does not match any files, it expands to an empty string instead of the default to leaving
-    # the pattern unchanged, e.g. ${ARTIFACTS_DIR}/results/*-report.json - we don't want that
+    # the pattern unchanged, e.g. ${artifacts_dir}/results/*-report.json - we don't want that
     shopt -s nullglob
     shopt -s globstar || true
     # shellcheck disable=SC2206
@@ -600,9 +600,6 @@ assert_false() {
 }
 
 declare -x common_switches="
-    --help | -h | -?
-        Displays this usage text and exits.
-
     --debugger
         Set when the script is running under a debugger, e.g. 'gdb'. If
         specified, the script will not set traps for DEBUG and EXIT, and will
@@ -614,10 +611,18 @@ declare -x common_switches="
         been executed.
         Initial value from \$DRY_RUN or 'false'
 
+    --help | -h | -?
+        Displays this usage text and exits.
+
     --quiet | -q
         Suppresses all prompts for input from the user, and assumes the default
         answers.
         Initial value from \$QUIET or 'false'
+
+    --trace | -x
+        Sets the Bash trace option 'set -x' and enables the output from the
+        functions 'trace' and 'dump_vars'.
+        Initial value from \$TRACE_ENABLED or 'false'
 
     --verbose | -v
         Enables verbose output: all output from the invoked commands (e.g. jq,
@@ -625,9 +630,4 @@ declare -x common_switches="
         enables the output from the script function trace() and all other
         commands and functions that are otherwise silent.
         Initial value from \$VERBOSE or 'false'
-
-    --trace | -x
-        Sets the Bash trace option 'set -x' and enables the output from the
-        functions 'trace' and 'dump_vars'.
-        Initial value from \$TRACE_ENABLED or 'false'
 "
