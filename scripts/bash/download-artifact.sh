@@ -85,7 +85,10 @@ else
     else
         usage "Either the workflow id, or the workflow name or the workflow path must be specified."
     fi
-    workflow_id=$(gh workflow list --repo "$repository" --json "id,name,path" | jq "$query")
+    workflow_id=$(execute gh workflow list --repo "$repository" --json "id,name,path" --jq "$query")
+    if [[ "$dry_run" == true ]]; then
+        workflow_id=1234567890
+    fi
 fi
 
 if [[ -z $workflow_id ]]; then
@@ -102,12 +105,17 @@ fi
 dump_all_variables
 
 # get the IDs of the last 1000 successful runs of the specified workflow
-mapfile -t runs < <(gh run list \
-                        --repo "$repository" \
-                        --workflow "$workflow_id" \
-                        --status success \
-                        --limit 1000 \
-                        --json databaseId | jq '.[].databaseId')
+mapfile -t runs < <(execute gh run list \
+                                --repo "$repository" \
+                                --workflow "$workflow_id" \
+                                --status success \
+                                --limit 1000 \
+                                --json databaseId \
+                                --jq '.[].databaseId')
+
+if [[ "$dry_run" == true ]]; then
+    runs=(1234567890 1234567889 1234567888)
+fi
 
 if [[ ${#runs[@]} == 0 ]]; then
     usage "No successful runs found for the workflow '$workflow_id' in the repository '$repository'." >&2
@@ -119,22 +127,21 @@ fi
 for run in "${runs[@]}"; do
     trace "Checking run $run for the artifact '$artifact_name'..."
     query="any(.artifacts[]; .name==\"$artifact_name\")"
-    if [[ ! $(gh api "repos/$repository/actions/runs/$run/artifacts" | jq "$query") == "true" ]]; then
+    if [[ ! $(execute gh api "repos/$repository/actions/runs/$run/artifacts" --jq "$query") == "true" ]]; then
         trace "The artifact '$artifact_name' not found in run $run."
         continue
     fi
 
     trace "The artifact '$artifact_name' found in run $run. Downloading..."
-    if http_error=$(execute gh run download "$run" \
+    if ! http_error=$(execute gh run download "$run" \
                                 --repo "$repository" \
                                 --name "$artifact_name" \
                                 --dir "$artifacts_dir") ; then
-        echo "The artifact '$artifact_name' successfully downloaded to '$artifacts_dir'."
-        exit 0
-    else
         echo "Error while downloading '$artifact_name': $http_error" >&2
         exit 2
     fi
+    echo "The artifact '$artifact_name' successfully downloaded to '$artifacts_dir'."
+    exit 0
 done
 
 usage "The artifact '$artifact_name' was not found in the last ${#runs[@]} successful runs of the workflow '$workflow_name' in the repository '$repository'."

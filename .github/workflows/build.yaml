@@ -15,7 +15,7 @@ on:
         required: false
         default: "9.0.x"
 
-      configuration:
+      build-configuration:
         description: "The type of build to produce, e.g. Release vs Debug"
         type: string
         required: false
@@ -52,10 +52,10 @@ jobs:
             **/packages.lock.json
             **/*.csproj
 
-      - name: Build (${{ inputs.configuration }})
+      - name: Build (${{ inputs.build-configuration }})
         run: >-
           dotnet build
-          --configuration ${{ inputs.configuration }}
+          --configuration ${{ inputs.build-configuration }}
           /p:DefineConstants="${{ inputs.defined_symbols }}"
 
       - name: ShellCheck

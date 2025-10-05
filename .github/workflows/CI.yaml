@@ -33,17 +33,17 @@ on:
         required: false
         default: ""
 
-      verbose:
-        description: "Whether to enable verbose logging"
-        type: boolean
-        required: false
-        default: false
-
       test-project:
         description: "Path to test project"
         type: string
         required: true
         default: "./test/UlidType.Tests/UlidType.Tests.csproj"
+
+      min-coverage-pct:
+        description: "Minimum acceptable code coverage percentage"
+        type: number
+        required: true
+        default: 75
 
       run-benchmarks:
         description: "Whether to run benchmarks and compare against baseline"
@@ -57,6 +57,12 @@ on:
         required: true
         default: "./benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj"
 
+      max-regression-pct:
+        description: "Maximum acceptable performance regression percentage"
+        type: number
+        required: true
+        default: 10 # percent
+
       force-new-baseline:
         description: "Whether to force new baseline (if true, no regression check is done)"
         type: boolean
@@ -67,43 +73,74 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  # Default values for inputs, used if the input is not provided
+  MATRIX_OS: ${{ fromJson(inputs.os) || fromJson(vars.MATRIX_OS) || '["ubuntu-latest"]' }}
+  DOTNET_VERSION: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
+  BUILD_CONFIGURATION: ${{ inputs.build-configuration || vars.BUILD_CONFIGURATION || 'Release' }}
+  DEFINED_SYMBOLS: ${{ inputs.defined_symbols || vars.DEFINED_SYMBOLS || '' }}
+  TEST_PROJECT: ${{ inputs.test-project || vars.TEST_PROJECT || './test/UlidType.Tests/UlidType.Tests.csproj' }}
+  MIN_COVERAGE_PCT: ${{ fromJson(inputs.min-coverage-pct) || fromJson(vars.MIN_COVERAGE_PCT) || 75 }} # percent
+  RUN_BENCHMARKS: ${{ fromJSON(inputs.run-benchmarks) || fromJson(vars.RUN_BENCHMARKS) || true }}
+  BENCHMARK_PROJECT: ${{ inputs.benchmark-project || vars.BENCHMARK_PROJECT || './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj' }}
+  FORCE_NEW_BASELINE: ${{ fromJSON(inputs.force-new-baseline) || fromJson(vars.FORCE_NEW_BASELINE) || false }}
+  MAX_REGRESSION_PCT: ${{ fromJSON(inputs.max-regression-pct) || fromJson(vars.MAX_REGRESSION_PCT) || 10 }} # percent
+  VERBOSE: ${{ fromJSON(vars.VERBOSE) || false }}
+
 jobs:
-  build:
+  sample:
+    name: Sample Job
+    env:
+      SAMPLE_ENV_VAR: "Hello, World!"
+    strategy:
+      matrix:
+        os: ${{ fromJSON(inputs.os) }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - run: echo "This is a sample job. Replace or remove it as needed."
+
+  build_job:
     name: Build
+    strategy:
+      fail-fast: true
+      matrix:
+        os: ["ubuntu-latest", "windows-latest", "macos-latest"]
     uses: ./.github/workflows/build.yaml
-    if: >
-      ${{ github.event_name != 'push' ||
-          (!contains(github.event.head_commit.message, '[skip ci]')) &&
-          (!contains(github.event.head_commit.message, '[no ci]'  ))    }}
+    # allow skipping CI via commit message only for push events
+    if: ${{ github.event_name != 'push' || !contains(github.event.head_commit.message, '[skip ci]') }}
     with:
       os: ${{ inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]' }}
       dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
-      configuration: ${{ inputs.build-configuration ||vars.BUILD_CONFIGURATION || 'Release' }}
+      build-configuration: ${{ inputs.build-configuration ||vars.BUILD_CONFIGURATION || 'Release' }}
       defined_symbols: ${{ inputs.defined_symbols || vars.DEFINED_SYMBOLS || '' }}
 
-  test:
+  test_job:
     name: Test
-    needs: build
+    if: ${{ github.event_name != 'push' || !contains(github.event.head_commit.message, '[skip ci]') }}
+    needs: build_job
     uses: ./.github/workflows/test.yaml
     with:
       os: ${{ inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]' }}
       dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
       test-project: ${{ inputs.test-project || vars.TEST_PROJECT || './test/UlidType.Tests/UlidType.Tests.csproj' }}
-      configuration: ${{ inputs.build-configuration ||vars.BUILD_CONFIGURATION || 'Release' }}
+      build-configuration: ${{ inputs.build-configuration ||vars.BUILD_CONFIGURATION || 'Release' }}
       defined_symbols: ${{ inputs.defined_symbols || vars.DEFINED_SYMBOLS || '' }}
-      verbose: ${{ inputs.verbose || fromJSON(vars.VERBOSE) || false }}
+      verbose: ${{ fromJSON(vars.VERBOSE) || false }}
       min-coverage-pct: ${{ fromJSON(vars.MIN_COVERAGE_PCT) || 75 }}
 
-  benchmarks:
-    name: Benchmarks (Linux only)
-    needs: build
-    if: ${{ inputs.run-benchmarks || fromJSON(vars.RUN_BENCHMARKS) || true }}
+  benchmarks_job:
+    name: Benchmarks
+    if: >
+      ${{ github.event_name != 'push' ||
+      fromJSON(inputs.run-benchmarks) || fromJson(vars.RUN_BENCHMARKS) ||
+      !contains(github.event.head_commit.message, '[skip ci]') }}
+    needs: build_job
     uses: ./.github/workflows/benchmarks.yaml
     with:
       os: ${{ inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]' }}
       dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
       benchmark-project: ${{ inputs.benchmark-project || vars.BENCHMARK_PROJECT || './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj' }}
-      configuration: ${{ inputs.build-configuration ||vars.BUILD_CONFIGURATION || 'Release' }}
+      build-configuration: ${{ inputs.build-configuration ||vars.BUILD_CONFIGURATION || 'Release' }}
       defined_symbols: ${{ inputs.defined_symbols || vars.DEFINED_SYMBOLS || '' }}
       verbose: ${{ inputs.verbose || fromJSON(vars.VERBOSE) || false }}
       max-regression-pct: ${{ fromJSON(vars.MAX_REGRESSION_PCT) || 10 }}

@@ -21,7 +21,7 @@ on:
         required: false
         default: "./benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj"
 
-      configuration:
+      build-configuration:
         description: "The type of build to produce, e.g. Release vs Debug"
         type: string
         required: false
@@ -32,12 +32,6 @@ on:
         type: string
         required: false
         default: ""
-
-      verbose:
-        description: "Whether to enable verbose logging"
-        type: boolean
-        required: false
-        default: false
 
       max-regression-pct:
         description: "Maximum acceptable performance regression percentage"
@@ -51,16 +45,19 @@ on:
         required: false
         default: false
 
+      verbose:
+        description: "Whether to enable verbose logging for debugging scripts"
+        type: boolean
+        required: false
+        default: false
+
 permissions:
   contents: read
 
 env:
-  CI: true # implies --quiet for the scripts
   # these must be the same across all jobs and steps below.
   # We must know where to find the artifacts and where to download/upload to/from across all jobs and steps here.
-  ARTIFACTS_DIR: BmArtifacts
-  BASELINE_DIR: BmArtifacts/baseline
-  SUMMARIES_DIR: BmArtifacts/summaries
+  ARTIFACTS_DIR: ${{ github.workspace }}/BmArtifacts
 
 jobs:
   benchmarks:
@@ -69,6 +66,7 @@ jobs:
     strategy:
       matrix:
         os: ${{ fromJSON(inputs.os) }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -86,11 +84,13 @@ jobs:
 
       - name: Download baseline benchmark summaries artifact
         if: ${{ !inputs.force-new-baseline }}
-        uses: actions/download-artifact@v4
-        continue-on-error: true
-        with:
-          name: benchmark-baseline-${{ matrix.os }}
-          path: ${{ env.BASELINE_DIR }}
+        shell: bash
+        run: >-
+          ./scripts/bash/download-artifact.sh
+          --artifact benchmark-summaries-${{ matrix.os }}
+          --directory ${{ env.ARTIFACTS_DIR }}/baseline
+          --repo ${{ github.repository }}
+          --wf-path .github/workflows/benchmarks.yaml
 
       - name: Run the benchmarks
         shell: bash
@@ -98,18 +98,17 @@ jobs:
           FORCE_NEW_BASELINE: ${{ fromJSON(inputs.force-new-baseline) || false }}
           VERBOSE: ${{ fromJSON(inputs.verbose) || false }}
           DEFINED_SYMBOLS: ${{ inputs.defined_symbols || '' }}
-          SUMMARIES_DIR: ${{ env.SUMMARIES_DIR }}
         run: >-
           ./scripts/bash/run-benchmarks.sh ${{ inputs.benchmark-project }}
           --max-regression-pct "${{ inputs.max-regression-pct }}"
           --defined_symbols "${{ inputs.defined_symbols }}"
-          --configuration "${{ inputs.configuration }}"
+          --build-configuration "${{ inputs.build-configuration }}"
 
       - name: Upload benchmark summaries artifact
         uses: actions/upload-artifact@v4
         with:
           name: benchmark-summaries-${{ matrix.os }}
-          path: ${{ env.SUMMARIES_DIR }}
+          path: ${{ env.ARTIFACTS_DIR }}/summaries
           if-no-files-found: error
           overwrite: true
           retention-days: 5
@@ -119,7 +118,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: benchmark-baseline-${{ matrix.os }}
-          path: ${{ env.SUMMARIES_DIR }}
+          path: ${{ env.ARTIFACTS_DIR }}/baseline
           if-no-files-found: error
           overwrite: true
           retention-days: 5

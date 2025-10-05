@@ -1,0 +1,77 @@
+name: Download Artifact
+
+# Unlike the existing action action/download-artifact, this action downloads the latest artifact from previous successful runs
+# of the specified workflow. E.g., the benchmarks workflow can designate an artifact from the current run as the baseline for
+# future runs. The future runs can then download the artifact from that baseline run and compare the results.
+
+on:
+  workflow_call:
+    inputs:
+      os:
+        description: "Runner OS-s"
+        type: string
+        required: true
+        default: '["ubuntu-latest"]'
+
+      repo:
+        description: "Repository in owner/name format"
+        type: string
+        required: true
+        default: ${{ github.repository }}
+
+      wf-id:
+        description: >
+          Workflow ID. Specify one of: wf-id, wf-name, or wf-path in order to identify the workflow.
+          If you specify more than one, the precedence is wf-id > wf-name > wf-path."
+        type: string
+        required: false
+
+      wf-name:
+        description: >
+          Workflow name. Specify one of: wf-id, wf-name, or wf-path in order to identify the workflow.
+          If you specify more than one, the precedence is wf-id > wf-name > wf-path."
+        type: string
+        required: false
+
+      wf-path:
+        description: >
+          Workflow file path. Specify one of: wf-id, wf-name, or wf-path in order to identify the workflow.
+          If you specify more than one, the precedence is wf-id > wf-name > wf-path."
+        type: string
+        required: false
+
+      artifact:
+        description: "The name of the artifact to download"
+        type: string
+        required: true
+
+      directory:
+        description: "Directory to download the artifact into"
+        type: string
+        required: true
+        default: "."
+
+env:
+  CI: true # implies --quiet for the scripts
+
+jobs:
+  download-baseline:
+    name: Download Baseline Artifact
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: ${{ fromJson(inputs.os) }}
+
+    steps:
+      - name: Find and download baseline artifact
+        shell: bash
+        env:
+          VERBOSE: ${{ fromJson(env.VERBOSE) || fromJson(vars.VERBOSE) || false }}
+        run: >-
+          ./scripts/bash/download-artifact.sh
+          --artifact ${{ inputs.artifact }}
+          --directory ${{ inputs.directory }}
+          --repo ${{ inputs.repo }}
+          $([[ -n "${{ inputs.wf-id   }}" ]] && printf "%s\n" "--wf-id    ${{ inputs.wf-id   }}")
+          $([[ -n "${{ inputs.wf-name }}" ]] && printf "%s\n" "--wf-name '${{ inputs.wf-name }}'")
+          $([[ -n "${{ inputs.wf-path }}" ]] && printf "%s\n" "--wf-path '${{ inputs.wf-path }}'")

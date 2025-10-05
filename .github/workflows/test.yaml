@@ -21,7 +21,7 @@ on:
         required: false
         default: "./test/UlidType.Tests/UlidType.Tests.csproj"
 
-      configuration:
+      build-configuration:
         description: "The type of build to produce, e.g. Release vs Debug"
         type: string
         required: false
@@ -33,23 +33,22 @@ on:
         required: false
         default: ""
 
-      verbose:
-        description: "Whether to enable verbose logging"
-        type: boolean
-        required: false
-        default: false
-
       min-coverage-pct:
         description: "Minimum acceptable code coverage percentage"
         type: number
         required: true
         default: 75
 
+      verbose:
+        description: "Whether to enable verbose logging"
+        type: boolean
+        required: false
+        default: false
+
 permissions:
   contents: read # to checkout the code
 
 env:
-  CI: true # implies --quiet for the scripts
   # this must be the same across all jobs and steps below.
   # We must know where to find the artifacts and where to download/upload to/from across all jobs and steps here.
   ARTIFACTS_DIR: "TestArtifacts"
@@ -81,13 +80,10 @@ jobs:
 
       - name: Run script for unit test with coverage
         shell: bash
-        env:
-          VERBOSE: ${{ inputs.verbose || false }}
-          DEFINED_SYMBOLS: ${{ inputs.defined_symbols || '' }}
         run: >-
           ./scripts/bash/run-tests.sh ${{ inputs.test-project }}
           --min-coverage-pct "${{ inputs.min-coverage-pct }}"
-          --configuration "${{ inputs.configuration }}"
+          --build-configuration "${{ inputs.build-configuration }}"
           --defined_symbols "${{ inputs.defined_symbols }}"
 
       - name: Upload coverage artifact

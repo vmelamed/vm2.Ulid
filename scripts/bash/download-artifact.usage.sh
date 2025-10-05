@@ -33,6 +33,10 @@ Options:
         the workflow. Optional.
         Initial value from \$REPOSITORY.
 
+    --wf-id | -i
+        Specifies the ID of the workflow. Optional.
+        Initial value from \$WORKFLOW_ID or ''.
+
     --wf-name | -n
         Specifies the name of the workflow as shown in the GitHub Actions UI.
         Optional.
@@ -42,10 +46,6 @@ Options:
         Specifies the path of the workflow file in the repository, e.g.
         '.github/workflows/run-benchmarks.yml'. Optional.
         Initial value from \$WORKFLOW_PATH or ''.
-
-    --wf-id | -i
-        Specifies the ID of the workflow. Optional.
-        Initial value from \$WORKFLOW_ID or ''.
 
     Note:
         1) If none of the --wf-* options are specified, the script will try to find

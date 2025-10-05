@@ -51,9 +51,9 @@ function get_arguments()
             --configuration|-c )
                 value="$1"
                 shift
-                configuration="${value,,}"
-                configuration="${configuration^}"
-                if ! is_in "$configuration" "Release" "Debug"; then
+                build_configuration="${value,,}"
+                build_configuration="${build_configuration^}"
+                if ! is_in "$build_configuration" "Release" "Debug"; then
                     usage "The coverage threshold must be either 'Release' or 'Debug'. Got '$value'."
                     exit 2
                 fi
@@ -99,7 +99,7 @@ dump_all_variables()
         trace_enabled \
         --blank \
         bm_project \
-        configuration \
+        build_configuration \
         defined_symbols \
         max_regression_pct \
         force_new_baseline \

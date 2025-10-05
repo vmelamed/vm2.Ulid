@@ -278,7 +278,9 @@ function on_exit() {
 }
 
 function trace() {
-    echo "Trace: $*" > "$_ignore"
+    if [[ $trace_enabled == true ]]; then
+        echo "Trace: $*" >&2
+    fi
 }
 
 # Depending on the value of $dry_run either executes or just displays what would have been executed.

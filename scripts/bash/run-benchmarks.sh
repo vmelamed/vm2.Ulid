@@ -13,7 +13,7 @@ declare -xr script_dir
 source "$script_dir/_common.sh"
 
 declare -x bm_project=${BM_PROJECT:-}
-declare -x configuration=${CONFIGURATION:="Release"}
+declare -x build_configuration=${BUILD_CONFIGURATION:="Release"}
 declare -x defined_symbols=${DEFINED_SYMBOLS:-}
 declare -ix max_regression_pct=${MAX_REGRESSION_PCT:-10}
 declare -x force_new_baseline=${FORCE_NEW_BASELINE:-false}
@@ -29,7 +29,7 @@ if [[ ! -s "$bm_project" ]]; then
     exit 2
 fi
 declare -r bm_project
-declare -r configuration
+declare -r build_configuration
 declare -r defined_symbols
 declare -r max_regression_pct
 declare -r force_new_baseline
@@ -86,12 +86,12 @@ fi
 trace "Creating directory(s)..."
 execute mkdir -p "$summaries_dir"
 
-trace "Running benchmark tests in project '$bm_project' with configuration '$configuration'..."
+trace "Running benchmark tests in project '$bm_project' with build configuration '$build_configuration'..."
 execute mkdir -p "$artifacts_dir"
 execute dotnet run \
     /p:DefineConstants="$defined_symbols" \
     --project "$bm_project" \
-    --configuration "$configuration" \
+    --configuration "$build_configuration" \
     --filter '*' \
     --memory \
     --exporters JSON \
