@@ -60,13 +60,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: ${{ fromJson(inputs.os) }}
+        os: ${{ fromJSON(inputs.os) }}
 
     steps:
       - name: Find and download baseline artifact
         shell: bash
         env:
-          VERBOSE: ${{ fromJson(env.VERBOSE) || fromJson(vars.VERBOSE) || false }}
+          VERBOSE: ${{ fromJSON(env.VERBOSE) || fromJSON(vars.VERBOSE) || false }}
         run: >-
           ./scripts/bash/download-artifact.sh
           --artifact ${{ inputs.artifact }}

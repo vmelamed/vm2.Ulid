@@ -33,7 +33,7 @@ Options:
 
     --configuration | -c
         Specifies the build configuration to use ('Debug' or 'Release').
-        Initial value from \$BUILD_CONFIGURATION or 'Release'
+        Initial value from \$CONFIGURATION or 'Release'
 
     --define | -d
         Defines one or more user-defined pre-processor symbols to be used when

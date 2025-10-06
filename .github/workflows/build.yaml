@@ -15,13 +15,13 @@ on:
         required: false
         default: "9.0.x"
 
-      build-configuration:
+      configuration:
         description: "The type of build to produce, e.g. Release vs Debug"
         type: string
         required: false
         default: "Release"
 
-      defined_symbols:
+      defined-symbols:
         description: "Define constants to pass to the compiler"
         type: string
         required: false
@@ -29,6 +29,10 @@ on:
 
 permissions:
   contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
 
 jobs:
   build:
@@ -52,11 +56,11 @@ jobs:
             **/packages.lock.json
             **/*.csproj
 
-      - name: Build (${{ inputs.build-configuration }})
+      - name: Build (${{ inputs.configuration }})
         run: >-
           dotnet build
-          --configuration ${{ inputs.build-configuration }}
-          /p:DefineConstants="${{ inputs.defined_symbols }}"
+          --configuration ${{ inputs.configuration }}
+          /p:DefineConstants="${{ inputs.defined-symbols }}"
 
       - name: ShellCheck
         uses: ludeeus/action-shellcheck@master

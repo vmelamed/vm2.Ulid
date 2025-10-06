@@ -52,7 +52,7 @@ jobs:
     with:
       os: ${{ inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]' }}
       dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
-      build-configuration: Release
+      configuration: Release
 
   test:
     name: Test
@@ -62,7 +62,7 @@ jobs:
       os: ${{ inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]' }}
       dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
       test-project: ${{ inputs.test-project || vars.TEST_PROJECT || './test/UlidType.Tests/UlidType.Tests.csproj' }}
-      build-configuration: Release
+      configuration: Release
       verbose: ${{ fromJSON(vars.VERBOSE) || false }}
       min-coverage-pct: ${{ fromJSON(vars.MIN_COVERAGE_PCT) || 75 }}
 
@@ -74,7 +74,7 @@ jobs:
       os: ${{ inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]' }}
       dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
       benchmark-project: ${{ inputs.benchmark-project || vars.BENCHMARK_PROJECT || './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj' }}
-      build-configuration: Release
+      configuration: Release
       verbose: ${{ fromJSON(vars.VERBOSE) || false }}
       max-regression-pct: ${{ fromJSON(vars.MAX_REGRESSION_PCT) || 10 }}
 

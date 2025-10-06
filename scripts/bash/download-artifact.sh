@@ -109,7 +109,7 @@ mapfile -t runs < <(execute gh run list \
                                 --repo "$repository" \
                                 --workflow "$workflow_id" \
                                 --status success \
-                                --limit 1000 \
+                                --limit 100 \
                                 --json databaseId \
                                 --jq '.[].databaseId')
 
@@ -124,7 +124,9 @@ fi
 
 # iterate over the runs and try to find and download the specified artifact
 # starting from the most recent one down to the oldest one
+i=0
 for run in "${runs[@]}"; do
+    ((i++))
     trace "Checking run $run for the artifact '$artifact_name'..."
     query="any(.artifacts[]; .name==\"$artifact_name\")"
     if [[ ! $(execute gh api "repos/$repository/actions/runs/$run/artifacts" --jq "$query") == "true" ]]; then
@@ -132,6 +134,10 @@ for run in "${runs[@]}"; do
         continue
     fi
 
+    if ((i > 80)); then
+        echo "Warning: The artifact was found in run $run, but this script is limited to checking only the last 100 runs.
+You may want to refresh the artifact, e.g. run the benchmarks with --force-new-baseline or vars.FORCE_NEW_BASELINE" >&2
+    fi
     trace "The artifact '$artifact_name' found in run $run. Downloading..."
     if ! http_error=$(execute gh run download "$run" \
                                 --repo "$repository" \
@@ -144,5 +150,5 @@ for run in "${runs[@]}"; do
     exit 0
 done
 
-usage "The artifact '$artifact_name' was not found in the last ${#runs[@]} successful runs of the workflow '$workflow_name' in the repository '$repository'."
+usage "The artifact '$artifact_name' was not found in the last ${#runs[@]} successful runs of the workflow '$workflow_name' in the repository '$repository'." >&2
 exit 2

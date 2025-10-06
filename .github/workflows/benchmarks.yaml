@@ -21,13 +21,13 @@ on:
         required: false
         default: "./benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj"
 
-      build-configuration:
+      configuration:
         description: "The type of build to produce, e.g. Release vs Debug"
         type: string
         required: false
         default: "Release"
 
-      defined_symbols:
+      defined-symbols:
         description: "Define constants to pass to the compiler"
         type: string
         required: false
@@ -58,6 +58,8 @@ env:
   # these must be the same across all jobs and steps below.
   # We must know where to find the artifacts and where to download/upload to/from across all jobs and steps here.
   ARTIFACTS_DIR: ${{ github.workspace }}/BmArtifacts
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
 
 jobs:
   benchmarks:
@@ -66,7 +68,6 @@ jobs:
     strategy:
       matrix:
         os: ${{ fromJSON(inputs.os) }}
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -90,19 +91,23 @@ jobs:
           --artifact benchmark-summaries-${{ matrix.os }}
           --directory ${{ env.ARTIFACTS_DIR }}/baseline
           --repo ${{ github.repository }}
-          --wf-path .github/workflows/benchmarks.yaml
+          --wf-path $GITHUB_PATH
+          ${{ inputs.verbose && '--verbose' || '' }}
 
       - name: Run the benchmarks
         shell: bash
         env:
           FORCE_NEW_BASELINE: ${{ fromJSON(inputs.force-new-baseline) || false }}
           VERBOSE: ${{ fromJSON(inputs.verbose) || false }}
-          DEFINED_SYMBOLS: ${{ inputs.defined_symbols || '' }}
+          DEFINED_SYMBOLS: ${{ inputs.defined-symbols || '' }}
         run: >-
           ./scripts/bash/run-benchmarks.sh ${{ inputs.benchmark-project }}
           --max-regression-pct "${{ inputs.max-regression-pct }}"
-          --defined_symbols "${{ inputs.defined_symbols }}"
-          --build-configuration "${{ inputs.build-configuration }}"
+          --define "${{ inputs.defined-symbols }}"
+          --configuration "${{ inputs.configuration }}"
+          --artifacts "${{ env.ARTIFACTS_DIR }}"
+          ${{ inputs.force-new-baseline && '--force-new-baseline' || '' }}
+          ${{ inputs.verbose && '--verbose' || '' }}
 
       - name: Upload benchmark summaries artifact
         uses: actions/upload-artifact@v4
