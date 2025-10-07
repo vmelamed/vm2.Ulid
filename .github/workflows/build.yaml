@@ -62,7 +62,7 @@ jobs:
             /p:DefineConstants="${{ inputs.defined-symbols }}" \
             --configuration ${{ inputs.configuration }}
           {
-            echo "Successful build!"
+            echo "✅ Successful build!"
             echo "Build configuration: ${{ inputs.configuration }}"
             echo "Defined symbols: ${{ inputs.defined-symbols || 'None' }}"
             echo "Runner: ${{ matrix.os }}"
