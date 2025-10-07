@@ -145,10 +145,12 @@ jobs:
 
       - name: Upload package artifact
         if: success() && steps.tagcheck.outputs.already_tagged == 'false' && env.SAVE_PACKAGE_ARTIFACT == 'true'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: nuget-packages-${{ steps.compute.outputs.prerelease_tag }}
           path: artifacts/pack/*.nupkg
+          if-no-files-found: error
+          overwrite: true
 
       - name: Summary
         env:

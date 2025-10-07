@@ -99,4 +99,3 @@ jobs:
           path: ${{ env.ARTIFACTS_DIR }}
           if-no-files-found: error
           overwrite: true
-          retention-days: 5

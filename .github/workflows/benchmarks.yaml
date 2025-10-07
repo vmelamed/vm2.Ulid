@@ -117,7 +117,6 @@ jobs:
           path: ${{ env.ARTIFACTS_DIR }}/summaries
           if-no-files-found: error
           overwrite: true
-          retention-days: 5
 
       - name: Upload benchmark results artifact as a new baseline
         if: ${{ inputs.force-new-baseline || false }}
@@ -127,4 +126,3 @@ jobs:
           path: ${{ env.ARTIFACTS_DIR }}/summaries
           if-no-files-found: error
           overwrite: true
-          retention-days: 5
