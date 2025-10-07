@@ -1,4 +1,4 @@
-namespace vm2.UlidRandomProviders;
+namespace vm2.Providers;
 
 /// <summary>
 /// A random provider that uses cryptographic random number generation.

@@ -328,7 +328,7 @@ __pycache__/
 *.pyc
 
 # Cake - Uncomment if you are using it
-# tools/**
+tools/
 # !tools/packages.config
 
 # Tabs Studio
@@ -401,9 +401,23 @@ FodyWeavers.xsd
 launchSettings.json
 
 # benchmarkDotNet results folder(s)
-BenchmarkDotNet.Artifacts/
-Artifacts/
-
-# unit tests Code Coverage folder
+TestArtifacts/
+BmArtifacts/
 TestResults/
 report.txt
+
+# Coverage files
+*.cobertura.xml
+.coverage/
+
+# Others
+*.vsix
+*.db
+*.db-shm
+*.db-wal
+*.bak
+*.backup
+*.BLOB
+*scratch*
+*scratch*/
+_ignore

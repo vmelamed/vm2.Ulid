@@ -69,12 +69,12 @@ public class UlidTests
         var ulid = new Ulid("01K5MVTR82AF7EA4DNPKQAVE3T"u8, true);
         Span<byte> buffer = stackalloc byte[UlidStringLength+1];
 
-        ulid.TryWrite(buffer[..(UlidStringLength-1)], true).Should().BeFalse();
+        ulid.TryWriteUtf8(buffer[..(UlidStringLength-1)]).Should().BeFalse();
 
-        ulid.TryWrite(buffer[..UlidStringLength], true).Should().BeTrue();
+        ulid.TryWriteUtf8(buffer[..UlidStringLength]).Should().BeTrue();
         new Ulid(buffer, true).Should().Be(ulid);
 
-        ulid.TryWrite(buffer, true).Should().BeTrue();
+        ulid.TryWriteUtf8(buffer).Should().BeTrue();
         new Ulid(buffer, true).Should().Be(ulid);
     }
 
@@ -127,9 +127,8 @@ public class UlidTests
     {
         var ulid = new UlidFactory().NewUlid();
         var str = ulid.ToString();
-        Ulid result;
 
-        TryParse(Encoding.UTF8.GetBytes(str), out result).Should().BeTrue();
+        TryParse(Encoding.UTF8.GetBytes(str), out var result).Should().BeTrue();
         result.Should().Be(ulid);
 
         TryParse(str, out result).Should().BeTrue();
@@ -198,6 +197,62 @@ public class UlidTests
         var bytes = ulid.Bytes.ToArray();
         var random = ulid.RandomBytes.ToArray();
         bytes.Skip(RandomBegin).Take(RandomLength).Should().Equal(random);
+    }
+
+    public record struct TimeAndRandom(long UnixTime, byte[] Random, bool Throws = false);
+
+    public static TheoryData<(TimeAndRandom, TimeAndRandom)> TimeAndRandoms =
+    [
+        (new TimeAndRandom( 1758851704339L, [0x94, 0x35, 0x28, 0x71, 0x11, 0xE0, 0x66, 0xD6, 0x4A, 0xFF] ),
+         new TimeAndRandom( 1758851704339L, [0x94, 0x35, 0x28, 0x71, 0x11, 0xE0, 0x66, 0xD6, 0x4B, 0x00] )),
+
+        (new TimeAndRandom( 1758851704339L, [0x94, 0x35, 0x28, 0x71, 0x11, 0xE0, 0x66, 0xD6, 0xFF, 0xFF] ),
+         new TimeAndRandom( 1758851704339L, [0x94, 0x35, 0x28, 0x71, 0x11, 0xE0, 0x66, 0xD7, 0x00, 0x00] )),
+
+        (new TimeAndRandom( 1758851704339L, [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF], true ),
+         new TimeAndRandom( 1758851704339L, [0x94, 0x35, 0x28, 0x71, 0x11, 0xE0, 0x66, 0xD7, 0x00, 0x00], true )),
+    ];
+
+    class Test_IUlidRandomProvider : IUlidRandomProvider
+    {
+        private readonly byte[] _bytes;
+
+        public Test_IUlidRandomProvider(byte[] param) => _bytes = param;
+
+        public void Fill(Span<byte> buffer) => _bytes.AsSpan(0, buffer.Length).CopyTo(buffer);
+    }
+
+    class Test_IClock : IClock
+    {
+        private readonly long _unixTimeMilliseconds;
+
+        public Test_IClock(long param) => _unixTimeMilliseconds = param;
+
+        public long UnixTimeMilliseconds() => _unixTimeMilliseconds;
+    }
+
+    [Theory]
+    [MemberData(nameof(TimeAndRandoms))]
+    public void UlidFactory_Increments_Correctly_Random(
+        (TimeAndRandom last, TimeAndRandom next) data)
+    {
+        var ulidFactory = new UlidFactory(new Test_IUlidRandomProvider(data.last.Random),
+                                          new Test_IClock(data.last.UnixTime));
+        var throws = data.next.Throws;
+
+        var _ = ulidFactory.NewUlid();
+
+        if (throws)
+        {
+            Action act = () => ulidFactory.NewUlid();
+            act.Should().Throw<OverflowException>();
+        }
+        else
+        {
+            var ulid2 = ulidFactory.NewUlid();
+            ulid2.Timestamp.ToUnixTimeMilliseconds().Should().Be(data.next.UnixTime);
+            ulid2.RandomBytes.ToArray().Should().Equal(data.next.Random);
+        }
     }
 
     [Fact]
@@ -402,5 +457,31 @@ public class UlidTests
     {
         MinValue.Should().Be(Empty);
         MaxValue.Should().Be(AllBitsSet);
+    }
+
+    [Fact]
+    public void ImplicitConversion_ToAndFrom_Guid_Works_As_Expected()
+    {
+        var factory = new UlidFactory();
+        var ulid = factory.NewUlid();
+
+        Guid guid = ulid;
+        guid.ToByteArray().Should().Equal(ulid.Bytes.ToArray());
+
+        Ulid ulid2 = guid;
+        ulid2.Should().Be(ulid);
+    }
+
+    [Fact]
+    public void ImplicitConversion_ToAndFrom_String_Works_As_Expected()
+    {
+        var factory = new UlidFactory();
+        var ulid = factory.NewUlid();
+
+        string str = ulid;
+        str.Should().Be(ulid.ToString());
+
+        Ulid ulid2 = str;
+        ulid2.Should().Be(ulid);
     }
 }

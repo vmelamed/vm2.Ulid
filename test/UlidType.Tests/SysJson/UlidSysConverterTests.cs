@@ -13,7 +13,7 @@ public class UlidSysConverterTests
         {
         }
 
-        public Subject(string? id) => Id = id is null ? null : new Ulid(id);
+        public Subject(string? id) => Id = id is null ? (Ulid?)null : new Ulid(id);
     }
 
     class Subject1

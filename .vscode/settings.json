@@ -1,5 +1,8 @@
 {
     "cSpell.words": [
-        "tagcheck"
+        "nullglob",
+        "reporttypes",
+        "tagcheck",
+        "targetdir"
     ]
 }

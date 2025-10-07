@@ -5,6 +5,25 @@
   <Folder Name="/examples/">
     <Project Path="examples/GenerateUlids/GenerateUlids.csproj" />
   </Folder>
+  <Folder Name="/scripts/" />
+  <Folder Name="/scripts/bash/">
+    <File Path="scripts/bash/_common.sh" />
+    <File Path="scripts/bash/download-artifact.sh" />
+    <File Path="scripts/bash/download-artifact.usage.sh" />
+    <File Path="scripts/bash/download-artifact.utils.sh" />
+    <File Path="scripts/bash/run-benchmarks.sh" />
+    <File Path="scripts/bash/run-benchmarks.usage.sh" />
+    <File Path="scripts/bash/run-benchmarks.utils.sh" />
+    <File Path="scripts/bash/run-tests.sh" />
+    <File Path="scripts/bash/run-tests.usage.sh" />
+    <File Path="scripts/bash/run-tests.utils.sh" />
+    <File Path="scripts/bash/self-test.sh" />
+    <File Path="scripts/bash/setup-ci-vars.sh" />
+    <File Path="scripts/bash/setup-ci-vars.usage.sh" />
+    <File Path="scripts/bash/setup-ci-vars.utils.sh" />
+    <File Path="scripts/bash/.shellcheckrc" />
+    <File Path="scripts/bash/summary.jq" />
+  </Folder>
   <Folder Name="/solution items/">
     <File Path=".editorconfig" />
     <File Path=".gitignore" />
@@ -14,15 +33,15 @@
     <File Path="LICENSE" />
     <File Path="README.md" />
     <File Path="ReleaseProcess.md" />
+    <File Path="test.runsettings" />
   </Folder>
   <Folder Name="/Solution Items/CI-CD/">
-    <File Path=".github/workflows/ci.yml" />
+    <File Path=".github/workflows/CI.yml" />
     <File Path=".github/workflows/build.yml" />
-    <File Path=".github/workflows/summary.jq" />
     <File Path=".github/workflows/test.yml" />
     <File Path=".github/workflows/benchmarks.yml" />
-    <File Path=".github/workflows/prerelease.yml" />
-    <File Path=".github/workflows/release.yml" />
+    <File Path=".github/workflows/Prerelease.yml" />
+    <File Path=".github/workflows/Release.yml" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/UlidType/UlidType.csproj" />

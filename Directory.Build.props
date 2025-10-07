@@ -62,7 +62,9 @@
         <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" />
         <PackageReference Include="FluentAssertions" />
         <PackageReference Include="xunit.v3" />
-        <PackageReference Update="xunit.runner.visualstudio">
+        <!-- Microsoft Testing Platform makes the following references redundant:
+        <PackageReference Include="Microsoft.NET.Test.Sdk" /> <!- - required for VSTest but not for MS Test Platform - ->
+        <PackageReference Update="xunit.runner.visualstudio"> <!- - required for VSTest but not for MS Test Platform - ->
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -70,6 +72,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+        -->
     </ItemGroup>
     <ItemGroup Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]test[/\\]')) and !$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectName), '^*.Tests$'))">
         <!-- for test libraries in the test folder: -->
