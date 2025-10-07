@@ -44,6 +44,7 @@ This format follows:
 - Method `public readonly bool TryWriteUtf8(in Span<byte> destination)` (see also [Changed](#changed) below)
 - Implicit conversion to/from `string` and `Guid`
 - Unit tests for the new features above and the fixed bug below.
+- A lot of CI/CD workflow improvements and scripts to automate the release process (see also [Internal](#internal) below).
 
 ### Changed
 
@@ -59,6 +60,7 @@ Small API changes that clarify the semantic of some input parameters:
 - Minor stylistic code changes.
 
 ### Fixed
+
 - Fixed bug where the UlidFactory could produce non-monotonic ULIDs when called within the same millisecond and the last byte of
   the previous ULID was `0xFF`.
 
@@ -67,6 +69,7 @@ Small API changes that clarify the semantic of some input parameters:
 - Small optimization of `UlidToString()`: Using the new `string.Create` (thank you Stephen Toub!).
 
 ### Internal
+
 - build pipeline changes
 
 ---

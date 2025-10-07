@@ -52,9 +52,9 @@ The actual activation is via:
 
 | Flow                    | Trigger                                             | Tag Format                                | Publishes?       | Result                   |
 |-------------------------|-----------------------------------------------------|-------------------------------------------|------------------|--------------------------|
+| Local build (no tag)    | `dotnet build`                                      | Computed prerelease (if no tag reachable) | No               | For development only     |
 | Prerelease (automated)  | Merge (push) to `main` (commit not already tagged)  | `vX.Y.(Z+1)-preview.YYYYMMDD.<run>`       | Yes (prerelease) | Preview package on NuGet |
 | Stable release (manual) | **Manual** annotated tag push                       | `vX.Y.Z`                                  | Yes (stable)     | Final package on NuGet   |
-| Local build (no tag)    | `dotnet build`                                      | Computed prerelease (if no tag reachable) | No               | For development only     |
 
 ---
 
@@ -273,4 +273,3 @@ Avoid unless strong justification (most libraries keep AssemblyVersion stable ac
 ---
 
 [MinVer]: https://github.com/adamralph/minver
-

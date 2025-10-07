@@ -14,6 +14,7 @@ on:
 
 env:
   DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
   DOTNET_VERSION: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
   REASON: ${{ inputs.reason || 'manual run' }}
 
@@ -66,10 +67,10 @@ jobs:
           DATE=$(date -u +%Y%m%d)
           RUN=${GITHUB_RUN_NUMBER}
           PRERELEASE_TAG="v${MAJOR}.${MINOR}.${NEXT_PATCH}-preview.${DATE}.${RUN}"
-          printf 'prerelease_tag=%s\n' "$PRERELEASE_TAG" >> "$GITHUB_OUTPUT"
+          printf 'prerelease_tag=%s\n' "$PRERELEASE_TAG" | tee -a "$GITHUB_OUTPUT" "$GITHUB_STEP_SUMMARY"
 
       - name: Log the reason for workflow dispatch
-        if: ${{ fromJSON(inputs.reason) && inputs.reason != '' }}
+        if: ${{ inputs.reason }}
         run: |
           {
               echo "Prerelease reason:"
