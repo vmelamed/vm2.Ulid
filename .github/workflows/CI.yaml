@@ -154,8 +154,8 @@ jobs:
       test-project: ${{ needs.setup.outputs.test-project }}
       configuration: ${{ needs.setup.outputs.configuration }}
       defined-symbols: ${{ needs.setup.outputs.defined-symbols }}
-      verbose: ${{ needs.setup.outputs.verbose }}
-      min-coverage-pct: ${{ needs.setup.outputs.min-coverage-pct }}
+      min-coverage-pct: ${{ fromJSON(needs.setup.outputs.min-coverage-pct) }}
+      verbose: ${{ fromJSON(needs.setup.outputs.verbose) }}
 
   benchmarks_job:
     name: Benchmarks
@@ -177,6 +177,6 @@ jobs:
       benchmark-project: ${{ needs.setup.outputs.benchmark-project }}
       configuration: ${{ needs.setup.outputs.configuration }}
       defined-symbols: ${{ needs.setup.outputs.defined-symbols }}
-      verbose: ${{ needs.setup.outputs.verbose }}
-      max-regression-pct: ${{ needs.setup.outputs.max-regression-pct }}
-      force-new-baseline: ${{ needs.setup.outputs.force-new-baseline }}
+      max-regression-pct: ${{ fromJSON(needs.setup.outputs.max-regression-pct) }}
+      force-new-baseline: ${{ fromJSON(needs.setup.outputs.force-new-baseline) }}
+      verbose: ${{ fromJSON(needs.setup.outputs.verbose) }}
