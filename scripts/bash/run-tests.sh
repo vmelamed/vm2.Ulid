@@ -168,7 +168,7 @@ if [[ $dry_run != "true" ]]; then
         exit 2
     fi
 
-    echo "Coverage: $pct% (threshold: $min_coverage_pct%)" >> "$GITHUB_STEP_SUMMARY"
+    echo "Coverage: $pct% (threshold: $min_coverage_pct%)"
 
     # Compare the coverage percentage against the threshold
     if (( pct < min_coverage_pct )); then
