@@ -92,19 +92,27 @@ jobs:
       max-regression-pct: ${{ steps.setup-vars.outputs.max-regression-pct }}
       verbose: ${{ steps.setup-vars.outputs.verbose }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Make Scripts Executable
+        run: chmod u+x ./scripts/bash/*.sh
+
       - id: setup-vars
-        run: |
-          echo "matrix-os=${{ fromJson(inputs.os) || fromJson(vars.MATRIX_OS) || '["ubuntu-latest"]' }}" >> $GITHUB_OUTPUT
-          echo "dotnet-version=${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}" >> $GITHUB_OUTPUT
-          echo "configuration=${{ inputs.configuration || vars.CONFIGURATION || 'Release' }}" >> $GITHUB_OUTPUT
-          echo "defined-symbols=${{ inputs.defined-symbols || vars.DEFINED_SYMBOLS || '' }}" >> $GITHUB_OUTPUT
-          echo "test-project=${{ inputs.test-project || vars.TEST_PROJECT || './test/UlidType.Tests/UlidType.Tests.csproj' }}" >> $GITHUB_OUTPUT
-          echo "min-coverage-pct=${{ fromJson(inputs.min-coverage-pct) || fromJson(vars.MIN_COVERAGE_PCT) || 75 }}" >> $GITHUB_OUTPUT
-          echo "run-benchmarks=${{ fromJSON(inputs.run-benchmarks) || fromJson(vars.RUN_BENCHMARKS) || true }}" >> $GITHUB_OUTPUT
-          echo "benchmark-project=${{ inputs.benchmark-project || vars.BENCHMARK_PROJECT || './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj' }}" >> $GITHUB_OUTPUT
-          echo "force-new-baseline=${{ fromJSON(inputs.force-new-baseline) || fromJson(vars.FORCE_NEW_BASELINE) || false }}" >> $GITHUB_OUTPUT
-          echo "max-regression-pct=${{ fromJSON(inputs.max-regression-pct) || fromJson(vars.MAX_REGRESSION_PCT) || 10 }}" >> $GITHUB_OUTPUT
-          echo "verbose=${{ fromJSON(vars.VERBOSE) || false }}" >> $GITHUB_OUTPUT
+        shell: bash
+        env:
+          MATRIX_OS: ${{ fromJson(inputs.os) || fromJson(vars.MATRIX_OS) || '["ubuntu-latest"]' }}
+          DOTNET_VERSION: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
+          CONFIGURATION: ${{ inputs.configuration || vars.CONFIGURATION || 'Release' }}
+          DEFINED_SYMBOLS: ${{ inputs.defined-symbols || vars.DEFINED_SYMBOLS || '' }}
+          TEST_PROJECT: ${{ inputs.test-project || vars.TEST_PROJECT || './test/UlidType.Tests/UlidType.Tests.csproj' }}
+          MIN_COVERAGE_PCT: ${{ fromJson(inputs.min-coverage-pct) || fromJson(vars.MIN_COVERAGE_PCT) || 75 }}
+          RUN_BENCHMARKS: ${{ fromJSON(inputs.run-benchmarks) || fromJson(vars.RUN_BENCHMARKS) || true }}
+          BENCHMARK_PROJECT: ${{ inputs.benchmark-project || vars.BENCHMARK_PROJECT || './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj' }}
+          FORCE_NEW_BASELINE: ${{ fromJSON(inputs.force-new-baseline) || fromJson(vars.FORCE_NEW_BASELINE) || false }}
+          MAX_REGRESSION_PCT: ${{ fromJSON(inputs.max-regression-pct) || fromJson(vars.MAX_REGRESSION_PCT) || 10 }}
+          VERBOSE: ${{ fromJSON(vars.VERBOSE) || false }}
+        run: ./scripts/bash/setup-ci-vars.sh
 
   build_job:
     name: Build
@@ -113,13 +121,15 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os:
-          - ubuntu-latest
-          - windows-latest
-          - macos-latest
+        os: ${{ fromJSON(needs.setup.outputs.matrix-os) }}
     uses: ./.github/workflows/build.yaml
-    # allow skipping CI via commit message only for push events
-    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
+    # Skip if [skip ci] is found in commit message (push only), always run for PRs
+    if: >-
+      ${{
+        (github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip ci]')) ||
+        github.event_name == 'pull_request' ||
+        github.event_name == 'workflow_dispatch'
+      }}
     with:
       os: ${{ needs.setup.outputs.matrix-os }}
       configuration: ${{ needs.setup.outputs.configuration }}
@@ -128,7 +138,12 @@ jobs:
 
   test_job:
     name: Test
-    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
+    if: >-
+      ${{
+        (github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip ci]')) ||
+        github.event_name == 'pull_request' ||
+        github.event_name == 'workflow_dispatch'
+      }}
     needs:
       - setup
       - build_job
@@ -144,10 +159,14 @@ jobs:
 
   benchmarks_job:
     name: Benchmarks
-    if: "${{
-      !contains(github.event.head_commit.message, '[skip ci]') ||
-      fromJSON(inputs.run-benchmarks) ||
-      fromJSON(vars.RUN_BENCHMARKS) }}"
+    if: >-
+      ${{
+        (github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip ci]')) ||
+        github.event_name == 'pull_request' ||
+        github.event_name == 'workflow_dispatch' ||
+        fromJSON(inputs.run-benchmarks) ||
+        fromJSON(vars.RUN_BENCHMARKS)
+      }}
     needs:
       - setup
       - build_job
