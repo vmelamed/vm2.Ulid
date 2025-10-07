@@ -57,15 +57,15 @@ jobs:
             **/*.csproj
 
       - name: Build (${{ inputs.configuration }})
-        run: >-
-          dotnet build
-          /p:DefineConstants="${{ inputs.defined-symbols }}"
-          --configuration ${{ inputs.configuration }}
+        run: |
+          dotnet build \
+            /p:DefineConstants="${{ inputs.defined-symbols }}" \
+            --configuration ${{ inputs.configuration }}
           {
-          echo "Successful build!"
-          echo "Build configuration: ${{ inputs.configuration }}"
-          echo "Defined symbols: ${{ inputs.defined-symbols || 'None' }}"
-          echo "Runner: ${{ matrix.os }}"
+            echo "Successful build!"
+            echo "Build configuration: ${{ inputs.configuration }}"
+            echo "Defined symbols: ${{ inputs.defined-symbols || 'None' }}"
+            echo "Runner: ${{ matrix.os }}"
           } >> $GITHUB_STEP_SUMMARY
 
       - name: ShellCheck
