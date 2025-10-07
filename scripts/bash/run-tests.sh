@@ -116,9 +116,10 @@ execute dotnet test "$test_project" \
     --coverage-output-format cobertura \
     --coverage-output "$coverage_source_path"
 
+# shellcheck disable=SC2154
 if [[ $dry_run != "true" ]]; then
     if [[ ! -s "$coverage_source_path" ]]; then
-        echo "Coverage file not found or is empty." >&2
+        echo "Coverage file not found or is empty." | tee >> "$GITHUB_STEP_SUMMARY" >&2
         exit 2
     fi
 fi
@@ -147,7 +148,7 @@ fi
 
 if [[ $dry_run != "true" ]]; then
     if [[ ! -s "$coverage_reports_path" ]]; then
-        echo "Coverage summary not found." >&2
+        echo "Coverage summary not found." | tee >> "$GITHUB_STEP_SUMMARY" >&2
         exit 2
     fi
 fi
@@ -162,20 +163,20 @@ trace "Extracting coverage percentage from '$coverage_summary_path'..."
 if [[ $dry_run != "true" ]]; then
     pct=$(sed -nE 's/Method coverage: ([0-9]+)(\.[0-9]+)?%.*/\1/p' "$coverage_summary_path" | head -n1)
     if [[ -z "$pct" ]]; then
-        echo "Could not parse coverage percent from $coverage_summary_path" >&2
+        echo "Could not parse coverage percent from $coverage_summary_path" | tee >> "$GITHUB_STEP_SUMMARY" >&2
         sync
         exit 2
     fi
 
-    echo "Coverage: $pct% (threshold: $min_coverage_pct%)"
+    echo "Coverage: $pct% (threshold: $min_coverage_pct%)" >> "$GITHUB_STEP_SUMMARY"
 
     # Compare the coverage percentage against the threshold
     if (( pct < min_coverage_pct )); then
-        echo "Coverage $pct% is below the threshold of $min_coverage_pct%" >&2
+        echo "Coverage $pct% is below the threshold of $min_coverage_pct%" | tee >> "$GITHUB_STEP_SUMMARY" >&2
         sync
         exit 2
     else
-        echo "Coverage $pct% meets the threshold of $min_coverage_pct%";
+        echo "Coverage $pct% meets the threshold of $min_coverage_pct%" >> "$GITHUB_STEP_SUMMARY"
     fi
 fi
 sync

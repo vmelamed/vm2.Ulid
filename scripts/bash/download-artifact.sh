@@ -120,7 +120,8 @@ if [[ "$dry_run" == true ]]; then
 fi
 
 if [[ ${#runs[@]} == 0 ]]; then
-    usage "No successful runs found for the workflow '$workflow_id' in the repository '$repository'." >&2
+    # shellcheck disable=SC2154
+    usage "No successful runs found for the workflow '$workflow_id' in the repository '$repository'." | tee >> "$GITHUB_STEP_SUMMARY" >&2
     exit 2
 fi
 
@@ -132,7 +133,8 @@ for run in "${runs[@]}"; do
     trace "Checking run $run for the artifact '$artifact_name'..."
     query="any(.artifacts[]; .name==\"$artifact_name\")"
     if [[ ! $(execute gh api "repos/$repository/actions/runs/$run/artifacts" --jq "$query") == "true" ]]; then
-        trace "The artifact '$artifact_name' not found in run $run."
+        # shellcheck disable=SC2154
+        echo "The artifact '$artifact_name' not found in run $run." >> "$GITHUB_STEP_SUMMARY"
         continue
     fi
 
@@ -145,12 +147,12 @@ You may want to refresh the artifact, e.g. run the benchmarks with --force-new-b
                                 --repo "$repository" \
                                 --name "$artifact_name" \
                                 --dir "$artifacts_dir") ; then
-        echo "Error while downloading '$artifact_name': $http_error" >&2
+        echo "Error while downloading '$artifact_name': $http_error" | tee >> "$GITHUB_STEP_SUMMARY" >&2
         exit 2
     fi
-    echo "The artifact '$artifact_name' successfully downloaded to '$artifacts_dir'."
+    echo "The artifact '$artifact_name' successfully downloaded to '$artifacts_dir'." >> "$GITHUB_STEP_SUMMARY"
     exit 0
 done
 
-usage "The artifact '$artifact_name' was not found in the last ${#runs[@]} successful runs of the workflow '$workflow_name' in the repository '$repository'." >&2
+usage "The artifact '$artifact_name' was not found in the last ${#runs[@]} successful runs of the workflow '$workflow_name' in the repository '$repository'." | tee >> "$GITHUB_STEP_SUMMARY" >&2
 exit 2
