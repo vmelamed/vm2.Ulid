@@ -11,6 +11,10 @@ on:
       dotnet-version:
         description: "Version of .NET SDK to use"
         default: "9.0.x"
+      force-publish:
+        description: "Force publish even if already tagged"
+        type: boolean
+        default: false
 
 env:
   DOTNET_NOLOGO: true
@@ -79,7 +83,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Create & push prerelease tag
-        if: steps.tagcheck.outputs.already_tagged == 'false'
+        if: steps.tagcheck.outputs.already_tagged == 'false' || inputs.force-publish == true
         env:
           TAG: ${{ steps.compute.outputs.prerelease_tag }}
         run: |
