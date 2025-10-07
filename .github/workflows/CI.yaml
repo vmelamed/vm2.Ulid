@@ -154,8 +154,8 @@ jobs:
       test-project: ${{ needs.setup.outputs.test-project }}
       configuration: ${{ needs.setup.outputs.configuration }}
       defined-symbols: ${{ needs.setup.outputs.defined-symbols }}
-      verbose: ${{ needs.setup.outputs.verbose }}
-      min-coverage-pct: ${{ needs.setup.outputs.min-coverage-pct }}
+      verbose: ${{ fromJSON(needs.setup.outputs.verbose) }}
+      min-coverage-pct: ${{ fromJSON(needs.setup.outputs.min-coverage-pct) }}
 
   benchmarks_job:
     name: Benchmarks

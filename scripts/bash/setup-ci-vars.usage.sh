@@ -67,3 +67,8 @@ Options:
 
 EOF
 }
+
+function usage()
+{
+    display_usage_msg "$(usage_text)" "$@"
+}
