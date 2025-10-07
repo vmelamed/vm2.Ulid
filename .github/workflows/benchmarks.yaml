@@ -89,7 +89,7 @@ jobs:
         run: >-
           ./scripts/bash/download-artifact.sh
             --repo ${{ github.repository }}
-            --wf-path $GITHUB_PATH
+            --wf-name 'Reusable - Benchmarks'
             --artifact benchmark-summaries-${{ matrix.os }}
             --directory ${{ env.ARTIFACTS_DIR }}/baseline
             ${{ inputs.verbose && '--verbose' || '' }}

@@ -86,7 +86,7 @@ jobs:
           ./scripts/bash/run-tests.sh ${{ inputs.test-project }}
           --min-coverage-pct "${{ inputs.min-coverage-pct }}"
           --configuration "${{ inputs.configuration }}"
-          --defined-symbols "${{ inputs.defined-symbols }}"
+          --define "${{ inputs.defined-symbols }}"
           --artifacts-dir "${{ env.ARTIFACTS_DIR }}"
           ${{ inputs.verbose && '--verbose' || '' }}
 
