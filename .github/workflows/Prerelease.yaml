@@ -20,14 +20,14 @@ on:
         default: "9.0.x"
         required: true
 
-      save_package_artifact:
-        description: "Whether to save the built package as a workflow artifact"
+      force-publish:
+        description: "Force publish even if already tagged"
         type: boolean
         default: false
         required: true
 
-      force-publish:
-        description: "Force publish even if already tagged"
+      save_package_artifact:
+        description: "Upload package as a workflow artifact"
         type: boolean
         default: false
         required: true
