@@ -1,4 +1,4 @@
-name: CI - Build, Test, Coverage & Benchmarks
+name: CI - Build, Test, Benchmarks
 
 on:
   push:

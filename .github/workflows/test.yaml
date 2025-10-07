@@ -1,4 +1,4 @@
-name: Reusable - Test .NET
+name: Test .NET projects (Reusable)
 
 on:
   workflow_call:
@@ -81,14 +81,16 @@ jobs:
         run: chmod u+x ./scripts/bash/*.sh
 
       - name: Run script for unit test with coverage
+        env:
+          CONFIGURATION: ${{ inputs.configuration || 'vars.CONFIGURATION' || 'Release' }}
+          DEFINED_SYMBOLS: ${{ inputs.defined-symbols || 'vars.DEFINED_SYMBOLS' }}
+          VERBOSE: ${{ fromJSON(inputs.verbose) || fromJson(vars.VERBOSE) || false }}
         shell: bash
         run: >-
           ./scripts/bash/run-tests.sh ${{ inputs.test-project }}
           --min-coverage-pct "${{ inputs.min-coverage-pct }}"
           --configuration "${{ inputs.configuration }}"
-          --define "${{ inputs.defined-symbols }}"
           --artifacts "${{ env.ARTIFACTS_DIR }}"
-          ${{ inputs.verbose && '--verbose' || '' }}
 
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4

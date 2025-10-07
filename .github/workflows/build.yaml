@@ -1,4 +1,4 @@
-name: Reusable - Builds the .NET project in the current workspace
+name: Build .NET projects (Reusable)
 
 on:
   workflow_call:
