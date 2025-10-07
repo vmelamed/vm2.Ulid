@@ -159,14 +159,14 @@ fi
 
 trace "Calculating the percent change vs baseline"
 pct=$(( (sum_cur - sum_base) * 100 / sum_base ))
-echo "Percent change vs baseline: $pct% (allowed: $max_regression_pct%)"
+echo "Percent change vs baseline: $pct% (allowed: $max_regression_pct%)" | tee >> "$GITHUB_STEP_SUMMARY"
 
 if (( pct > max_regression_pct )); then
     echo "Performance regression exceeds threshold" | tee >> "$GITHUB_STEP_SUMMARY" >&2
     if [[ $force_new_baseline == "true" ]] && is_defined "GITHUB_ENV"; then
         echo "Significant regression of $pct% over baseline. Updating the baseline." | tee >> "$GITHUB_STEP_SUMMARY"
         # shellcheck disable=SC2154
-        echo "FORCE_NEW_BASELINE=true" >> "$GITHUB_ENV"
+        echo "FORCE_NEW_BASELINE=true" | tee >> "$GITHUB_ENV"
         sync
         exit 0
     fi
@@ -181,7 +181,7 @@ elif (( pct < 0 )); then
         if is_defined "GITHUB_ENV"; then
             echo "Significant improvement of $pct_abs% over baseline. Updating the baseline." | tee >> "$GITHUB_STEP_SUMMARY"
             # shellcheck disable=SC2154
-            echo "FORCE_NEW_BASELINE=true" >> "$GITHUB_ENV"
+            echo "FORCE_NEW_BASELINE=true" | tee >> "$GITHUB_ENV"
         fi
     else
         echo "Improvement of $pct_abs% over baseline." | tee >> "$GITHUB_STEP_SUMMARY"
