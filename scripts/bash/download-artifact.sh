@@ -139,7 +139,7 @@ for run in "${runs[@]}"; do
     fi
 
     if ((i > 80)); then
-        echo "Warning: The artifact was found in a run $i out of 100. \
+        echo "⚠️ Warning: The artifact was found in a run $i out of 100. \
 You may want to refresh the artifact. \
 E.g. run the benchmarks with --force-new-baseline or vars.FORCE_NEW_BASELINE" >&2
     fi
@@ -151,10 +151,10 @@ E.g. run the benchmarks with --force-new-baseline or vars.FORCE_NEW_BASELINE" >&
         echo "Error while downloading '$artifact_name': $http_error" | tee >> "$GITHUB_STEP_SUMMARY" >&2
         exit 2
     fi
-    echo "The artifact '$artifact_name' successfully downloaded to directory '$artifacts_dir'." >> "$GITHUB_STEP_SUMMARY"
+    echo "✅ The artifact '$artifact_name' successfully downloaded to directory '$artifacts_dir'." >> "$GITHUB_STEP_SUMMARY"
     exit 0
 done
 
-usage "The artifact '$artifact_name' was not found in the last ${#runs[@]} successful runs of the workflow '$workflow_name' in \
+usage "❌ The artifact '$artifact_name' was not found in the last ${#runs[@]} successful runs of the workflow '$workflow_name' in \
 the repository '$repository'." | tee >> "$GITHUB_STEP_SUMMARY" >&2
 exit 2

@@ -111,7 +111,7 @@ if [[ $dry_run != "true" ]]; then
     mapfile -t -d " " files < <(list_of_files "$artifacts_dir/results/*-report.json")
 
     if [[ ${#files[@]} == 0 ]]; then
-        echo "No JSON reports found." | tee >> "$GITHUB_STEP_SUMMARY" >&2
+        echo "❌ No JSON reports found." | tee >> "$GITHUB_STEP_SUMMARY" >&2
         exit 2
     fi
     for f in "${files[@]}"; do
@@ -123,7 +123,7 @@ fi
 trace "Sum up the means from all the summary files"
 mapfile -t -d " " files < <(list_of_files "$summaries_dir/*-summary.json")
 if [[ ${#files[@]} == 0 ]]; then
-    echo "No current benchmark result JSON files found." | tee >> "$GITHUB_STEP_SUMMARY" >&2
+    echo "❌ No current benchmark result JSON files found." | tee >> "$GITHUB_STEP_SUMMARY" >&2
     exit 2
 fi
 sum_cur=0
@@ -132,16 +132,16 @@ for f in "${files[@]}"; do
     sum_cur=$(( sum_cur + VAL ))
 done
 if (( sum_cur == 0 )); then
-    echo "Current sum is invalid ($sum_cur)." | tee >> "$GITHUB_STEP_SUMMARY" >&2
+    echo "❌ Current sum is invalid ($sum_cur)." | tee >> "$GITHUB_STEP_SUMMARY" >&2
     exit 2
 fi
 
 trace "Sum up the means from all the baseline summary files"
 mapfile -t -d " " files < <(list_of_files "$baseline_dir/*-summary.json")
 if [[ ${#files[@]} == 0 ]]; then
-    echo "Baseline reports were not found at $baseline_dir." | tee >> "$GITHUB_STEP_SUMMARY" >&2
+    echo "❌ Baseline reports were not found at $baseline_dir." | tee >> "$GITHUB_STEP_SUMMARY" >&2
     if is_defined "GITHUB_ENV"; then
-        echo "Creating a new baseline from the current results." | tee >> "$GITHUB_STEP_SUMMARY"
+        echo "⚠️ Creating a new baseline from the current results." | tee >> "$GITHUB_STEP_SUMMARY"
         # shellcheck disable=SC2154
         echo "FORCE_NEW_BASELINE=true" >> "$GITHUB_ENV"
     fi
@@ -153,7 +153,7 @@ for f in "${files[@]}"; do
     sum_base=$(( sum_base + VAL ))
 done
 if (( sum_base == 0 )); then
-    echo "Baseline sum is invalid ($sum_base)." | tee >> "$GITHUB_STEP_SUMMARY" >&2
+    echo "❌ Baseline sum is invalid ($sum_base)." | tee >> "$GITHUB_STEP_SUMMARY" >&2
     exit 2
 fi
 
@@ -162,29 +162,29 @@ pct=$(( (sum_cur - sum_base) * 100 / sum_base ))
 echo "Percent change vs baseline: $pct% (allowed: $max_regression_pct%)" | tee >> "$GITHUB_STEP_SUMMARY"
 
 if (( pct > max_regression_pct )); then
-    echo "Performance regression exceeds threshold" | tee >> "$GITHUB_STEP_SUMMARY" >&2
+    echo "❌ Performance regression exceeds threshold" | tee >> "$GITHUB_STEP_SUMMARY" >&2
     if [[ $force_new_baseline == "true" ]] && is_defined "GITHUB_ENV"; then
-        echo "Significant regression of $pct% over baseline. Updating the baseline." | tee >> "$GITHUB_STEP_SUMMARY"
+        echo "❌ Significant regression of $pct% over baseline. Updating the baseline." | tee >> "$GITHUB_STEP_SUMMARY"
         # shellcheck disable=SC2154
         echo "FORCE_NEW_BASELINE=true" | tee >> "$GITHUB_ENV"
         sync
         exit 0
     fi
-    echo "If this is acceptable, please update the baseline by setting the variable 'FORCE_NEW_BASELINE=true'." | tee >> "$GITHUB_STEP_SUMMARY" >&2
+    echo "⚠️ If this is acceptable, please update the baseline by setting the variable 'FORCE_NEW_BASELINE=true'." | tee >> "$GITHUB_STEP_SUMMARY" >&2
     sync
     exit 2
 elif (( pct > 0 )); then
-    echo "Performance regression within acceptable threshold." | tee >> "$GITHUB_STEP_SUMMARY"
+    echo "✅ Performance regression within acceptable threshold." | tee >> "$GITHUB_STEP_SUMMARY"
 elif (( pct < 0 )); then
     pct_abs=$(( -pct ))
     if (( pct_abs >= max_regression_pct )); then
         if is_defined "GITHUB_ENV"; then
-            echo "Significant improvement of $pct_abs% over baseline. Updating the baseline." | tee >> "$GITHUB_STEP_SUMMARY"
+            echo "✅ Significant improvement of $pct_abs% over baseline. Updating the baseline." | tee >> "$GITHUB_STEP_SUMMARY"
             # shellcheck disable=SC2154
             echo "FORCE_NEW_BASELINE=true" | tee >> "$GITHUB_ENV"
         fi
     else
-        echo "Improvement of $pct_abs% over baseline." | tee >> "$GITHUB_STEP_SUMMARY"
+        echo "✅ Improvement of $pct_abs% over baseline." | tee >> "$GITHUB_STEP_SUMMARY"
     fi
 fi
 sync
