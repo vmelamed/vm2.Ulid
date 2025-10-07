@@ -139,8 +139,9 @@ for run in "${runs[@]}"; do
     fi
 
     if ((i > 80)); then
-        echo "Warning: The artifact was found in run $run, but this script is limited to checking only the last 100 runs.
-You may want to refresh the artifact, e.g. run the benchmarks with --force-new-baseline or vars.FORCE_NEW_BASELINE" >&2
+        echo "Warning: The artifact was found in a run $i out of 100. \
+You may want to refresh the artifact. \
+E.g. run the benchmarks with --force-new-baseline or vars.FORCE_NEW_BASELINE" >&2
     fi
     trace "The artifact '$artifact_name' found in run $run. Downloading..."
     if ! http_error=$(execute gh run download "$run" \
@@ -154,5 +155,6 @@ You may want to refresh the artifact, e.g. run the benchmarks with --force-new-b
     exit 0
 done
 
-usage "The artifact '$artifact_name' was not found in the last ${#runs[@]} successful runs of the workflow '$workflow_name' in the repository '$repository'." | tee >> "$GITHUB_STEP_SUMMARY" >&2
+usage "The artifact '$artifact_name' was not found in the last ${#runs[@]} successful runs of the workflow '$workflow_name' in \
+the repository '$repository'." | tee >> "$GITHUB_STEP_SUMMARY" >&2
 exit 2
