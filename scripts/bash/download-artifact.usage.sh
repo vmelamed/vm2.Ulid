@@ -15,7 +15,6 @@ Usage:
     set. If both are specified, the command line arguments take precedence.
 
 Switches:$common_switches
-
 Options:
     --artifact | -a
         Specifies the name of the artifact to download. Optional.
