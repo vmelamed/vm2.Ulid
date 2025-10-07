@@ -23,6 +23,8 @@ source "$script_dir/download-artifact.usage.sh"
 
 get_arguments "$@"
 
+dump_all_variables
+
 renamed_artifacts_dir="$artifacts_dir-$(date -u +"%Y%m%dT%H%M%S")"
 declare -r renamed_artifacts_dir
 

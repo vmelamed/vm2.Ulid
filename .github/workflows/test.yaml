@@ -87,7 +87,7 @@ jobs:
           --min-coverage-pct "${{ inputs.min-coverage-pct }}"
           --configuration "${{ inputs.configuration }}"
           --define "${{ inputs.defined-symbols }}"
-          --artifacts-dir "${{ env.ARTIFACTS_DIR }}"
+          --artifacts "${{ env.ARTIFACTS_DIR }}"
           ${{ inputs.verbose && '--verbose' || '' }}
 
       - name: Upload coverage artifact
