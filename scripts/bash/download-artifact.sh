@@ -129,7 +129,7 @@ fi
 # starting from the most recent one down to the oldest one
 i=0
 for run in "${runs[@]}"; do
-    ((i++))
+    i=$((i + 1))
     trace "Checking run $run for the artifact '$artifact_name'..."
     query="any(.artifacts[]; .name==\"$artifact_name\")"
     if [[ ! $(execute gh api "repos/$repository/actions/runs/$run/artifacts" --jq "$query") == "true" ]]; then
