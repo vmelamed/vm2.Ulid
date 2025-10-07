@@ -30,7 +30,7 @@ dotnet build -c Release /p:MinVerVerbosity=detailed
 - Keep shell scripts in `scripts/bash/` directory
 - Follow the established **three-file pattern** for complex scripts:
   - **Main script** (e.g., `script-name.sh`): Contains core business logic only
-  - **Usage file** (e.g., `script-name.usage.sh`): Contains help text and documentation  
+  - **Usage file** (e.g., `script-name.usage.sh`): Contains help text and documentation
   - **Utils file** (e.g., `script-name.utils.sh`): Contains argument parsing and utility functions
 - Use common utility functions from `_common.sh`
 - Centralize common parameters in `_common.sh` via `$common_switches`
