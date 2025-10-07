@@ -79,7 +79,6 @@ if ! [[ "$max_regression_pct" =~ ^[0-9]+$ ]] || (( max_regression_pct < 0 || max
     echo "ERROR: max-regression-pct must be 0-100, got: $max_regression_pct" >&2
     exit 1
 fi
-
 if [[ "$verbose" != "true" && "$verbose" != "false" ]]; then
     echo "ERROR: verbose must be true/false, got: \"$verbose\"" >&2
     exit 1
