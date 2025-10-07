@@ -64,7 +64,7 @@ function get_arguments()
                shift
                ;;
             --directory|-d )
-                artifacts_dir="$p"
+                artifacts_dir="$1"
                 ;;
             * )
                 usage "Unknown option '$flag'."

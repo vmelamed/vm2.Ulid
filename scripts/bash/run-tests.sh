@@ -13,7 +13,7 @@ source "$script_dir/_common.sh"
 
 declare -x test_project=${TEST_PROJECT:-}
 declare -x configuration=${CONFIGURATION:="Release"}
-declare -x defined_symbols=${DEFINED_SYMBOLS:-}
+declare -x defined_symbols=${DEFINED_SYMBOLS:-" "}
 declare -ix min_coverage_pct=${MIN_COVERAGE_PCT:-80}
 declare -x artifacts_dir=${ARTIFACTS_DIR:-}
 

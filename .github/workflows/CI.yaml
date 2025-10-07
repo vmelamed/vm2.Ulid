@@ -104,7 +104,7 @@ jobs:
           MATRIX_OS: ${{ inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]' }}
           DOTNET_VERSION: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
           CONFIGURATION: ${{ inputs.configuration || vars.CONFIGURATION || 'Release' }}
-          DEFINED_SYMBOLS: ${{ inputs.defined-symbols || vars.DEFINED_SYMBOLS || '' }}
+          DEFINED_SYMBOLS: ${{ inputs.defined-symbols || vars.DEFINED_SYMBOLS || '_' }}
           TEST_PROJECT: ${{ inputs.test-project || vars.TEST_PROJECT || './test/UlidType.Tests/UlidType.Tests.csproj' }}
           MIN_COVERAGE_PCT: ${{ inputs.min-coverage-pct || vars.MIN_COVERAGE_PCT || '75' }}
           RUN_BENCHMARKS: ${{ inputs.run-benchmarks || vars.RUN_BENCHMARKS || 'true' }}

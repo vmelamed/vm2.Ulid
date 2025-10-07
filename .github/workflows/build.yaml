@@ -59,8 +59,8 @@ jobs:
       - name: Build (${{ inputs.configuration }})
         run: >-
           dotnet build
-          --configuration ${{ inputs.configuration }}
           /p:DefineConstants="${{ inputs.defined-symbols }}"
+          --configuration ${{ inputs.configuration }}
 
       - name: ShellCheck
         uses: ludeeus/action-shellcheck@master

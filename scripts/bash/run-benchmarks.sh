@@ -14,7 +14,7 @@ source "$script_dir/_common.sh"
 
 declare -x bm_project=${BM_PROJECT:-}
 declare -x configuration=${CONFIGURATION:="Release"}
-declare -x defined_symbols=${DEFINED_SYMBOLS:-}
+declare -x defined_symbols=${DEFINED_SYMBOLS:-" "}
 declare -ix max_regression_pct=${MAX_REGRESSION_PCT:-10}
 declare -x force_new_baseline=${FORCE_NEW_BASELINE:-false}
 declare -x artifacts_dir=${ARTIFACTS_DIR:-}
