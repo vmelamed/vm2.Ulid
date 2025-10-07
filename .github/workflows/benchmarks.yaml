@@ -88,11 +88,11 @@ jobs:
         shell: bash
         run: >-
           ./scripts/bash/download-artifact.sh
-            --repo ${{ github.repository }}
-            --wf-name 'Reusable - Benchmarks'
-            --artifact benchmark-summaries-${{ matrix.os }}
-            --directory ${{ env.ARTIFACTS_DIR }}/baseline
-            ${{ inputs.verbose && '--verbose' || '' }}
+          --repo ${{ github.repository }}
+          --wf-name 'Reusable - Benchmarks'
+          --artifact benchmark-summaries-${{ matrix.os }}
+          --directory ${{ env.ARTIFACTS_DIR }}/baseline
+          ${{ inputs.verbose && '--verbose' || '' }}
 
       - name: Run the benchmarks
         shell: bash
@@ -102,12 +102,12 @@ jobs:
           DEFINED_SYMBOLS: ${{ inputs.defined-symbols || '' }}
         run: >-
           ./scripts/bash/run-benchmarks.sh ${{ inputs.benchmark-project }}
-            --define "${{ inputs.defined-symbols }}"
-            --configuration "${{ inputs.configuration }}"
-            --artifacts "${{ env.ARTIFACTS_DIR }}"
-            --max-regression-pct "${{ inputs.max-regression-pct }}"
-            ${{ inputs.force-new-baseline && '--force-new-baseline' || '' }}
-            ${{ inputs.verbose && '--verbose' || '' }}
+          --define "${{ inputs.defined-symbols }}"
+          --configuration "${{ inputs.configuration }}"
+          --artifacts "${{ env.ARTIFACTS_DIR }}"
+          --max-regression-pct "${{ inputs.max-regression-pct }}"
+          ${{ inputs.force-new-baseline && '--force-new-baseline' || '' }}
+          ${{ inputs.verbose && '--verbose' || '' }}
 
       - name: Upload benchmark summaries artifact
         uses: actions/upload-artifact@v4

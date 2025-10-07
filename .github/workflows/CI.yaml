@@ -126,9 +126,9 @@ jobs:
     # Skip if [skip ci] is found in commit message (push only), always run for PRs
     if: >-
       ${{
-        (github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip ci]')) ||
-        github.event_name == 'pull_request' ||
-        github.event_name == 'workflow_dispatch'
+      (github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip ci]')) ||
+      github.event_name == 'pull_request' ||
+      github.event_name == 'workflow_dispatch'
       }}
     with:
       os: ${{ needs.setup.outputs.matrix-os }}
@@ -140,9 +140,9 @@ jobs:
     name: Test
     if: >-
       ${{
-        (github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip ci]')) ||
-        github.event_name == 'pull_request' ||
-        github.event_name == 'workflow_dispatch'
+      (github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip ci]')) ||
+      github.event_name == 'pull_request' ||
+      github.event_name == 'workflow_dispatch'
       }}
     needs:
       - setup
@@ -161,11 +161,11 @@ jobs:
     name: Benchmarks
     if: >-
       ${{
-        (github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip ci]')) ||
-        github.event_name == 'pull_request' ||
-        github.event_name == 'workflow_dispatch' ||
-        fromJSON(inputs.run-benchmarks) ||
-        fromJSON(vars.RUN_BENCHMARKS)
+      (github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip ci]')) ||
+      github.event_name == 'pull_request' ||
+      github.event_name == 'workflow_dispatch' ||
+      fromJSON(inputs.run-benchmarks) ||
+      fromJSON(vars.RUN_BENCHMARKS)
       }}
     needs:
       - setup

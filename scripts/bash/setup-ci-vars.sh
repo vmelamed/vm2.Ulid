@@ -28,6 +28,8 @@ source "$script_dir/setup-ci-vars.utils.sh"
 
 get_arguments "$@"
 
+dump_all_variables
+
 # Validate and set matrix-os
 if ! echo "$matrix_os" | jq . >/dev/null 2>&1; then
     echo "ERROR: Invalid JSON for matrix-os: $matrix_os" >&2

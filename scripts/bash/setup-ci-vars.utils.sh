@@ -78,3 +78,25 @@ function get_arguments()
         esac
     done
 }
+
+dump_all_variables()
+{
+    dump_vars \
+        --header "Script Arguments:" \
+        debugger \
+        dry_run \
+        verbose \
+        quiet \
+        trace_enabled \
+        --blank \
+        matrix_os \
+        dotnet_version \
+        configuration \
+        defined_symbols \
+        test_project \
+        min_coverage_pct \
+        run_benchmarks \
+        benchmark_project \
+        force_new_baseline \
+        max_regression_pct
+}
