@@ -65,6 +65,7 @@ function get_arguments()
                ;;
             --directory|-d )
                 artifacts_dir="$1"
+                shift
                 ;;
             * )
                 usage "Unknown option '$flag'."
