@@ -35,14 +35,20 @@ on:
         default: "./benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj"
         required: true
 
+      force-publish:
+        description: "Force publish even if already tagged"
+        type: boolean
+        default: false
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 env:
-  CI: true
-  NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-  REASON: ${{ inputs.reason || 'manual run' }}
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  FORCE_PUBLISH: ${{ inputs.force-publish || 'false' }}
+  REASON: ${{ inputs.reason || (inputs.force-publish && 'forced publish') || 'manual run' }}
 
 jobs:
   # last time run the gates before release
@@ -121,6 +127,8 @@ jobs:
             --api-key  "${NUGET_API_KEY}" \
             --source https://api.nuget.org/v3/index.json \
             --skip-duplicate
+
+          echo "If symbols package exists, push that too:"
 
           dotnet nuget push artifacts/pack/*.snupkg \
             --api-key "${NUGET_API_KEY}" \
