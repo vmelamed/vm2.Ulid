@@ -111,7 +111,7 @@ jobs:
           BENCHMARK_PROJECT: ${{ inputs.benchmark-project || vars.BENCHMARK_PROJECT || './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj' }}
           FORCE_NEW_BASELINE: ${{ inputs.force-new-baseline || vars.FORCE_NEW_BASELINE || 'false' }}
           MAX_REGRESSION_PCT: ${{ inputs.max-regression-pct || vars.MAX_REGRESSION_PCT || '10' }}
-          verbose: ${{ vars.VERBOSE || 'false' }}
+          VERBOSE: ${{ vars.VERBOSE || 'false' }}
         run: ./scripts/bash/setup-ci-vars.sh
 
   build_job:

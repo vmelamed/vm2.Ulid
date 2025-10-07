@@ -35,7 +35,7 @@ function get_arguments()
                 value="$1"; shift
                 matrix_os="$value"
                 ;;
-            --dotnet-version|-v )
+            --dotnet-version )
                 value="$1"; shift
                 dotnet_version="$value"
                 ;;
@@ -70,10 +70,6 @@ function get_arguments()
             --max-regression-pct|-r )
                 value="$1"; shift
                 max_regression_pct="$value"
-                ;;
-            --verbose|-V )
-                value="$1"; shift
-                verbose="$value"
                 ;;
             * )
                 usage "Unknown option: $flag"

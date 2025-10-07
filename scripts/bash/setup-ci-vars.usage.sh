@@ -25,7 +25,7 @@ Options:
         JSON array of OS runners for the build matrix.
         Initial value from \$MATRIX_OS or '["ubuntu-latest"]'
 
-    --dotnet-version | -v
+    --dotnet-version
         Version of .NET SDK to use.
         Initial value from \$DOTNET_VERSION or '9.0.x'
 
@@ -61,7 +61,7 @@ Options:
         Maximum acceptable performance regression percentage (0-100).
         Initial value from \$MAX_REGRESSION_PCT or 10
 
-    --verbose | -V
+    --verbose | -v
         Whether to enable verbose logging (true/false).
         Initial value from \$VERBOSE or false
 

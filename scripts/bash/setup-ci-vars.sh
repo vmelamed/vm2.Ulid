@@ -22,7 +22,6 @@ declare -x run_benchmarks=${RUN_BENCHMARKS:-}
 declare -x benchmark_project=${BENCHMARK_PROJECT:-}
 declare -x force_new_baseline=${FORCE_NEW_BASELINE:-}
 declare -x max_regression_pct=${MAX_REGRESSION_PCT:-}
-declare -x verbose=${VERBOSE:-}
 
 source "$script_dir/setup-ci-vars.usage.sh"
 source "$script_dir/setup-ci-vars.utils.sh"
@@ -82,7 +81,7 @@ if ! [[ "$max_regression_pct" =~ ^[0-9]+$ ]] || (( max_regression_pct < 0 || max
 fi
 
 if [[ "$verbose" != "true" && "$verbose" != "false" ]]; then
-    echo "ERROR: verbose must be true/false, got: $verbose" >&2
+    echo "ERROR: verbose must be true/false, got: \"$verbose\"" >&2
     exit 1
 fi
 
