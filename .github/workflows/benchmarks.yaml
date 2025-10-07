@@ -91,7 +91,7 @@ jobs:
         run: >-
           ./scripts/bash/download-artifact.sh
           --repository ${{ github.repository }}
-          --wf-path '.github/workflows/CI.yaml'
+          --wf-name 'CI - Build, Test, Coverage & Benchmarks'
           --artifact benchmark-summaries-${{ matrix.os }}
           --directory ${{ env.ARTIFACTS_DIR }}/baseline
           ${{ inputs.verbose && '--verbose' || '' }}
