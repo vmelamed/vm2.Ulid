@@ -131,7 +131,7 @@ jobs:
         github.event_name == 'workflow_dispatch'
       }}
     with:
-      os: ${{ fromJSON(needs.setup.outputs.matrix-os) }}
+      os: ${{ needs.setup.outputs.matrix-os }}
       configuration: ${{ needs.setup.outputs.configuration }}
       defined-symbols: ${{ needs.setup.outputs.defined-symbols }}
       dotnet-version: ${{ needs.setup.outputs.dotnet-version }}
@@ -149,13 +149,13 @@ jobs:
       - build_job
     uses: ./.github/workflows/test.yaml
     with:
-      os: ${{ fromJSON(needs.setup.outputs.matrix-os) }}
+      os: ${{ needs.setup.outputs.matrix-os }}
       dotnet-version: ${{ needs.setup.outputs.dotnet-version }}
       test-project: ${{ needs.setup.outputs.test-project }}
       configuration: ${{ needs.setup.outputs.configuration }}
       defined-symbols: ${{ needs.setup.outputs.defined-symbols }}
       verbose: ${{ needs.setup.outputs.verbose }}
-      min-coverage-pct: ${{ fromJSON(needs.setup.outputs.min-coverage-pct) }}
+      min-coverage-pct: ${{ needs.setup.outputs.min-coverage-pct }}
 
   benchmarks_job:
     name: Benchmarks
@@ -172,11 +172,11 @@ jobs:
       - build_job
     uses: ./.github/workflows/benchmarks.yaml
     with:
-      os: ${{ fromJSON(needs.setup.outputs.matrix-os) }}
+      os: ${{ needs.setup.outputs.matrix-os }}
       dotnet-version: ${{ needs.setup.outputs.dotnet-version }}
       benchmark-project: ${{ needs.setup.outputs.benchmark-project }}
       configuration: ${{ needs.setup.outputs.configuration }}
       defined-symbols: ${{ needs.setup.outputs.defined-symbols }}
       verbose: ${{ needs.setup.outputs.verbose }}
-      max-regression-pct: ${{ fromJSON(needs.setup.outputs.max-regression-pct) }}
-      force-new-baseline: ${{ fromJSON(needs.setup.outputs.force-new-baseline) }}
+      max-regression-pct: ${{ needs.setup.outputs.max-regression-pct }}
+      force-new-baseline: ${{ needs.setup.outputs.force-new-baseline }}
