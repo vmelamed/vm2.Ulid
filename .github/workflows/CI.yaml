@@ -101,18 +101,18 @@ jobs:
       - id: setup-vars
         shell: bash
         run: >-
-          ./scripts/bash/setup-ci-vars.sh
-          --matrix-os: ${{ toJSON(inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]') }}
-          --dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
-          --configuration: ${{ inputs.configuration || vars.CONFIGURATION || 'Release' }}
-          --defined-symbols: ${{ inputs.defined-symbols || vars.DEFINED_SYMBOLS || '' }}
-          --test-project: ${{ inputs.test-project || vars.TEST_PROJECT || './test/UlidType.Tests/UlidType.Tests.csproj' }}
-          --min-coverage-pct: ${{ inputs.min-coverage-pct || vars.MIN_COVERAGE_PCT || '75' }}
-          --run-benchmarks: ${{ inputs.run-benchmarks || vars.RUN_BENCHMARKS || 'true' }}
-          --benchmark-project: ${{ inputs.benchmark-project || vars.BENCHMARK_PROJECT || './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj' }}
-          --force-new-baseline: ${{ inputs.force-new-baseline || vars.FORCE_NEW_BASELINE || 'false' }}
-          --max-regression-pct: ${{ inputs.max-regression-pct || vars.MAX_REGRESSION_PCT || '10' }}
-          --verbose: ${{ vars.VERBOSE || 'false' }}
+          ./scripts/bash/setup-ci-vars.sh \
+            --matrix-os ${{ inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]' }} \
+            --dotnet-version ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }} \
+            --configuration ${{ inputs.configuration || vars.CONFIGURATION || 'Release' }} \
+            --defined-symbols ${{ inputs.defined-symbols || vars.DEFINED_SYMBOLS || '' }} \
+            --test-project ${{ inputs.test-project || vars.TEST_PROJECT || './test/UlidType.Tests/UlidType.Tests.csproj' }} \
+            --min-coverage-pct ${{ inputs.min-coverage-pct || vars.MIN_COVERAGE_PCT || '75' }} \
+            --run-benchmarks ${{ inputs.run-benchmarks || vars.RUN_BENCHMARKS || 'true' }} \
+            --benchmark-project ${{ inputs.benchmark-project || vars.BENCHMARK_PROJECT || './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj' }} \
+            --force-new-baseline ${{ inputs.force-new-baseline || vars.FORCE_NEW_BASELINE || 'false' }} \
+            --max-regression-pct ${{ inputs.max-regression-pct || vars.MAX_REGRESSION_PCT || '10' }} \
+            --verbose ${{ vars.VERBOSE || 'false' }}
 
   build_job:
     name: Build
