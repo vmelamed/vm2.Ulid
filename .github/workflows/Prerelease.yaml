@@ -21,6 +21,7 @@ env:
   DOTNET_CLI_TELEMETRY_OPTOUT: true
   DOTNET_VERSION: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
   REASON: ${{ inputs.reason || 'manual run' }}
+  FORCE_PUBLISH: ${{ inputs.force-publish || 'false' }}
 
 permissions:
   contents: write
@@ -39,7 +40,7 @@ jobs:
       - name: Skip if commit already tagged (any v* tag)
         id: tagcheck
         run: |
-          if git tag --points-at HEAD | grep -E '^v[0-9]'; then
+          if [[ $FORCE_PUBLISH != 'true' ]] && git tag --points-at HEAD | grep -E '^v[0-9]'; then
             printf 'already_tagged=%s\n' "true" >> "$GITHUB_OUTPUT"
           else
             printf 'already_tagged=%s\n' "false" >> "$GITHUB_OUTPUT"
@@ -83,7 +84,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Create & push prerelease tag
-        if: steps.tagcheck.outputs.already_tagged == 'false' || inputs.force-publish == true
+        if: steps.tagcheck.outputs.already_tagged == 'false'
         env:
           TAG: ${{ steps.compute.outputs.prerelease_tag }}
         run: |
