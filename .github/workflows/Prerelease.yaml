@@ -1,4 +1,4 @@
-name: Prerelease Auto Tag & Publish
+name: Prerelease (Tag & Publish)
 
 on:
   push:
