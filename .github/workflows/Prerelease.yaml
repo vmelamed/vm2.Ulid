@@ -72,7 +72,8 @@ jobs:
           DATE=$(date -u +%Y%m%d)
           RUN=${GITHUB_RUN_NUMBER}
           PRERELEASE_TAG="v${MAJOR}.${MINOR}.${NEXT_PATCH}-preview.${DATE}.${RUN}"
-          printf 'prerelease_tag=%s\n' "$PRERELEASE_TAG" | tee -a "$GITHUB_OUTPUT" "$GITHUB_STEP_SUMMARY"
+          printf 'prerelease_tag=%s\n' "$PRERELEASE_TAG" >> "$GITHUB_OUTPUT"
+          printf 'prerelease_tag=%s\n' "$PRERELEASE_TAG" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Log the reason for workflow dispatch
         if: ${{ inputs.reason }}
@@ -80,6 +81,7 @@ jobs:
           {
               echo "Prerelease reason:"
               echo
+              echo "Forced by dispatch: $FORCE_PUBLISH"
               echo "${{ inputs.reason }}"
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -103,15 +105,11 @@ jobs:
             **/packages.lock.json
             **/*.csproj
 
-      - name: Build
-        if: steps.tagcheck.outputs.already_tagged == 'false'
-        run: dotnet build -c Release
-
       - name: Pack (MinVer consumes the just-pushed prerelease tag)
         if: steps.tagcheck.outputs.already_tagged == 'false'
         run: |
           mkdir -p artifacts/pack
-          dotnet pack -c Release --no-build -o artifacts/pack /p:MinVerTagPrefix=${MINVER_TAG_PREFIX} "/p:PackageReleaseNotes=Prerelease: ${REASON:-N/A}"
+          dotnet pack -c Release -o artifacts/pack /p:MinVerTagPrefix=${MINVER_TAG_PREFIX} "/p:PackageReleaseNotes=Prerelease: ${REASON:-N/A}"
           ls -1 artifacts/pack
 
       - name: Publish prerelease to NuGet
