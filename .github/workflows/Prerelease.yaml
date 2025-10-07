@@ -18,11 +18,19 @@ on:
       dotnet-version:
         description: "Version of .NET SDK to use"
         default: "9.0.x"
+        required: true
+
+      save_package_artifact:
+        description: "Whether to save the built package as a workflow artifact"
+        type: boolean
+        default: false
+        required: true
 
       force-publish:
         description: "Force publish even if already tagged"
         type: boolean
         default: false
+        required: true
 
 env:
   DOTNET_NOLOGO: true
@@ -30,6 +38,7 @@ env:
   DOTNET_VERSION: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
   FORCE_PUBLISH: ${{ inputs.force-publish || 'false' }}
   REASON: ${{ inputs.reason || (inputs.force-publish && 'forced publish') || 'manual run' }}
+  SAVE_PACKAGE_ARTIFACT: ${{  inputs.save_package_artifact || 'false' }}
 
 permissions:
   contents: write
@@ -132,10 +141,24 @@ jobs:
             --api-key "$NUGET_API_KEY" \
             --source https://api.nuget.org/v3/index.json \
             --skip-duplicate
+          printf 'Packages %s pushed to NuGet: %s\n' "$PRERELEASE_TAG" "$(ls)" >> "$GITHUB_STEP_SUMMARY"
 
-          echo "If symbols package exists, push that too:"
+      - name: Upload package artifact
+        if: success() && steps.tagcheck.outputs.already_tagged == 'false' && env.SAVE_PACKAGE_ARTIFACT == 'true'
+        uses: actions/upload-artifact@v3
+        with:
+          name: nuget-packages-${{ steps.compute.outputs.prerelease_tag }}
+          path: artifacts/pack/*.nupkg
 
-          dotnet nuget push artifacts/pack/*.snupkg \
-            --api-key "$NUGET_API_KEY" \
-            --source https://api.nuget.org/v3/index.json \
-            --skip-duplicate
+      - name: Summary
+        env:
+          REASON: ${{ inputs.reason }}
+        run: |
+          {
+              echo "## Release Summary"
+              echo
+              echo "- Tag: ${GITHUB_REF_NAME}"
+              echo "- Pre-release reason: ${REASON:-tag push}"
+              echo "- Artifacts:"
+              ls -1 artifacts/pack | sed 's/^/  - /'
+          } >> "$GITHUB_STEP_SUMMARY"

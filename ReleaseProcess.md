@@ -211,6 +211,7 @@ Generates a new prerelease tag & package.
 Example: introduce `beta` before `preview`.
 
 Adjust prerelease workflow compute step to decide label:
+
 - Use `beta` if feature freeze label file exists.
 - Fallback to `preview`.
 
@@ -232,7 +233,6 @@ If you decide to align `AssemblyVersion` with full Major.Minor.Patch (risking bi
     <MinVerMajorMinorPatch>true</MinVerMajorMinorPatch>
 </PropertyGroup>
 ```
-
 
 Avoid unless strong justification (most libraries keep AssemblyVersion stable across patches).
 
@@ -272,4 +272,4 @@ Avoid unless strong justification (most libraries keep AssemblyVersion stable ac
 
 ---
 
-[MinVer]: https://github.com/adamralph/minver
+See also: [MinVer](https://github.com/adamralph/minver)

@@ -128,13 +128,6 @@ jobs:
             --source https://api.nuget.org/v3/index.json \
             --skip-duplicate
 
-          echo "If symbols package exists, push that too:"
-
-          dotnet nuget push artifacts/pack/*.snupkg \
-            --api-key "${NUGET_API_KEY}" \
-            --source https://api.nuget.org/v3/index.json \
-            --skip-duplicate
-
       - name: Summary
         env:
           REASON: ${{ inputs.reason }}
