@@ -128,7 +128,6 @@ jobs:
           mkdir -p artifacts/pack
           dotnet pack \
             --configuration Release \
-            --no-build \
             --output artifacts/pack \
             /p:MinVerTagPrefix=${MINVER_TAG_PREFIX} \
             "/p:PackageReleaseNotes=Prerelease: ${REASON:-N/A}"
