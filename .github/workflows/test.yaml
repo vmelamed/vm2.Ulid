@@ -37,7 +37,7 @@ on:
         description: "Minimum acceptable code coverage percentage"
         type: number
         required: true
-        default: 75
+        default: 80 # percent
 
       verbose:
         description: "Whether to enable verbose logging"

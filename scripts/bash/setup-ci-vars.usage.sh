@@ -42,8 +42,8 @@ Options:
         Initial value from \$TEST_PROJECT or './test/UlidType.Tests/UlidType.Tests.csproj'
 
     --min-coverage-pct | -m
-        Minimum acceptable code coverage percentage (0-100).
-        Initial value from \$MIN_COVERAGE_PCT or 75
+        Minimum acceptable code coverage percentage (50-100).
+        Initial value from \$MIN_COVERAGE_PCT or 80
 
     --run-benchmarks | -b
         Whether to run benchmarks (true/false).
@@ -58,7 +58,7 @@ Options:
         Initial value from \$FORCE_NEW_BASELINE or false
 
     --max-regression-pct | -r
-        Maximum acceptable performance regression percentage (0-100).
+        Maximum acceptable performance regression percentage (0-50).
         Initial value from \$MAX_REGRESSION_PCT or 10
 
     --verbose | -v

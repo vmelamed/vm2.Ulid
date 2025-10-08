@@ -106,7 +106,7 @@ jobs:
           CONFIGURATION: ${{ inputs.configuration || vars.CONFIGURATION || 'Release' }}
           DEFINED_SYMBOLS: ${{ inputs.defined-symbols || vars.DEFINED_SYMBOLS || '_' }}
           TEST_PROJECT: ${{ inputs.test-project || vars.TEST_PROJECT || './test/UlidType.Tests/UlidType.Tests.csproj' }}
-          MIN_COVERAGE_PCT: ${{ inputs.min-coverage-pct || vars.MIN_COVERAGE_PCT || '75' }}
+          MIN_COVERAGE_PCT: ${{ inputs.min-coverage-pct || vars.MIN_COVERAGE_PCT || '80' }}
           RUN_BENCHMARKS: ${{ inputs.run-benchmarks || vars.RUN_BENCHMARKS || 'true' }}
           BENCHMARK_PROJECT: ${{ inputs.benchmark-project || vars.BENCHMARK_PROJECT || './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj' }}
           FORCE_NEW_BASELINE: ${{ inputs.force-new-baseline || vars.FORCE_NEW_BASELINE || 'false' }}

@@ -50,7 +50,7 @@ Options:
         Initial value from \$DEFINED_SYMBOLS or ''
 
     --max-regression-pct | -r
-        Specifies the maximum acceptable regression percentage (0-100) when
+        Specifies the maximum acceptable regression percentage (0-50) when
         comparing to a previous, base-line benchmark results.
         Initial value from \$MAX_REGRESSION_PCT or 10
 

@@ -42,7 +42,7 @@ Options:
         Initial value from \$DEFINED_SYMBOLS or ''
 
     --min-coverage-pct | -t
-        Specifies the minimum acceptable code coverage percentage (0-100).
+        Specifies the minimum acceptable code coverage percentage (50-100).
         Initial value from \$MIN_COVERAGE_PCT or 80
 
 EOF
