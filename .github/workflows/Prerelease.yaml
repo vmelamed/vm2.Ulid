@@ -33,8 +33,8 @@ on:
         default: false
         required: true
 
-      save_package_artifact:
-        description: "Upload package as a workflow artifact"
+      save_package_artifacts:
+        description: "Upload package(s) as workflow artifact"
         type: boolean
         default: false
         required: true
@@ -45,7 +45,7 @@ env:
   DOTNET_VERSION: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
   FORCE_PUBLISH: ${{ inputs.force-publish || 'false' }}
   REASON: ${{ inputs.reason || (inputs.force-publish && 'forced publish') || 'Workflow dispatch' }}
-  SAVE_PACKAGE_ARTIFACT: ${{  inputs.save_package_artifact || 'false' }}
+  SAVE_PACKAGE_ARTIFACTS: ${{  inputs.save_package_artifacts || 'false' }}
   MINVER_TAG_PREFIX: "v"
   SEMVER_BUILD_PREFIX: ${{ inputs.semver-build-prefix || 'preview' }}
 
@@ -94,16 +94,16 @@ jobs:
           RUN=$GITHUB_RUN_NUMBER
           PRERELEASE_TAG="v$MAJOR.$MINOR.$NEXT_PATCH-$SEMVER_BUILD_PREFIX.$DATE.$RUN"
           printf 'prerelease_tag=%s\n' "$PRERELEASE_TAG" >> "$GITHUB_OUTPUT"
-          printf 'prerelease_tag=%s\n' "$PRERELEASE_TAG" >> "$GITHUB_STEP_SUMMARY"
+          printf '## Prerelease Tag:\n- %s\n' "$PRERELEASE_TAG" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Log the reason for workflow dispatch
         if: ${{ inputs.reason }}
         run: |
           {
-              echo "Prerelease reason:"
+              echo "## Prerelease reason:"
               echo
-              echo "Force publish: $FORCE_PUBLISH"
-              echo "$REASON"
+              echo "- Force publish: $FORCE_PUBLISH"
+              echo "- Reason: $REASON"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Create & push prerelease tag
@@ -140,6 +140,7 @@ jobs:
       - name: Publish prerelease to NuGet
         if: steps.tagcheck.outputs.already_tagged == 'false'
         env:
+          PRERELEASE_TAG: ${{ steps.compute.outputs.prerelease_tag }}
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
           if [ -z "${NUGET_API_KEY}" ]; then
@@ -149,10 +150,10 @@ jobs:
             --api-key "$NUGET_API_KEY" \
             --source https://api.nuget.org/v3/index.json \
             --skip-duplicate
-          printf 'Packages %s pushed to NuGet: %s\n' "$PRERELEASE_TAG" "$(ls)" >> "$GITHUB_STEP_SUMMARY"
+          printf '## Packages %s pushed to NuGet:\n%s\n' "$PRERELEASE_TAG" "$(ls -1 artifacts/pack/*.nupkg | sed 's/^/  - /')" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload package artifact
-        if: success() && steps.tagcheck.outputs.already_tagged == 'false' && env.SAVE_PACKAGE_ARTIFACT == 'true'
+        if: env.SAVE_PACKAGE_ARTIFACTS == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: nuget-packages-${{ steps.compute.outputs.prerelease_tag }}
@@ -162,6 +163,7 @@ jobs:
 
       - name: Summary
         env:
+          ARTIFACTS_SAVED: ${{ env.SAVE_PACKAGE_ARTIFACTS == 'true' }}
           REASON: ${{ inputs.reason }}
         run: |
           {
@@ -169,6 +171,8 @@ jobs:
               echo
               echo "- Tag: ${GITHUB_REF_NAME}"
               echo "- Pre-release reason: ${REASON:-tag push}"
-              echo "- Artifacts:"
-              ls -1 artifacts/pack | sed 's/^/  - /'
+              if [ "$ARTIFACTS_SAVED" = "true" ]; then
+                echo "- Artifacts:"
+                ls -1 artifacts/pack | sed 's/^/  - /'
+              fi
           } >> "$GITHUB_STEP_SUMMARY"

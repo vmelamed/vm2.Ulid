@@ -45,7 +45,7 @@ on:
         description: "Minimum acceptable code coverage percentage"
         type: number
         required: true
-        default: 75
+        default: 80 # percent
 
       run-benchmarks:
         description: "Whether to run benchmarks and compare against baseline"
