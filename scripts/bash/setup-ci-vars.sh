@@ -12,16 +12,16 @@ declare -xr script_dir
 source "$script_dir/_common.sh"
 
 # CI Variables that will be passed as environment variables
-declare -x matrix_os=${MATRIX_OS:-}
-declare -x dotnet_version=${DOTNET_VERSION:-}
-declare -x configuration=${CONFIGURATION:-}
-declare -x defined_symbols=${DEFINED_SYMBOLS:-}
-declare -x test_project=${TEST_PROJECT:-}
-declare -x min_coverage_pct=${MIN_COVERAGE_PCT:-}
-declare -x run_benchmarks=${RUN_BENCHMARKS:-}
-declare -x benchmark_project=${BENCHMARK_PROJECT:-}
-declare -x force_new_baseline=${FORCE_NEW_BASELINE:-}
-declare -x max_regression_pct=${MAX_REGRESSION_PCT:-}
+declare -x matrix_os=${MATRIX_OS-}
+declare -x dotnet_version=${DOTNET_VERSION-}
+declare -x configuration=${CONFIGURATION-}
+declare -x defined_symbols=${DEFINED_SYMBOLS-}
+declare -x test_project=${TEST_PROJECT-}
+declare -x min_coverage_pct=${MIN_COVERAGE_PCT-}
+declare -x run_benchmarks=${RUN_BENCHMARKS-}
+declare -x benchmark_project=${BENCHMARK_PROJECT-}
+declare -x force_new_baseline=${FORCE_NEW_BASELINE-}
+declare -x max_regression_pct=${MAX_REGRESSION_PCT-}
 
 source "$script_dir/setup-ci-vars.usage.sh"
 source "$script_dir/setup-ci-vars.utils.sh"
@@ -35,14 +35,14 @@ declare -i errors=0
 # shellcheck disable=SC2154
 function error()
 {
-    echo "❌ ERROR: $*" | tee >> "$GITHUB_STEP_SUMMARY" >&2
+    echo "❌ ERROR $*" | tee >> "$GITHUB_STEP_SUMMARY" >&2
     errors=$((errors + 1))
 }
 
 function warning()
 {
     declare -n variable="$1";
-    echo "⚠️ WARNING: $3, Assuming $2" | tee >> "$GITHUB_STEP_SUMMARY" >&2
+    echo "⚠️ WARNING $3, Assuming $2" | tee >> "$GITHUB_STEP_SUMMARY" >&2
     # shellcheck disable=SC2034
     variable="$2"
 }
@@ -114,18 +114,18 @@ fi
 } >> "$GITHUB_OUTPUT"
 {
     # Log all computed values for debugging
-    echo "✅ All variables validated successfully:"
-    echo "| Variable:           | Value:              |"
-    echo "|---------------------|---------------------|"
-    echo "| matrix-os:          | $matrix_os          |"
-    echo "| dotnet-version:     | $dotnet_version     |"
-    echo "| configuration:      | $configuration      |"
-    echo "| defined-symbols:    | $defined_symbols    |"
-    echo "| test-project:       | $test_project       |"
-    echo "| min-coverage-pct:   | $min_coverage_pct   |"
-    echo "| run-benchmarks:     | $run_benchmarks     |"
-    echo "| benchmark-project:  | $benchmark_project  |"
-    echo "| force-new-baseline: | $force_new_baseline |"
-    echo "| max-regression-pct: | $max_regression_pct |"
-    echo "| verbose:            | $verbose            |"
+    echo "✅ All variables validated successfully"
+    echo "| Variable           | Value               |"
+    echo "|:-------------------|:--------------------|"
+    echo "| matrix-os          | $matrix_os          |"
+    echo "| dotnet-version     | $dotnet_version     |"
+    echo "| configuration      | $configuration      |"
+    echo "| defined-symbols    | $defined_symbols    |"
+    echo "| test-project       | $test_project       |"
+    echo "| min-coverage-pct   | $min_coverage_pct   |"
+    echo "| run-benchmarks     | $run_benchmarks     |"
+    echo "| benchmark-project  | $benchmark_project  |"
+    echo "| force-new-baseline | $force_new_baseline |"
+    echo "| max-regression-pct | $max_regression_pct |"
+    echo "| verbose            | $verbose            |"
 } | tee >> "$GITHUB_STEP_SUMMARY"
