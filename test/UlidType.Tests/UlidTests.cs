@@ -1,7 +1,7 @@
 namespace vm2.UlidType.Tests;
 
 [ExcludeFromCodeCoverage]
-public class UlidTests
+public partial class UlidTests
 {
     [Fact]
     public void Ulid_NewUlid_Uses_InternalFactory()
@@ -197,38 +197,6 @@ public class UlidTests
         var bytes = ulid.Bytes.ToArray();
         var random = ulid.RandomBytes.ToArray();
         bytes.Skip(RandomBegin).Take(RandomLength).Should().Equal(random);
-    }
-
-    public record struct TimeAndRandom(long UnixTime, byte[] Random, bool Throws = false);
-
-    public static TheoryData<(TimeAndRandom, TimeAndRandom)> TimeAndRandoms =
-    [
-        (new TimeAndRandom( 1758851704339L, [0x94, 0x35, 0x28, 0x71, 0x11, 0xE0, 0x66, 0xD6, 0x4A, 0xFF] ),
-         new TimeAndRandom( 1758851704339L, [0x94, 0x35, 0x28, 0x71, 0x11, 0xE0, 0x66, 0xD6, 0x4B, 0x00] )),
-
-        (new TimeAndRandom( 1758851704339L, [0x94, 0x35, 0x28, 0x71, 0x11, 0xE0, 0x66, 0xD6, 0xFF, 0xFF] ),
-         new TimeAndRandom( 1758851704339L, [0x94, 0x35, 0x28, 0x71, 0x11, 0xE0, 0x66, 0xD7, 0x00, 0x00] )),
-
-        (new TimeAndRandom( 1758851704339L, [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF], true ),
-         new TimeAndRandom( 1758851704339L, [0x94, 0x35, 0x28, 0x71, 0x11, 0xE0, 0x66, 0xD7, 0x00, 0x00], true )),
-    ];
-
-    class Test_IUlidRandomProvider : IUlidRandomProvider
-    {
-        private readonly byte[] _bytes;
-
-        public Test_IUlidRandomProvider(byte[] param) => _bytes = param;
-
-        public void Fill(Span<byte> buffer) => _bytes.AsSpan(0, buffer.Length).CopyTo(buffer);
-    }
-
-    class Test_IClock : IClock
-    {
-        private readonly long _unixTimeMilliseconds;
-
-        public Test_IClock(long param) => _unixTimeMilliseconds = param;
-
-        public long UnixTimeMilliseconds() => _unixTimeMilliseconds;
     }
 
     [Theory]

@@ -29,7 +29,7 @@ For more information on using a .runsettings file, see https://aka.ms/vstest-run
         0.5x, 1.5x, 2x, etc - factor of the number of processors on the machine
         -->
         <AssertEquivalentMaxDepth>50</AssertEquivalentMaxDepth>
-        <MethodDisplay>classAndMethos</MethodDisplay> <!-- method, classAndMethod -->
+        <MethodDisplay>classAndMethod</MethodDisplay> <!-- method, classAndMethod -->
         <MethodDisplayOptions></MethodDisplayOptions> <!-- "all", or comma separated: "replaceUnderscoreWithSpace", "useOperatorMonikers"..., "useParameterTypes", "useEscapeSequences" Xnn or Unnnn, "replacePeriodWithComma" -->
         <NoAutoReporters>false</NoAutoReporters>
         <ParallelAlgorithm>conservative</ParallelAlgorithm> <!-- aggressive -->
