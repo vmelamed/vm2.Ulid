@@ -2,6 +2,7 @@
 
 using System.Text.Json;
 
+[ExcludeFromCodeCoverage]
 public class UlidSysConverterTests
 {
 

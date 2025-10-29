@@ -2,6 +2,7 @@
 
 using Newtonsoft.Json;
 
+[ExcludeFromCodeCoverage]
 public class UlidNsConverterTests
 {
 

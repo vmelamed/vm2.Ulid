@@ -4,7 +4,8 @@
         <LangVersion>preview<!--latest--></LangVersion>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks><!-- for stackalloc mostly -->
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <!-- for stackalloc mostly -->
         <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
         <AnalysisLevel>preview<!--latest--></AnalysisLevel>
         <WarningLevel>9999</WarningLevel>
@@ -62,9 +63,9 @@
         <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" />
         <PackageReference Include="FluentAssertions" />
         <PackageReference Include="xunit.v3" />
-        <!-- Microsoft Testing Platform makes the following references redundant:
-        <PackageReference Include="Microsoft.NET.Test.Sdk" /> <!- - required for VSTest but not for MS Test Platform - ->
-        <PackageReference Update="xunit.runner.visualstudio"> <!- - required for VSTest but not for MS Test Platform - ->
+        <!-- Required for VSTest but not for MS Test Platform. Microsoft Testing Platform makes the following references redundant:
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
+        <PackageReference Update="xunit.runner.visualstudio">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -74,10 +75,12 @@
         </PackageReference>
         -->
     </ItemGroup>
+
     <ItemGroup Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]test[/\\]')) and !$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectName), '^*.Tests$'))">
         <!-- for test libraries in the test folder: -->
         <PackageReference Include="xunit.v3.extensibility.core" />
     </ItemGroup>
+
     <ItemGroup Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]test[/\\]'))">
         <Using Include="Xunit" />
         <Using Include="FluentAssertions" />
@@ -113,11 +116,9 @@
         <Using Include="BenchmarkDotNet.Order" />
         <Using Include="BenchmarkDotNet.Running" />
     </ItemGroup>
-
     <PropertyGroup Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]examples[/\\]'))">
         <!-- Example projects settings -->
         <IsPackable>false</IsPackable>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
     </PropertyGroup>
-
 </Project>
