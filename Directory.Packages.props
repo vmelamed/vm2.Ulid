@@ -4,25 +4,25 @@
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup>
+    <PackageVersion Include="System.CommandLine" Version="2.0.0" />
     <PackageVersion Include="System.Memory" Version="4.6.3" />
-    <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="9.0.8" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
+    <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="9.0.8" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageVersion Include="MinVer" Version="6.0.0" />
+
     <!-- The test stack: -->
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+    <PackageVersion Include="Microsoft.Testing.Extensions.TrxReport" Version="2.0.2" />
+    <PackageVersion Include="Microsoft.Testing.Extensions.TrxReport.Abstractions" Version="2.0.2" />
     <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.1.0" />
     <PackageVersion Include="FluentAssertions" Version="8.8.0" />
-    <PackageVersion Include="xunit.v3" Version="3.1.0" />
-    <PackageVersion Include="coverlet.msbuild" Version="6.0.4" />
-    <!-- required for VSTest but not for MS Test Platform. Microsoft Testing Platform makes the following assemblies redundant:
-        <PackageVersion Include="xunit.v3.extensibility.core" Version="3.1.0" />
-        -->
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.0" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
-    <!-- BenchmarkDotNet -->
-    <!-- for running with Visual Studio profiler:
-        <PackageVersion Include="Microsoft.VisualStudio.DiagnosticsHub.BenchmarkDotNetDiagnosers" Version="18.0.36421.1" />
-        -->
+    <PackageVersion Include="xunit.v3.mtp-v2" Version="3.2.1" />
+    <PackageVersion Include="xunit.v3.extensibility.core" Version="3.2.1" />
+
+    <!-- Benchmarking packages: -->
+    <!-- for running with Visual Studio profiler: <PackageVersion Include="Microsoft.VisualStudio.DiagnosticsHub.BenchmarkDotNetDiagnosers" Version="18.0.36421.1" />-->
     <PackageVersion Include="BenchmarkDotNet" Version="0.15.5" />
     <PackageVersion Include="BenchmarkDotNet.Annotations" Version="0.15.5" />
   </ItemGroup>
