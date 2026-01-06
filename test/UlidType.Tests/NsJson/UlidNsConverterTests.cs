@@ -1,4 +1,7 @@
-﻿namespace vm2.UlidType.Tests.NsJson;
+﻿// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Val Melamed
+
+namespace vm2.UlidType.Tests.NsJson;
 
 using Newtonsoft.Json;
 

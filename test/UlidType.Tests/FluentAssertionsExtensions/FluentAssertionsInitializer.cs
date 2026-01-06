@@ -1,4 +1,7 @@
-﻿using vm2.UlidType.Tests.FluentAssertionsExtensions;
+﻿// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Val Melamed
+
+using vm2.UlidType.Tests.FluentAssertionsExtensions;
 
 [assembly: AssertionEngineInitializer(
     typeof(FluentAssertionsInitializer),

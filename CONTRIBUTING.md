@@ -25,8 +25,8 @@ Commit message guidance:
 
 Prerequisites:100:
 
-- .NET 9 SDK installed (download from Microsoft).
-- A modern editor or IDE (for example __Visual Studio__ or __Visual Studio Code__), updated to support .NET 9.
+- .NET 10 SDK installed (download from Microsoft).
+- A modern editor or IDE, for example __Visual Studio Code__ (preferred) or  __Visual Studio__, updated to support .NET 10.
 - Optional: `dotnet-format` for automatic formatting.
 
 Clone and build locally
@@ -50,27 +50,37 @@ Formatting and linting
 
 ## Tests
 
+- In Visual Studio Code and CL the code must be tested using `dotnet run` - MTP v2 and in Visual Studio use the built-in test explorer - MTP v1. For settings and packages differences see Directory.Builds.props.
 - Add unit tests for bug fixes and new features under `test/UlidType.Tests`.
 - Tests should be deterministic where possible and runnable with `dotnet test`.
+- The code coverage should not go under 80%
+
+##  Benchmarks
+
+- Benchmarks are located in the `benchmarks/` folder.
+- Use `dotnet run -c Release` to execute benchmarks.
+- Add benchmarks for new features or performance improvements. The goal is to track the performance with each change and to not go over 20% threshold. (If a performance regression is detected, investigate and optimize the code before merging or justify in a discussion.)
 
 ## Pull request checklist
 
 - [ ] PR targets `main`
 - [ ] Branch name follows convention
 - [ ] Unit tests added/updated and passing
+- [ ] Benchmarks added/updated if applicable and performance did not regress beyond the acceptable 20% threshold
 - [ ] Documentation updated if behavior or public API changed
 - [ ] CI checks pass (build & tests)
 - [ ] Include description of the change and motivation
 
 ## Continuous Integration / Releases
 
-- The repository uses GitHub Actions (or similar) for CI. CI should build the project and run tests on PRs.
-- Releases should follow semantic versioning where possible.
+- The repository uses GitHub Actions for CI. CI should build the project and run tests on PRs.
+- Releases should follow semantic versioning.
 
 ## Licensing & Intellectual Property
 
 - Verify that your contribution can be licensed under the repository license (MIT).
 - Do not include third-party code without proper license and attribution.
+- Make sure to prepend your source files with the appropriate SPDX license identifier header.
 
 ## Questions
 

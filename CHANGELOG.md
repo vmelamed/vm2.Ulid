@@ -35,6 +35,12 @@ This format follows:
 
 ---
 
+## [1.1.1] - 2026-01-02
+
+### Internal
+
+- Moved to the latest build pipeline templates from vm2.DevOps.
+
 ## [1.1.0] - 2025-09-23
 
 ### Added

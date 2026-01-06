@@ -1,4 +1,7 @@
-﻿using System.Text;
+﻿// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Val Melamed
+
+using System.Text;
 
 using vm2;
 

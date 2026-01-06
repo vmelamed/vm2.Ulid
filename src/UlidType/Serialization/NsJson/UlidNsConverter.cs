@@ -1,4 +1,7 @@
-﻿namespace vm2.NsJson;
+﻿// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Val Melamed
+
+namespace vm2.Serialization.NsJson;
 
 using Newtonsoft.Json;
 

@@ -1,4 +1,7 @@
-﻿namespace vm2;
+﻿// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Val Melamed
+
+namespace vm2;
 
 /// <summary>
 /// Represents a clock that provides the current time in milliseconds since the Unix epoch (January 1, 1970, UTC).
