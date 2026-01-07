@@ -1,0 +1,105 @@
+name: Publish NuGet Prerelease
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main # trigger on PR merge to main branch
+
+  workflow_dispatch:
+    inputs:
+      semver-build-prefix:
+        description: "Prerelease prefix (e.g. preview, alpha, beta, rc1, etc.)"
+        type: choice
+        options:
+          - preview
+          - alpha
+          - beta
+          - rc1
+          - rc2
+          - rc3
+        default: preview
+
+      reason:
+        description: "Reason for manual pre-release"
+        required: true
+        type: string
+
+      force-publish:
+        description: "Force publish even if already tagged"
+        type: boolean
+        default: false
+
+env:
+  # *CP* The projects to build and package as a JSON array of strings - path(s) to the project(s).
+  # An empty string means to build and package the root solution's projects or the root project, marked with <IsPackable>true</IsPackable>.
+  # Hint: to set the value as a valid JSON list of strings, use YAML folded style (>-), and double quotes around the strings, e.g.:
+  # BUILD_PROJECTS: >-
+  #   ["src/Project1/Project1.csproj", "src/Project2/Project2.csproj"]
+  PACKAGE_PROJECTS: ""
+  # CP. 'github' - GitHub Packages; 'nuget' - NuGet.org. Make sure the NUGET_API_KEY secret corresponds to the server selected here.
+  NUGET_SERVER: github
+
+jobs:
+  get-params:
+    name: Prepare the parameters
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+    outputs:
+      package-projects: ${{ steps.init-params.outputs.package-projects }}
+      nuget-server: ${{ steps.init-params.outputs.nuget-server }}
+      semver-build-prefix: ${{ steps.init-params.outputs.semver-build-prefix }}
+      force-publish: ${{ steps.init-params.outputs.force-publish }}
+    steps:
+      - name: Gather parameters
+        id: init-params
+        shell: bash
+        run: |
+          package_projects='${{ env.PACKAGE_PROJECTS }}'
+          nuget_server='${{ env.NUGET_SERVER }}'
+          semver_build_prefix=preview
+          force_publish=false
+
+          if [ '${{ github.event_name }}' == "workflow_dispatch" ]; then
+            semver_build_prefix='${{ inputs.semver-build-prefix }}'
+            force_publish='${{ inputs.force-publish }}'
+          fi
+
+          # Set the outputs:
+          {
+            echo "package-projects=${package_projects}"
+            echo "nuget-server=${nuget_server}"
+            echo "semver-build-prefix=$semver_build_prefix"
+            echo "force-publish=${force_publish}"
+          }  >> $GITHUB_OUTPUT
+
+  log-trigger:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log manual trigger reason
+        run: |
+          echo "::notice::Manual release triggered by ${{ github.actor }}"
+          echo "::notice::Reason: ${{ inputs.reason }}"
+
+  prerelease:
+    name: Prerelease
+    needs:
+      - get-params
+    uses: vmelamed/vm2.DevOps/.github/workflows/_prerelease.yaml@main
+    permissions:
+      contents: write
+      packages: write
+    secrets:
+      NUGET_API_KEY:
+        ${{ secrets.NUGET_API_NUGET_KEY }} # CP. The API key to use for publishing to the NuGet server (GitHub Package, NuGet.org, etc.).
+        # Make sure it corresponds to the 'env.NUGET_SERVER' above
+    with:
+      package-projects: ${{ needs.get-params.outputs.package-projects }}
+      dotnet-version: ${{ vars.DOTNET_VERSION }}
+      semver-build-prefix: ${{ needs.get-params.outputs.semver-build-prefix }}
+      force-publish: ${{ fromJSON(needs.get-params.outputs.force-publish) }}
+      reason: ${{ inputs.reason || '' }}
+      nuget-server: ${{ needs.get-params.outputs.nuget-server }}
+      save-package-artifacts: true
