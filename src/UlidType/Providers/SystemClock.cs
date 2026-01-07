@@ -1,4 +1,7 @@
-﻿namespace vm2.Providers;
+﻿// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Val Melamed
+
+namespace vm2.Providers;
 
 /// <summary>
 /// Provides the current system time in Coordinated Universal Time (UTC) as a Unix timestamp in milliseconds.

@@ -1,3 +1,6 @@
+﻿// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Val Melamed
+
 namespace vm2;
 
 /// <summary>
@@ -9,8 +12,8 @@ namespace vm2;
 /// to other formats such as strings or GUIDs. ULIDs are commonly used in distributed systems where unique, sortable identifiers<br/>
 /// are required.
 /// </remarks>
-[Newtonsoft.Json.JsonConverter(typeof(NsJson.UlidNsConverter))]
-[System.Text.Json.Serialization.JsonConverter(typeof(SysJson.UlidSysConverter))]
+[Newtonsoft.Json.JsonConverter(typeof(UlidNsConverter))]
+[System.Text.Json.Serialization.JsonConverter(typeof(UlidSysConverter))]
 public readonly partial struct Ulid :
     IEquatable<Ulid>,
     IComparable<Ulid>,

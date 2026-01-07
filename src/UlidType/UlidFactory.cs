@@ -1,4 +1,7 @@
-﻿namespace vm2;
+﻿// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Val Melamed
+
+namespace vm2;
 
 using vm2.Providers;
 

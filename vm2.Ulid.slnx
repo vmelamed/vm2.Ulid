@@ -1,13 +1,6 @@
 <Solution>
   <Folder Name="/.github/" />
-  <Folder Name="/.github/workflows/">
-    <File Path=".github/workflows/benchmarks.yaml" />
-    <File Path=".github/workflows/build.yaml" />
-    <File Path=".github/workflows/CI.yaml" />
-    <File Path=".github/workflows/Prerelease.yaml" />
-    <File Path=".github/workflows/Release.yaml" />
-    <File Path=".github/workflows/test.yaml" />
-  </Folder>
+  <Folder Name="/.github/workflows/" />
   <Folder Name="/benchmarks/">
     <Project Path="benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj" />
   </Folder>

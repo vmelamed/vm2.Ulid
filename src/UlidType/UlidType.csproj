@@ -1,36 +1,30 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <RootNamespace>vm2</RootNamespace>
-  </PropertyGroup>
+    <PropertyGroup>
+        <RootNamespace>vm2</RootNamespace>
+    </PropertyGroup>
 
-  <PropertyGroup Label="NuGet">
-    <Title>vm2.Ulid</Title>
-    <Description>
-        Implementation of the Universally Unique Lexicographically Sortable Identifier (ULID) for .NET.
-    </Description>
-    <PackageId>vm2.Ulid</PackageId>
-    <PackageReleaseNotes>Initial version of the vm2.Ulid.</PackageReleaseNotes>
-    <RepositoryUrl>https://github.com/vmelamed/vm2.Ulid</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/vmelamed/vm2.Ulid/blob/main/src/UlidType/UlidType.csproj</PackageProjectUrl>
-    <PackageTags>ULID Universally Unique Lexicographically Sortable Identifier .net core vm2</PackageTags>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-  </PropertyGroup>
+    <PropertyGroup Label="NuGet">
+        <PackageId>vm2.Ulid</PackageId>
+        <Title>Universally Unique Lexicographically Sortable Identifier (ULID) for .NET</Title>
+        <Description>Implementation of the Universally Unique Lexicographically Sortable Identifier (ULID) for .NET.</Description>
+        <PackageTags>ULID Universally Unique Lexicographically Sortable Identifier .net core vm2</PackageTags>
+        <PackageProjectUrl>https://github.com/vmelamed/vm2.Ulid/blob/main/src/UlidType/UlidType.csproj</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/vmelamed/vm2.Ulid</RepositoryUrl>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageReleaseNotes>No significant changes, but moved to the latest build pipeline templates.</PackageReleaseNotes>
+    </PropertyGroup>
 
     <ItemGroup>
         <None Include="../../README.md" Pack="true" PackagePath="\">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
         <None Include="../../LICENSE" Pack="true" PackagePath="\">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
         <None Include="../../CHANGELOG.md" Pack="true" PackagePath="\">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
-    </ItemGroup>
-
-    <ItemGroup>
-      <PackageReference Include="Newtonsoft.Json" />
     </ItemGroup>
 
 </Project>

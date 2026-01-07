@@ -27,14 +27,9 @@ on:
 env:
   BUILD_PROJECTS: ""
   TEST_PROJECTS: >-
-    [
-    "tests/UlidType.Tests/UlidType.Tests.csproj",
-    ]
-
+    ["test/UlidType.Tests/UlidType.Tests.csproj"]
   BENCHMARK_PROJECTS: >-
-    [
-    "benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj",
-    ]
+    ["benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj"]
   PREPROCESSOR_SYMBOLS: ""
   OS: ""
 
