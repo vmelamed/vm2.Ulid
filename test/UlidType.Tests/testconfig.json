@@ -19,8 +19,8 @@
         "methodDisplay": "classAndMethod", // "method", "class"
         "methodDisplayOptions": "none", // "all", or comma separated: "replaceUnderscoreWithSpace", "useOperatorMonikers"..., "useParameterTypes", "useEscapeSequences" Xnn or Unnnn, "replacePeriodWithComma"
         "assertEquivalentMaxDepth": 50,
-        "exoplicit": "off", // "on", "off", "only"
-        "failSkps": false,
+        "explicit": "off", // "on", "off", "only"
+        "failSkips": false,
         "failWarns": false
     }
 }
