@@ -1,182 +1,127 @@
-name: CI - Build, Test, Benchmarks
+name: "CI: Build, Test, Benchmark"
 
 on:
   push:
     branches:
-      - "**"
+      - "**" # trigger on push for all branches or...
 
   pull_request:
     branches:
-      - "**"
+      - "**" # ...on PR for all branches.
 
   workflow_dispatch:
     inputs:
       os:
-        description: "JSON array of runners"
+        description: Runner OS (or multiple OS-es separate by comma, e.g. 'ubuntu-latest,windows-latest')
         type: string
-        required: true
-        default: '["ubuntu-latest"]'
+        default: ubuntu-latest
+        # There is a known GitHub actions issue: the workflow dispatch UI doesn't properly handle JSON strings with quotes.
+        # E.g. for the input '["ubuntu-latest"]', the UI removes the inner quotes and it becomes the invalid JSON: '[ubuntu-latest]'.
 
-      dotnet-version:
-        description: "Version of .NET SDK to use"
-        type: string
-        required: true
-        default: "9.0.x"
-
-      configuration:
-        description: "The type of builds to produce, e.g. Release vs Debug"
+      preprocessor-symbols:
+        description: Define semicolon-separated preprocessor symbols to pass to the compiler
         type: string
         required: false
-        default: "Release"
+        # Here it enables benchmarks short run mode for faster execution, but less precise results, acceptable for CI runs.
 
-      defined-symbols:
-        description: "Define constants to pass to the compiler"
-        type: string
-        required: false
-        default: ""
+env:
+  BUILD_PROJECTS: ""
+  TEST_PROJECTS: >-
+    [
+    "tests/UlidType.Tests/UlidType.Tests.csproj",
+    ]
 
-      test-project:
-        description: "Path to test project"
-        type: string
-        required: true
-        default: "./test/UlidType.Tests/UlidType.Tests.csproj"
+  BENCHMARK_PROJECTS: >-
+    [
+    "benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj",
+    ]
+  PREPROCESSOR_SYMBOLS: ""
+  OS: ""
 
-      min-coverage-pct:
-        description: "Minimum acceptable code coverage percentage"
-        type: number
-        required: true
-        default: 75
-
-      run-benchmarks:
-        description: "Whether to run benchmarks and compare against baseline"
-        type: boolean
-        required: true
-        default: true
-
-      benchmark-project:
-        description: "Path to benchmark project"
-        type: string
-        required: true
-        default: "./benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj"
-
-      max-regression-pct:
-        description: "Maximum acceptable performance regression percentage"
-        type: number
-        required: true
-        default: 10 # percent
-
-      force-new-baseline:
-        description: "Whether to force new baseline (if true, no regression check is done)"
-        type: boolean
-        required: true
-        default: false
-
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
-  setup:
-    name: Setup Variables
-    runs-on: ubuntu-latest
+  get-params:
+    name: Prepare the default and passed in parameters
+    runs-on: ubuntu-latest # in this workflow the runner doesn't matter - we're just preparing the inputs for the next workload(s).
+    if: ${{ github.event_name != 'push' || !contains(github.event.head_commit.message, '[skip ci]') }}
+    env:
+      dotnet-version: ${{ vars.DOTNET_VERSION }}
+      configuration: ${{ vars.CONFIGURATION }}
+      min-coverage-pct: ${{ vars.MIN_COVERAGE_PCT }}
+      max-regression-pct: ${{ vars.MAX_REGRESSION_PCT }}
     outputs:
-      matrix-os: ${{ steps.setup-vars.outputs.matrix-os }}
-      dotnet-version: ${{ steps.setup-vars.outputs.dotnet-version }}
-      configuration: ${{ steps.setup-vars.outputs.configuration }}
-      defined-symbols: ${{ steps.setup-vars.outputs.defined-symbols }}
-      test-project: ${{ steps.setup-vars.outputs.test-project }}
-      min-coverage-pct: ${{ steps.setup-vars.outputs.min-coverage-pct }}
-      run-benchmarks: ${{ steps.setup-vars.outputs.run-benchmarks }}
-      benchmark-project: ${{ steps.setup-vars.outputs.benchmark-project }}
-      force-new-baseline: ${{ steps.setup-vars.outputs.force-new-baseline }}
-      max-regression-pct: ${{ steps.setup-vars.outputs.max-regression-pct }}
-      verbose: ${{ steps.setup-vars.outputs.verbose }}
+      build-projects: ${{ steps.init-params.outputs.build-projects }}
+      test-projects: ${{ steps.init-params.outputs.test-projects }}
+      benchmark-projects: ${{ steps.init-params.outputs.benchmark-projects }}
+      os: ${{ steps.init-params.outputs.os }}
+      dotnet-version: ${{ steps.init-params.outputs.dotnet-version }}
+      configuration: ${{ steps.init-params.outputs.configuration }}
+      preprocessor-symbols: ${{ steps.init-params.outputs.preprocessor-symbols }}
+      min-coverage-pct: ${{ steps.init-params.outputs.min-coverage-pct }}
+      max-regression-pct: ${{ steps.init-params.outputs.max-regression-pct }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Make Scripts Executable
-        run: chmod u+x ./scripts/bash/*.sh
-
-      - id: setup-vars
+      - name: Gather parameters
+        id: init-params
         shell: bash
-        env:
-          MATRIX_OS: ${{ inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]' }}
-          DOTNET_VERSION: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
-          CONFIGURATION: ${{ inputs.configuration || vars.CONFIGURATION || 'Release' }}
-          DEFINED_SYMBOLS: ${{ inputs.defined-symbols || vars.DEFINED_SYMBOLS || '_' }}
-          TEST_PROJECT: ${{ inputs.test-project || vars.TEST_PROJECT || './test/UlidType.Tests/UlidType.Tests.csproj' }}
-          MIN_COVERAGE_PCT: ${{ inputs.min-coverage-pct || vars.MIN_COVERAGE_PCT || '75' }}
-          RUN_BENCHMARKS: ${{ inputs.run-benchmarks || vars.RUN_BENCHMARKS || 'true' }}
-          BENCHMARK_PROJECT: ${{ inputs.benchmark-project || vars.BENCHMARK_PROJECT || './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj' }}
-          FORCE_NEW_BASELINE: ${{ inputs.force-new-baseline || vars.FORCE_NEW_BASELINE || 'false' }}
-          MAX_REGRESSION_PCT: ${{ inputs.max-regression-pct || vars.MAX_REGRESSION_PCT || '10' }}
-          VERBOSE: ${{ vars.VERBOSE || 'false' }}
-        run: ./scripts/bash/setup-ci-vars.sh
+        run: |
+          # the following outputs are invariant - no matter how we trigger the workflow, they stay the same as specified in env:
+          build_projects='${{ env.BUILD_PROJECTS }}'
+          test_projects='${{ env.TEST_PROJECTS }}'
+          benchmark_projects='${{ env.BENCHMARK_PROJECTS }}'
+          dotnet_version='${{ env.dotnet-version }}'
+          configuration='${{ env.configuration }}'
+          min_coverage_pct='${{ env.min-coverage-pct }}'
+          max_regression_pct='${{ env.max-regression-pct }}'
 
-  build_job:
-    name: Build
-    needs:
-      - setup
-    strategy:
-      fail-fast: true
-      matrix:
-        os: ${{ fromJSON(needs.setup.outputs.matrix-os) }}
-    uses: ./.github/workflows/build.yaml
-    # Skip if [skip ci] is found in commit message (push only), always run for PRs
-    if: >-
-      ${{
-      (github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip ci]')) ||
-      github.event_name == 'pull_request' ||
-      github.event_name == 'workflow_dispatch'
-      }}
-    with:
-      os: ${{ needs.setup.outputs.matrix-os }}
-      configuration: ${{ needs.setup.outputs.configuration }}
-      defined-symbols: ${{ needs.setup.outputs.defined-symbols }}
-      dotnet-version: ${{ needs.setup.outputs.dotnet-version }}
+          if [ '${{ github.event_name }}' == "push" ]; then
+              # Set the values for push events, and add SHORT_RUN to preprocessor_symbols for faster benchmark tests (less precise, yet acceptable for CI runs).
+              os='${{ env.OS }}'
+              preprocessor_symbols='SHORT_RUN;${{ env.PREPROCESSOR_SYMBOLS }}' # *CP* Adjust as needed.
+          elif [ '${{ github.event_name }}' == "pull_request" ]; then
+              # Set the values for pull_request events
+              os='${{ env.OS }}'
+              preprocessor_symbols='${{ env.PREPROCESSOR_SYMBOLS }}'
+          elif [ '${{ github.event_name }}' == "workflow_dispatch" ]; then
+              # Get the values from the UI inputs of workflow_dispatch event. Convert comma-separated runner's OS values to JSON array
+              # There is a known GitHub actions issue: the workflow dispatch UI doesn't properly handle JSON strings with quotes.
+              # E.g. for the input '["ubuntu-latest"]', the UI removes the inner quotes and it becomes the invalid JSON: '[ubuntu-latest]'.
+              os=$(echo "${{ inputs.os }}" | jq -Rc 'split(",") | map(select(length > 0) | gsub("^\\s+|\\s+$";""))')
+              preprocessor_symbols='${{ inputs.preprocessor-symbols }}'
+          else
+              echo "Unsupported event: ${{ github.event_name }}"
+              exit 5
+          fi
 
-  test_job:
-    name: Test
-    if: >-
-      ${{
-      (github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip ci]')) ||
-      github.event_name == 'pull_request' ||
-      github.event_name == 'workflow_dispatch'
-      }}
-    needs:
-      - setup
-      - build_job
-    uses: ./.github/workflows/test.yaml
-    with:
-      os: ${{ needs.setup.outputs.matrix-os }}
-      dotnet-version: ${{ needs.setup.outputs.dotnet-version }}
-      test-project: ${{ needs.setup.outputs.test-project }}
-      configuration: ${{ needs.setup.outputs.configuration }}
-      defined-symbols: ${{ needs.setup.outputs.defined-symbols }}
-      min-coverage-pct: ${{ fromJSON(needs.setup.outputs.min-coverage-pct) }}
-      verbose: ${{ fromJSON(needs.setup.outputs.verbose) }}
+          # Set the outputs:
+          {
+            echo "build-projects=${build_projects}"
+            echo "test-projects=${test_projects}"
+            echo "benchmark-projects=${benchmark_projects}"
+            echo "os=${os}"
+            echo "preprocessor-symbols=${preprocessor_symbols}"
+            echo "dotnet-version=${dotnet_version}"
+            echo "configuration=${configuration}"
+            echo "min-coverage-pct=${min_coverage_pct}"
+            echo "max-regression-pct=${max_regression_pct}"
+          }  >> $GITHUB_OUTPUT
 
-  benchmarks_job:
-    name: Benchmarks
-    if: >-
-      ${{
-      (github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip ci]')) ||
-      github.event_name == 'pull_request' ||
-      github.event_name == 'workflow_dispatch' ||
-      fromJSON(inputs.run-benchmarks) ||
-      fromJSON(vars.RUN_BENCHMARKS)
-      }}
+  call-ci:
+    uses: vmelamed/vm2.DevOps/.github/workflows/_ci.yaml@main
     needs:
-      - setup
-      - build_job
-    uses: ./.github/workflows/benchmarks.yaml
+      - get-params
+    secrets: inherit
+    permissions:
+      contents: read # Required to checkout the code
+      packages: read # Required to restore GitHub Packages NuGet packages
+      pull-requests: write # Required to comment on PRs
+      checks: write # Required to create GitHub Checks
     with:
-      os: ${{ needs.setup.outputs.matrix-os }}
-      dotnet-version: ${{ needs.setup.outputs.dotnet-version }}
-      benchmark-project: ${{ needs.setup.outputs.benchmark-project }}
-      configuration: ${{ needs.setup.outputs.configuration }}
-      defined-symbols: ${{ needs.setup.outputs.defined-symbols }}
-      max-regression-pct: ${{ fromJSON(needs.setup.outputs.max-regression-pct) }}
-      force-new-baseline: ${{ fromJSON(needs.setup.outputs.force-new-baseline) }}
-      verbose: ${{ fromJSON(needs.setup.outputs.verbose) }}
+      os: ${{ needs.get-params.outputs.os }}
+      dotnet-version: ${{ needs.get-params.outputs.dotnet-version }}
+      configuration: ${{ needs.get-params.outputs.configuration }}
+      preprocessor-symbols: ${{ needs.get-params.outputs.preprocessor-symbols }}
+      build-projects: ${{ needs.get-params.outputs.build-projects }}
+      test-projects: ${{ needs.get-params.outputs.test-projects }}
+      benchmark-projects: ${{ needs.get-params.outputs.benchmark-projects }}
+      min-coverage-pct: ${{ fromJSON(needs.get-params.outputs.min-coverage-pct) }}
+      max-regression-pct: ${{ fromJSON(needs.get-params.outputs.max-regression-pct) }}

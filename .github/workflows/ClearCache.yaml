@@ -1,0 +1,29 @@
+name: ClearCache.yaml - manually trigger clearing of all NuGet caches (For Emergency Use Only!)
+
+on:
+  workflow_dispatch:
+    inputs:
+
+      reason:
+        description: 'Reason for clearing cache'
+        required: true
+        type: string
+        default: 'Emergency cache cleanup'
+
+      cache-pattern:
+        description: 'Cache key pattern to delete (e.g.: nuget- or build-artifacts-)'
+        required: false
+        type: string
+        default: 'nuget-'
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  call_ci:
+    name: Call the CI Workflow
+    uses: vmelamed/vm2.DevOps/.github/workflows/_clear_cache.yaml@main
+    with:
+      reason: ${{ inputs.reason }}
+      cache-pattern: ${{ inputs.cache-pattern }}

@@ -1,142 +1,91 @@
-name: Release (Stable)
+name: Publish NuGet Release
+# After creating pay attention to the comments starting with CP - these are "Customize Points" to adjust the workflow to your repo needs.
 
 on:
   push:
-    branches:
-      - main
-    tags: ["v*", "!v*-*"]
+    tags:
+      - "v[0-9]*.[0-9]*.[0-9]*" # trigger on version tags like v1.2.3
 
   workflow_dispatch:
     inputs:
       reason:
-        description: "Why run?"
-
-      os:
-        description: "JSON array of runners"
-        type: string
-        default: '["ubuntu-latest"]'
+        description: "Reason for manual release"
         required: true
-
-      dotnet-version:
-        description: "Version of .NET SDK to use"
         type: string
-        default: "9.0.x"
-        required: true
-
-      test-project:
-        description: "Path to test project"
-        type: string
-        default: "./test/UlidType.Tests/UlidType.Tests.csproj"
-        required: true
-
-      benchmark-project:
-        description: "Path to benchmark project"
-        type: string
-        default: "./benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj"
-        required: true
 
       force-publish:
-        description: "Force publish even if already tagged"
+        description: "Force publish"
         type: boolean
         default: false
 
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
-
 env:
-  DOTNET_NOLOGO: true
-  DOTNET_CLI_TELEMETRY_OPTOUT: true
-  FORCE_PUBLISH: ${{ inputs.force-publish || 'false' }}
-  REASON: ${{ inputs.reason || (inputs.force-publish && 'forced publish') || 'manual run' }}
+  # *CP* The projects to build and package as a JSON array of strings - path(s) to the project(s).
+  # An empty string means to build and package the root solution's projects or the root project, marked with <IsPackable>true</IsPackable>.
+  # Hint: to set the value as a valid JSON list of strings, use YAML folded style (>-), and double quotes around the strings, e.g.:
+  # BUILD_PROJECTS: >-
+  #   ["src/Project1/Project1.csproj", "src/Project2/Project2.csproj"]
+  PACKAGE_PROJECTS: ""
+  # CP. 'github' - GitHub Packages; 'nuget' - NuGet.org. Make sure the NUGET_API_KEY secret corresponds to the server selected here.
+  NUGET_SERVER: github
 
 jobs:
-  # last time run the gates before release
-  build:
-    name: Build
-    uses: ./.github/workflows/build.yaml
-    with:
-      os: ${{ inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]' }}
-      dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
-      configuration: Release
-
-  test:
-    name: Test
-    needs: build
-    uses: ./.github/workflows/test.yaml
-    with:
-      os: ${{ inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]' }}
-      dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
-      test-project: ${{ inputs.test-project || vars.TEST_PROJECT || './test/UlidType.Tests/UlidType.Tests.csproj' }}
-      configuration: Release
-      verbose: ${{ fromJSON(vars.VERBOSE) || false }}
-      min-coverage-pct: ${{ fromJSON(vars.MIN_COVERAGE_PCT) || 75 }}
-
-  benchmarks:
-    name: Benchmarks (Linux only)
-    needs: build
-    uses: ./.github/workflows/benchmarks.yaml
-    with:
-      os: ${{ inputs.os || vars.MATRIX_OS || '["ubuntu-latest"]' }}
-      dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
-      benchmark-project: ${{ inputs.benchmark-project || vars.BENCHMARK_PROJECT || './benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj' }}
-      configuration: Release
-      verbose: ${{ fromJSON(vars.VERBOSE) || false }}
-      max-regression-pct: ${{ fromJSON(vars.MAX_REGRESSION_PCT) || 10 }}
-
-  release:
-    name: Release Stable
-    needs: [build, test, benchmarks]
-    if: ${{ github.event_name == 'workflow_dispatch' || (startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name,'-')) }}
+  get-params:
+    name: Prepare the parameters
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    if: >+
+      ${{
+      github.event_name == 'workflow_dispatch' ||
+      !contains(github.ref_name,'-') &&
+      startsWith(github.ref, format('refs/tags/%s', vars.MinVerTagPrefix || 'v'))
+      }}
+    outputs:
+      package-projects: ${{ steps.init-params.outputs.package-projects }}
+      nuget-server: ${{ steps.init-params.outputs.nuget-server }}
+      force-publish: ${{ steps.init-params.outputs.force-publish }}
     steps:
-      - name: Checkout (full history)
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          fetch-tags: true
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ inputs.dotnet-version || vars.DOTNET_VERSION || '9.0.x' }}
-          cache: true
-          cache-dependency-path: |
-            **/packages.lock.json
-            **/*.csproj
-
-      - name: Pack (stable)
-        env:
-          REASON: ${{ inputs.reason }}
+      - name: Gather parameters
+        id: init-params
+        shell: bash
         run: |
-          mkdir -p artifacts/pack
-          dotnet pack -c Release -o artifacts/pack \
-            "/p:PackageReleaseNotes=Stable: ${REASON:-tag push}"
-          ls -1 artifacts/pack
+          package_projects='${{ env.PACKAGE_PROJECTS }}'
+          nuget_server='${{ env.NUGET_SERVER }}'
+          force_publish=false
 
-      - name: Publish stable to NuGet
-        env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-        run: |
-          if [ -z "${NUGET_API_KEY}" ]; then
-            echo "NUGET_API_KEY not configured"; exit 1
+          if [ '${{ github.event_name }}' == "workflow_dispatch" ]; then
+            force_publish='${{ inputs.force-publish }}'
           fi
 
-          dotnet nuget push artifacts/pack/*.nupkg \
-            --api-key  "${NUGET_API_KEY}" \
-            --source https://api.nuget.org/v3/index.json \
-            --skip-duplicate
-
-      - name: Summary
-        env:
-          REASON: ${{ inputs.reason }}
-        run: |
+          # Set the outputs:
           {
-              echo "## Release Summary"
-              echo
-              echo "- Tag: ${GITHUB_REF_NAME}"
-              echo "- Stable release reason: ${REASON:-tag push}"
-              echo "- Artifacts:"
-              ls -1 artifacts/pack | sed 's/^/  - /'
-          } >> "$GITHUB_STEP_SUMMARY"
+            echo "package-projects=${package_projects}"
+            echo "nuget-server=${nuget_server}"
+            echo "force-publish=${force_publish}"
+          }  >> $GITHUB_OUTPUT
+
+  log-trigger:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log manual trigger reason
+        run: |
+          echo "::notice::Manual release triggered by ${{ github.actor }}"
+          echo "::notice::Reason: ${{ inputs.reason }}"
+
+  release:
+    name: Release
+    uses: vmelamed/vm2.DevOps/.github/workflows/_release.yaml@main
+    needs:
+      - get-params
+    permissions:
+      contents: write
+      packages: write
+    secrets:
+      # CP. the API key to use for publishing to GitHub NuGet packages or NuGet.org
+      # Make sure it corresponds to the 'nuget-server' below
+      NUGET_API_KEY: ${{ secrets.NUGET_API_NUGET_KEY }}
+    with:
+      package-projects: ${{ needs.get-params.outputs.package-projects }}
+      dotnet-version: ${{ vars.DOTNET_VERSION }}
+      force-publish: ${{ fromJSON(needs.get-params.outputs.force-publish) }}
+      nuget-server: ${{ needs.get-params.outputs.nuget-server }}
+      save-package-artifacts: true
