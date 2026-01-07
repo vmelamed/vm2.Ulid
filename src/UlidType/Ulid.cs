@@ -12,8 +12,8 @@ namespace vm2;
 /// to other formats such as strings or GUIDs. ULIDs are commonly used in distributed systems where unique, sortable identifiers<br/>
 /// are required.
 /// </remarks>
-[Newtonsoft.Json.JsonConverter(typeof(NsJson.UlidNsConverter))]
-[System.Text.Json.Serialization.JsonConverter(typeof(SysJson.UlidSysConverter))]
+[Newtonsoft.Json.JsonConverter(typeof(UlidNsConverter))]
+[System.Text.Json.Serialization.JsonConverter(typeof(UlidSysConverter))]
 public readonly partial struct Ulid :
     IEquatable<Ulid>,
     IComparable<Ulid>,
@@ -304,7 +304,7 @@ public readonly partial struct Ulid :
         for (var i = 0; i < UlidStringLength; i++)
         {
             // get the least significant 5 bits from the number and convert it to character
-            destination[UlidStringLength - i - 1] = CrockfordDigits[(byte)ulidAsNumber & UlidDigitMask];
+            destination[UlidStringLength-i-1] = CrockfordDigits[(byte)ulidAsNumber & UlidDigitMask];
             ulidAsNumber >>>= BitsPerUlidDigit;
         }
 
@@ -341,7 +341,7 @@ public readonly partial struct Ulid :
             for (var i = 0; i < UlidStringLength; i++)
             {
                 // get the least significant 5 bits from the number and convert it to character
-                destination[UlidStringLength - i - 1] = CrockfordDigitsUtf8[(byte)ulidAsNumber & UlidDigitMask];
+                destination[UlidStringLength-i-1] = CrockfordDigitsUtf8[(byte)ulidAsNumber & UlidDigitMask];
                 ulidAsNumber >>>= BitsPerUlidDigit;
             }
 
@@ -542,21 +542,21 @@ public readonly partial struct Ulid :
     public static bool operator ==(Ulid left, Ulid right) => left.Equals(right);
 
     /// <inheritdoc/>
-    public static bool operator !=(Ulid left, Ulid right) => !(left == right);
+    public static bool operator !=(Ulid left, Ulid right) => !(left==right);
     #endregion
 
     #region IComparisonOperators<Ulid, Ulid, bool>
     /// <inheritdoc/>
-    public static bool operator <(Ulid left, Ulid right) => left.CompareTo(right) < 0;
+    public static bool operator <(Ulid left, Ulid right) => left.CompareTo(right)<0;
 
     /// <inheritdoc/>
-    public static bool operator <=(Ulid left, Ulid right) => left.CompareTo(right) <= 0;
+    public static bool operator <=(Ulid left, Ulid right) => left.CompareTo(right)<=0;
 
     /// <inheritdoc/>
-    public static bool operator >(Ulid left, Ulid right) => left.CompareTo(right) > 0;
+    public static bool operator >(Ulid left, Ulid right) => left.CompareTo(right)>0;
 
     /// <inheritdoc/>
-    public static bool operator >=(Ulid left, Ulid right) => left.CompareTo(right) >= 0;
+    public static bool operator >=(Ulid left, Ulid right) => left.CompareTo(right)>=0;
     #endregion
 
     #region IEqualityComparer<Ulid>
@@ -574,7 +574,7 @@ public readonly partial struct Ulid :
         var newUlidBytes = value.Bytes.ToArray();
         var span = newUlidBytes.AsSpan();
 
-        var i = span.Length - 1;
+        var i = span.Length-1;
         for (; i >= 0; i--)
             if (unchecked(++span[i]) != 0)
                 return new Ulid(span, false);

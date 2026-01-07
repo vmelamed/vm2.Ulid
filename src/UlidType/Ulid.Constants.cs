@@ -87,7 +87,7 @@ public readonly partial struct Ulid
     public static readonly int BitsPerUlidDigit = 5; // 1 << BitsPerUlidDigit == CrockfordDigits.Length
 
     /// <summary>
-    /// Represents the bitmask (<c>0b_0001_1111 / 0x1F / 31</c>) used to extract the least significant digit of a ULID value. If<br/>
+    /// Represents the bit-mask (<c>0b_0001_1111 / 0x1F / 31</c>) used to extract the least significant digit of a ULID value. If<br/>
     /// we shift it left by <see cref="BitsPerUlidDigit"/> and mask again, we get the mask of the second least significant digit,
     /// etc.
     /// </summary>
