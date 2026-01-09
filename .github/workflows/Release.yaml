@@ -20,7 +20,7 @@ on:
 env:
   PACKAGE_PROJECTS: >-
     ["src/vm2.Ulid/vm2.Ulid.csproj"]
-  NUGET_SERVER: nuget
+  NUGET_SERVER: ${{ vars.NUGET_SERVER || 'github' }}
 
 jobs:
   get-params:
@@ -76,7 +76,7 @@ jobs:
       NUGET_API_NUGET_KEY: ${{ secrets.NUGET_API_NUGET_KEY }}
       NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
     permissions:
-      contents: write # Required to checkout the code
+      contents: write # Required to checkout the code and create releases
       packages: write # Required to publish GitHub Packages NuGet packages
       pull-requests: write # Required to comment on PRs
       checks: write # Required to create GitHub Checks

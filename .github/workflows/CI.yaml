@@ -22,10 +22,12 @@ on:
         description: Define semicolon-separated preprocessor symbols to pass to the compiler
         type: string
         required: false
+        default: ''
         # Here it enables benchmarks short run mode for faster execution, but less precise results, acceptable for CI runs.
 
 env:
-  BUILD_PROJECTS: ""
+  BUILD_PROJECTS: >-
+    ["./UlidType.slnx"]
   TEST_PROJECTS: >-
     ["test/UlidType.Tests/UlidType.Tests.csproj"]
   BENCHMARK_PROJECTS: >-
