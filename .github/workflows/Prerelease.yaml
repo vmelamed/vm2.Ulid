@@ -32,13 +32,9 @@ on:
         default: false
 
 env:
-  # *CP* The projects to build and package as a JSON array of strings - path(s) to the project(s).
-  # An empty string means to build and package the root solution's projects or the root project, marked with <IsPackable>true</IsPackable>.
-  # Hint: to set the value as a valid JSON list of strings, use YAML folded style (>-), and double quotes around the strings, e.g.:
-  # BUILD_PROJECTS: >-
-  #   ["src/Project1/Project1.csproj", "src/Project2/Project2.csproj"]
-  PACKAGE_PROJECTS: ""
-  # CP. 'github' - GitHub Packages; 'nuget' - NuGet.org. Make sure the NUGET_API_KEY secret corresponds to the server selected here.
+  PACKAGE_PROJECTS: >-
+    ["src/vm2.Ulid/vm2.Ulid.csproj"]
+
   NUGET_SERVER: github
 
 jobs:
@@ -75,6 +71,7 @@ jobs:
           }  >> $GITHUB_OUTPUT
 
   log-trigger:
+    name: Log manual trigger reason
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
@@ -88,13 +85,15 @@ jobs:
     needs:
       - get-params
     uses: vmelamed/vm2.DevOps/.github/workflows/_prerelease.yaml@main
-    permissions:
-      contents: write
-      packages: write
     secrets:
-      NUGET_API_KEY:
-        ${{ secrets.NUGET_API_NUGET_KEY }} # CP. The API key to use for publishing to the NuGet server (GitHub Package, NuGet.org, etc.).
-        # Make sure it corresponds to the 'env.NUGET_SERVER' above
+      NUGET_API_GITHUB_KEY: ${{ secrets.NUGET_API_GITHUB_KEY }}
+      NUGET_API_NUGET_KEY: ${{ secrets.NUGET_API_NUGET_KEY }}
+      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+    permissions:
+      contents: read # Required to checkout the code
+      packages: read # Required to restore GitHub Packages NuGet packages
+      pull-requests: write # Required to comment on PRs
+      checks: write # Required to create GitHub Checks
     with:
       package-projects: ${{ needs.get-params.outputs.package-projects }}
       dotnet-version: ${{ vars.DOTNET_VERSION }}
