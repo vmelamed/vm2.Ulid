@@ -31,7 +31,8 @@ env:
   BENCHMARK_PROJECTS: >-
     ["benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj"]
   PREPROCESSOR_SYMBOLS: ""
-  OS: ""
+  OS: >-
+    ["ubuntu-latest"]
 
 
 jobs:
