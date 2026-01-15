@@ -9,16 +9,10 @@ on:
 
   workflow_dispatch:
     inputs:
-      semver-build-prefix:
+      semver-prerelease-prefix:
         description: "Prerelease prefix (e.g. preview, alpha, beta, rc1, etc.)"
-        type: choice
-        options:
-          - preview
-          - alpha
-          - beta
-          - rc1
-          - rc2
-          - rc3
+        type: string
+        required: true
         default: preview
 
       reason:
@@ -26,14 +20,9 @@ on:
         required: true
         type: string
 
-      force-publish:
-        description: "Force publish even if already tagged"
-        type: boolean
-        default: false
-
 env:
   PACKAGE_PROJECTS: >-
-    ["src/vm2.Ulid/vm2.Ulid.csproj"]
+    ["src/Ulid/Ulid.csproj"]
 
   NUGET_SERVER: ${{ vars.NUGET_SERVER || 'github' }}
 
@@ -43,31 +32,40 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
     outputs:
+      dotnet-version: ${{ steps.init-params.outputs.dotnet-version }}
       package-projects: ${{ steps.init-params.outputs.package-projects }}
       nuget-server: ${{ steps.init-params.outputs.nuget-server }}
-      semver-build-prefix: ${{ steps.init-params.outputs.semver-build-prefix }}
-      force-publish: ${{ steps.init-params.outputs.force-publish }}
+      minver-tag-prefix: ${{ steps.init-params.outputs.minver-tag-prefix }}
+      semver-prerelease-prefix: ${{ steps.init-params.outputs.semver-prerelease-prefix }}
+      reason: ${{ steps.init-params.outputs.reason }}
+      save-package-artifacts: ${{ steps.init-params.outputs.save-package-artifacts }}
     steps:
       - name: Gather parameters
         id: init-params
         shell: bash
         run: |
+          dotnet_version='${{ vars.DOTNET_VERSION }}'
           package_projects='${{ env.PACKAGE_PROJECTS }}'
           nuget_server='${{ env.NUGET_SERVER }}'
-          semver_build_prefix=preview
-          force_publish=false
+          minver_tag_prefix='${{ vars.MINVERTAGPREFIX || 'v' }}'
+          semver_prerelease_prefix='${{ vars.SEMVER_PRERELEASE_PREFIX || 'preview' }}'
+          reason='auto-triggered by a merged pull request'
+          save_package_artifacts=false
 
           if [ '${{ github.event_name }}' == "workflow_dispatch" ]; then
-            semver_build_prefix='${{ inputs.semver-build-prefix }}'
-            force_publish='${{ inputs.force-publish }}'
+              semver_prerelease_prefix='${{ inputs.semver-prerelease-prefix }}'
+              reason='${{ inputs.reason }}'
           fi
 
           # Set the outputs:
           {
-            echo "package-projects=${package_projects}"
-            echo "nuget-server=${nuget_server}"
-            echo "semver-build-prefix=$semver_build_prefix"
-            echo "force-publish=${force_publish}"
+              echo "dotnet-version=${dotnet_version}"
+              echo "package-projects=${package_projects}"
+              echo "nuget-server=${nuget_server}"
+              echo "minver-tag-prefix=${minver_tag_prefix}"
+              echo "semver-prerelease-prefix=$semver_prerelease_prefix"
+              echo "reason=${reason}"
+              echo "save-package-artifacts=${save_package_artifacts}"
           }  >> $GITHUB_OUTPUT
 
   log-trigger:
@@ -95,10 +93,10 @@ jobs:
       pull-requests: write # Required to comment on PRs
       checks: write # Required to create GitHub Checks
     with:
+      dotnet-version: ${{ needs.get-params.outputs.dotnet-version }}
       package-projects: ${{ needs.get-params.outputs.package-projects }}
-      dotnet-version: ${{ vars.DOTNET_VERSION }}
-      semver-build-prefix: ${{ needs.get-params.outputs.semver-build-prefix }}
-      force-publish: ${{ fromJSON(needs.get-params.outputs.force-publish) }}
-      reason: ${{ inputs.reason || '' }}
       nuget-server: ${{ needs.get-params.outputs.nuget-server }}
-      save-package-artifacts: true
+      minver-tag-prefix: ${{ needs.get-params.outputs.minver-tag-prefix }}
+      semver-prerelease-prefix: ${{ needs.get-params.outputs.semver-prerelease-prefix }}
+      reason: ${{ needs.get-params.outputs.reason || '' }}
+      save-package-artifacts: ${{ needs.get-params.outputs.save-package-artifacts }}
