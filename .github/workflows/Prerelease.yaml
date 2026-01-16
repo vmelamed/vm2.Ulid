@@ -79,7 +79,7 @@ jobs:
           echo "::notice::Reason: ${{ inputs.reason }}"
 
   prerelease:
-    name: Prerelease
+    name: Prerelease - package and release NuGet prerelease
     needs:
       - get-params
     uses: vmelamed/vm2.DevOps/.github/workflows/_prerelease.yaml@main
