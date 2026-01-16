@@ -49,8 +49,8 @@ jobs:
           nuget_server='${{ env.NUGET_SERVER }}'
           minver_tag_prefix='${{ vars.MINVERTAGPREFIX || 'v' }}'
           semver_prerelease_prefix='${{ vars.SEMVER_PRERELEASE_PREFIX || 'preview' }}'
-          reason='auto-triggered by a merged pull request'
-          save_package_artifacts=false
+          reason=$(printf "%s %s" "$semver_prerelease_prefix" "pre-release (PR to main)")
+          save_package_artifacts='${{ vars.SAVE_PACKAGE_ARTIFACTS || 'false' }}'
 
           if [ '${{ github.event_name }}' == "workflow_dispatch" ]; then
               semver_prerelease_prefix='${{ inputs.semver-prerelease-prefix }}'
@@ -63,7 +63,7 @@ jobs:
               echo "package-projects=${package_projects}"
               echo "nuget-server=${nuget_server}"
               echo "minver-tag-prefix=${minver_tag_prefix}"
-              echo "semver-prerelease-prefix=$semver_prerelease_prefix"
+              echo "semver-prerelease-prefix=${semver_prerelease_prefix}"
               echo "reason=${reason}"
               echo "save-package-artifacts=${save_package_artifacts}"
           }  >> $GITHUB_OUTPUT
@@ -98,5 +98,5 @@ jobs:
       nuget-server: ${{ needs.get-params.outputs.nuget-server }}
       minver-tag-prefix: ${{ needs.get-params.outputs.minver-tag-prefix }}
       semver-prerelease-prefix: ${{ needs.get-params.outputs.semver-prerelease-prefix }}
-      reason: ${{ needs.get-params.outputs.reason || '' }}
-      save-package-artifacts: ${{ needs.get-params.outputs.save-package-artifacts }}
+      reason: ${{ needs.get-params.outputs.reason }}
+      save-package-artifacts: ${{ fromJson(needs.get-params.outputs.save-package-artifacts) }}

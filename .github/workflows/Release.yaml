@@ -30,6 +30,7 @@ jobs:
     outputs:
       package-projects: ${{ steps.init-params.outputs.package-projects }}
       nuget-server: ${{ steps.init-params.outputs.nuget-server }}
+      save-package-artifacts: ${{ steps.init-params.outputs.save-package-artifacts }}
     steps:
       - name: Gather parameters
         id: init-params
@@ -37,11 +38,13 @@ jobs:
         run: |
           package_projects='${{ env.PACKAGE_PROJECTS }}'
           nuget_server='${{ env.NUGET_SERVER }}'
+          save_package_artifacts='${{ vars.SAVE_PACKAGE_ARTIFACTS || 'false' }}'
 
           # Set the outputs:
           {
               echo "package-projects=${package_projects}"
               echo "nuget-server=${nuget_server}"
+              echo "save-package-artifacts=${save_package_artifacts}"
           }  >> $GITHUB_OUTPUT
 
   log-trigger:
@@ -72,4 +75,4 @@ jobs:
       package-projects: ${{ needs.get-params.outputs.package-projects }}
       dotnet-version: ${{ vars.DOTNET_VERSION }}
       nuget-server: ${{ needs.get-params.outputs.nuget-server }}
-      save-package-artifacts: true
+      save-package-artifacts: ${{ fromJson(needs.get-params.outputs.save-package-artifacts) }}
