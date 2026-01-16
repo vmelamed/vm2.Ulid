@@ -23,7 +23,6 @@ on:
 env:
   PACKAGE_PROJECTS: >-
     ["src/Ulid/Ulid.csproj"]
-
   NUGET_SERVER: ${{ vars.NUGET_SERVER || 'github' }}
 
 jobs:

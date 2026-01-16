@@ -72,7 +72,8 @@ jobs:
       pull-requests: write # Required to comment on PRs
       checks: write # Required to create GitHub Checks
     with:
-      package-projects: ${{ needs.get-params.outputs.package-projects }}
       dotnet-version: ${{ vars.DOTNET_VERSION }}
+      package-projects: ${{ needs.get-params.outputs.package-projects }}
       nuget-server: ${{ needs.get-params.outputs.nuget-server }}
+      reason: ${{ inputs.reason }}
       save-package-artifacts: ${{ fromJson(needs.get-params.outputs.save-package-artifacts) }}
