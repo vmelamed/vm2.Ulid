@@ -83,9 +83,10 @@ jobs:
       - get-params
     uses: vmelamed/vm2.DevOps/.github/workflows/_prerelease.yaml@main
     secrets:
+      # You don't need all three secrets, only the one corresponding to the chosen NuGet server in inputs.nuget-server or the default 'github'
+      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
       NUGET_API_GITHUB_KEY: ${{ secrets.NUGET_API_GITHUB_KEY }}
       NUGET_API_NUGET_KEY: ${{ secrets.NUGET_API_NUGET_KEY }}
-      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
     permissions:
       contents: write # Required to checkout the code and create releases
       packages: write # Required to restore and publish GitHub Packages NuGet packages

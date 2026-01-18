@@ -1,5 +1,5 @@
 [*]
-guidelines = 128
+guidelines = 128 dashed, 80 dotted, 50 dotted #160 solid
 
 # C# project files
 [*.{csproj}]
@@ -10,6 +10,10 @@ insert_final_newline = true
 
 # C# files
 [*.cs]
+file_header_template = SPDX-License-Identifier: MIT\nCopyright (c) 2025 Val Melamed\n
+
+# IDE0073: The file header does not match the required text
+dotnet_diagnostic.IDE0073.severity = warning
 
 #### Core EditorConfig Options ####
 
@@ -232,7 +236,7 @@ dotnet_naming_rule.public_const_field_should_be_pascal_case.severity = warning
 dotnet_naming_rule.public_const_field_should_be_pascal_case.symbols = public_const_field
 dotnet_naming_rule.public_const_field_should_be_pascal_case.style = pascal_case
 
-dotnet_naming_rule.non_public_const_member_should_be_camel_case.severity = warning
+dotnet_naming_rule.non_public_const_member_should_be_camel_case.severity = silent
 dotnet_naming_rule.non_public_const_member_should_be_camel_case.symbols = non_public_const_member
 dotnet_naming_rule.non_public_const_member_should_be_camel_case.style = camel_case
 
@@ -240,7 +244,11 @@ dotnet_naming_rule.public_static_readonly_field_should_be_pascal_case.severity =
 dotnet_naming_rule.public_static_readonly_field_should_be_pascal_case.symbols = public_static_readonly_field
 dotnet_naming_rule.public_static_readonly_field_should_be_pascal_case.style = pascal_case
 
-dotnet_naming_rule.non_public_static_readonly_fields_should_be_camel_case.severity = none
+dotnet_naming_rule.non_public_static_fields_should_be_camel_case.severity = silent
+dotnet_naming_rule.non_public_static_fields_should_be_camel_case.symbols = non_public_static_fields
+dotnet_naming_rule.non_public_static_fields_should_be_camel_case.style = begins_with_s
+
+dotnet_naming_rule.non_public_static_readonly_fields_should_be_camel_case.severity = silent
 dotnet_naming_rule.non_public_static_readonly_fields_should_be_camel_case.symbols = non_public_static_readonly_fields
 dotnet_naming_rule.non_public_static_readonly_fields_should_be_camel_case.style = camel_case
 
@@ -338,6 +346,11 @@ dotnet_naming_style.begins_with_i.required_suffix =
 dotnet_naming_style.begins_with_i.word_separator =
 dotnet_naming_style.begins_with_i.capitalization = pascal_case
 
+dotnet_naming_style.begins_with_s.required_prefix = s_
+dotnet_naming_style.begins_with_s.required_suffix =
+dotnet_naming_style.begins_with_s.word_separator =
+dotnet_naming_style.begins_with_s.capitalization = pascal_case
+
 dotnet_naming_style.private_field.required_prefix = _
 dotnet_naming_style.private_field.required_suffix =
 dotnet_naming_style.private_field.word_separator =
@@ -352,6 +365,7 @@ dotnet_naming_style.async_pascal_case.required_prefix =
 dotnet_naming_style.async_pascal_case.required_suffix = Async
 dotnet_naming_style.async_pascal_case.word_separator =
 dotnet_naming_style.async_pascal_case.capitalization = pascal_case
+
 csharp_prefer_system_threading_lock = true:suggestion
 csharp_style_prefer_unbound_generic_type_in_nameof = true:suggestion
 csharp_prefer_static_anonymous_function = true:suggestion
@@ -393,9 +407,8 @@ dotnet_style_prefer_inferred_anonymous_type_member_names = true:suggestion
 dotnet_style_prefer_compound_assignment = true:suggestion
 dotnet_style_prefer_simplified_interpolation = true:suggestion
 dotnet_style_namespace_match_folder = true:suggestion
-dotnet_diagnostic.CA1859.severity = none
 
-dotnet_diagnostic.CA1860.severity = none       # Avoid using 'Enumerable.Any()' extension method
+dotnet_diagnostic.CA1859.severity = none       # Avoid using 'Enumerable.Any()' extension method
 dotnet_diagnostic.CA1031.severity = warning    # Don’t catch System.Exception
 dotnet_diagnostic.CA2200.severity = warning    # Use 'throw;' to preserve stack
 dotnet_diagnostic.CA2219.severity = warning    # Don’t throw in finally/filter

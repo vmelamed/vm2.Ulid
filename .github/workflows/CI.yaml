@@ -22,7 +22,6 @@ on:
         type: string
         required: false
         default: ""
-        # Here it enables benchmarks short run mode for faster execution, but less precise results, acceptable for CI runs.
 
 env:
   BUILD_PROJECTS: >-
@@ -45,6 +44,8 @@ jobs:
       configuration: ${{ vars.CONFIGURATION }}
       min-coverage-pct: ${{ vars.MIN_COVERAGE_PCT }}
       max-regression-pct: ${{ vars.MAX_REGRESSION_PCT }}
+      MinVerTagPrefix: ${{ vars.MINVERTAGPREFIX || 'v' }}
+      MinVerDefaultPreReleaseIdentifiers: ${{ vars.MINVERDEFAULTPRERELEASEIDENTIFIERS || 'preview' }}
     outputs:
       build-projects: ${{ steps.init-params.outputs.build-projects }}
       test-projects: ${{ steps.init-params.outputs.test-projects }}
@@ -72,7 +73,7 @@ jobs:
           if [ '${{ github.event_name }}' == "push" ]; then
               # Set the values for push events, and add SHORT_RUN to preprocessor_symbols for faster benchmark tests (less precise, yet acceptable for CI runs).
               os='${{ env.OS }}'
-              preprocessor_symbols='SHORT_RUN;${{ env.PREPROCESSOR_SYMBOLS }}' # *TODO* Adjust as needed.
+              preprocessor_symbols='SHORT_RUN;${{ env.PREPROCESSOR_SYMBOLS }}'
           elif [ '${{ github.event_name }}' == "pull_request" ]; then
               # Set the values for pull_request events
               os='${{ env.OS }}'
@@ -90,15 +91,15 @@ jobs:
 
           # Set the outputs:
           {
-            echo "build-projects=${build_projects}"
-            echo "test-projects=${test_projects}"
-            echo "benchmark-projects=${benchmark_projects}"
-            echo "os=${os}"
-            echo "preprocessor-symbols=${preprocessor_symbols}"
-            echo "dotnet-version=${dotnet_version}"
-            echo "configuration=${configuration}"
-            echo "min-coverage-pct=${min_coverage_pct}"
-            echo "max-regression-pct=${max_regression_pct}"
+              echo "build-projects=${build_projects}"
+              echo "test-projects=${test_projects}"
+              echo "benchmark-projects=${benchmark_projects}"
+              echo "os=${os}"
+              echo "preprocessor-symbols=${preprocessor_symbols}"
+              echo "dotnet-version=${dotnet_version}"
+              echo "configuration=${configuration}"
+              echo "min-coverage-pct=${min_coverage_pct}"
+              echo "max-regression-pct=${max_regression_pct}"
           }  >> $GITHUB_OUTPUT
 
   call-ci:
