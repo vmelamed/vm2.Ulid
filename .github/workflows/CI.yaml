@@ -44,8 +44,8 @@ jobs:
       configuration: ${{ vars.CONFIGURATION }}
       min-coverage-pct: ${{ vars.MIN_COVERAGE_PCT }}
       max-regression-pct: ${{ vars.MAX_REGRESSION_PCT }}
-      MinVerTagPrefix: ${{ vars.MINVERTAGPREFIX || 'v' }}
-      MinVerDefaultPreReleaseIdentifiers: ${{ vars.MINVERDEFAULTPRERELEASEIDENTIFIERS || 'preview' }}
+      minver-tag-prefix: ${{ vars.MINVERTAGPREFIX || 'v' }}
+      minver-prerelease-id: ${{ vars.MINVERDEFAULTPRERELEASEIDENTIFIERS || 'preview.0' }}
     outputs:
       build-projects: ${{ steps.init-params.outputs.build-projects }}
       test-projects: ${{ steps.init-params.outputs.test-projects }}
@@ -56,6 +56,8 @@ jobs:
       preprocessor-symbols: ${{ steps.init-params.outputs.preprocessor-symbols }}
       min-coverage-pct: ${{ steps.init-params.outputs.min-coverage-pct }}
       max-regression-pct: ${{ steps.init-params.outputs.max-regression-pct }}
+      minver-tag-prefix: ${{ steps.init-params.outputs.minver-tag-prefix }}
+      minver-prerelease-id: ${{ steps.init-params.outputs.minver-prerelease-id }}
     steps:
       - name: Gather parameters
         id: init-params
@@ -69,6 +71,8 @@ jobs:
           configuration='${{ env.configuration }}'
           min_coverage_pct='${{ env.min-coverage-pct }}'
           max_regression_pct='${{ env.max-regression-pct }}'
+          minver_tag_prefix='${{ env.minver-tag-prefix }}'
+          minver_prerelease_id='${{ env.minver-prerelease-id }}'
 
           if [ '${{ github.event_name }}' == "push" ]; then
               # Set the values for push events, and add SHORT_RUN to preprocessor_symbols for faster benchmark tests (less precise, yet acceptable for CI runs).
@@ -100,6 +104,8 @@ jobs:
               echo "configuration=${configuration}"
               echo "min-coverage-pct=${min_coverage_pct}"
               echo "max-regression-pct=${max_regression_pct}"
+              echo "minver-tag-prefix=${minver_tag_prefix}"
+              echo "minver-prerelease-id=${minver_prerelease_id}"
           }  >> $GITHUB_OUTPUT
 
   call-ci:
@@ -125,3 +131,5 @@ jobs:
       benchmark-projects: ${{ needs.get-params.outputs.benchmark-projects }}
       min-coverage-pct: ${{ fromJSON(needs.get-params.outputs.min-coverage-pct) }}
       max-regression-pct: ${{ fromJSON(needs.get-params.outputs.max-regression-pct) }}
+      minver-tag-prefix: ${{ needs.get-params.outputs.minver-tag-prefix }}
+      minver-prerelease-id: ${{ needs.get-params.outputs.minver-prerelease-id }}

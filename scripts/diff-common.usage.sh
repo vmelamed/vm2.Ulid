@@ -36,7 +36,7 @@ Options:
 
     --minver-tag-prefix | -t
         The prefix used for MinVer version tags in the repositories.
-        Initial from the MinVerTagPrefix environment variable or 'v'.
+        Initial from the MINVERTAGPREFIX environment variable or 'v'.
 
 Environment Variables:
 
@@ -48,5 +48,6 @@ EOF
 
 function usage()
 {
-    display_usage_msg "$(usage_text)" "$@"
+    text="$(usage_text)"
+    display_usage_msg  "$text" "$@"
 }

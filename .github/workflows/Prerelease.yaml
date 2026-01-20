@@ -9,7 +9,7 @@ on:
 
   workflow_dispatch:
     inputs:
-      semver-prerelease-prefix:
+      minver-prerelease-id:
         description: "Prerelease prefix (e.g. preview, alpha, beta, rc1, etc.)"
         type: string
         required: true
@@ -35,7 +35,7 @@ jobs:
       package-projects: ${{ steps.init-params.outputs.package-projects }}
       nuget-server: ${{ steps.init-params.outputs.nuget-server }}
       minver-tag-prefix: ${{ steps.init-params.outputs.minver-tag-prefix }}
-      semver-prerelease-prefix: ${{ steps.init-params.outputs.semver-prerelease-prefix }}
+      minver-prerelease-id: ${{ steps.init-params.outputs.minver-prerelease-id }}
       reason: ${{ steps.init-params.outputs.reason }}
       save-package-artifacts: ${{ steps.init-params.outputs.save-package-artifacts }}
     steps:
@@ -43,26 +43,26 @@ jobs:
         id: init-params
         shell: bash
         run: |
-          dotnet_version='${{ vars.DOTNET_VERSION }}'
           package_projects='${{ env.PACKAGE_PROJECTS }}'
           nuget_server='${{ env.NUGET_SERVER }}'
+          dotnet_version='${{ vars.DOTNET_VERSION }}'
           minver_tag_prefix='${{ vars.MINVERTAGPREFIX || 'v' }}'
-          semver_prerelease_prefix='${{ vars.SEMVER_PRERELEASE_PREFIX || 'preview' }}'
-          reason=$(printf "%s %s" "$semver_prerelease_prefix" "pre-release (PR to main)")
+          minver_prerelease_id='${{ vars.MINVERDEFAULTPRERELEASEIDENTIFIERS || 'preview.0' }}'
+          reason="$minver_prerelease_id pre-release (PR to main)"
           save_package_artifacts='${{ vars.SAVE_PACKAGE_ARTIFACTS || 'false' }}'
 
           if [ '${{ github.event_name }}' == "workflow_dispatch" ]; then
-              semver_prerelease_prefix='${{ inputs.semver-prerelease-prefix }}'
+              minver_prerelease_id='${{ inputs.minver-prerelease-id }}'
               reason='${{ inputs.reason }}'
           fi
 
           # Set the outputs:
           {
-              echo "dotnet-version=${dotnet_version}"
               echo "package-projects=${package_projects}"
               echo "nuget-server=${nuget_server}"
+              echo "dotnet-version=${dotnet_version}"
               echo "minver-tag-prefix=${minver_tag_prefix}"
-              echo "semver-prerelease-prefix=${semver_prerelease_prefix}"
+              echo "minver-prerelease-id=${minver_prerelease_id}"
               echo "reason=${reason}"
               echo "save-package-artifacts=${save_package_artifacts}"
           }  >> $GITHUB_OUTPUT
@@ -97,6 +97,6 @@ jobs:
       package-projects: ${{ needs.get-params.outputs.package-projects }}
       nuget-server: ${{ needs.get-params.outputs.nuget-server }}
       minver-tag-prefix: ${{ needs.get-params.outputs.minver-tag-prefix }}
-      semver-prerelease-prefix: ${{ needs.get-params.outputs.semver-prerelease-prefix }}
+      minver-prerelease-id: ${{ needs.get-params.outputs.minver-prerelease-id }}
       reason: ${{ needs.get-params.outputs.reason }}
       save-package-artifacts: ${{ fromJson(needs.get-params.outputs.save-package-artifacts) }}

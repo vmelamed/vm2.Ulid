@@ -25,11 +25,14 @@ jobs:
       ${{
       github.event_name == 'workflow_dispatch' ||
       !contains(github.ref_name,'-') &&
-      startsWith(github.ref, format('refs/tags/%s', vars.MinVerTagPrefix || 'v'))
+      startsWith(github.ref, format('refs/tags/%s', vars.MINVERTAGPREFIX || 'v'))
       }}
     outputs:
+      dotnet-version: ${{ steps.init-params.outputs.dotnet-version }}
       package-projects: ${{ steps.init-params.outputs.package-projects }}
       nuget-server: ${{ steps.init-params.outputs.nuget-server }}
+      minver-tag-prefix: ${{ steps.init-params.outputs.minver-tag-prefix }}
+      reason: ${{ steps.init-params.outputs.reason }}
       save-package-artifacts: ${{ steps.init-params.outputs.save-package-artifacts }}
     steps:
       - name: Gather parameters
@@ -38,12 +41,22 @@ jobs:
         run: |
           package_projects='${{ env.PACKAGE_PROJECTS }}'
           nuget_server='${{ env.NUGET_SERVER }}'
+          dotnet_version='${{ vars.DOTNET_VERSION }}'
+          minver_tag_prefix='${{ vars.MINVERTAGPREFIX || 'v' }}'
+          reason="Stable Release (main tagged release)"
           save_package_artifacts='${{ vars.SAVE_PACKAGE_ARTIFACTS || 'false' }}'
+
+          if [ '${{ github.event_name }}' == "workflow_dispatch" ]; then
+              reason='${{ inputs.reason }}'
+          fi
 
           # Set the outputs:
           {
               echo "package-projects=${package_projects}"
               echo "nuget-server=${nuget_server}"
+              echo "dotnet-version=${dotnet_version}"
+              echo "minver-tag-prefix=${minver_tag_prefix}"
+              echo "reason=${reason}"
               echo "save-package-artifacts=${save_package_artifacts}"
           }  >> $GITHUB_OUTPUT
 
@@ -76,5 +89,6 @@ jobs:
       dotnet-version: ${{ vars.DOTNET_VERSION }}
       package-projects: ${{ needs.get-params.outputs.package-projects }}
       nuget-server: ${{ needs.get-params.outputs.nuget-server }}
-      reason: ${{ inputs.reason }}
+      reason: ${{ needs.get-params.outputs.reason }}
       save-package-artifacts: ${{ fromJson(needs.get-params.outputs.save-package-artifacts) }}
+      minver-tag-prefix: ${{ needs.get-params.outputs.minver-tag-prefix }}

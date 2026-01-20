@@ -1,6 +1,7 @@
 #!/bin/bash
 
-if ! declare -pF "error" > /dev/null; then
+# shellcheck disable=SC2154 # variable is referenced but not assigned.
+if ! declare -pF "error" > "$_ignore"; then
     semver_dir="$(dirname "${BASH_SOURCE[0]}")"
     source "$semver_dir/_common.diagnostics.sh"
 fi
@@ -22,12 +23,13 @@ function press_any_key() {
 ## Parameter 1 - the prompt to confirm.
 ## Parameter 2 - the default response if the user presses [Enter]. When specified should be either 'y' or 'n'. Optional.
 ## Outputs the result to stdout as 'y' or 'n'.
-function confirm() {
-    if [[ -z "$1" ]]; then
-        error "The function confirm() requires at least one parameter: the prompt."
-        exit 2
+function confirm()
+{
+    if [[ $# -eq 0 || $# -gt 2 || -z "$1" ]]; then
+        error "The function confirm() requires at least one parameter: the prompt and a second, optional parameter -default response."
+        return 2
     fi
-    if [[ -n "$2" && ! "$2" =~ ^[ynYN]$ ]]; then
+    if [[ -n "$2" && ! "$2" =~ ^[NYny]$ ]]; then
         error "If a default response parameter is specified for the function confirm(), it must be either 'y' or 'n'"
         exit 2
     fi

@@ -1,6 +1,7 @@
 #!/bin/bash
 
-if ! declare -pF "error" > /dev/null; then
+# shellcheck disable=SC2154 # variable is referenced but not assigned.
+if ! declare -pF "error" > "$_ignore"; then
     semver_dir="$(dirname "${BASH_SOURCE[0]}")"
     source "$semver_dir/_common.diagnostics.sh"
 fi
@@ -74,10 +75,11 @@ function is_in() {
 function has_errors()
 {
     if ((errors > 0)); then
-        error "$errors error(s) encountered. Please fix the issues and try again." >&2
         if [[ -n $1 ]]; then
-            usage
+            usage "❌  ERROR: $errors error(s) encountered. Please fix the above issues and try again."
             exit 2
+        else
+            error "$errors error(s) encountered. Please fix the above issues and try again."
         fi
         return 1
     fi
@@ -99,21 +101,21 @@ function is_git_repo()
         return 2
     fi
 
-    [[ -d $1 ]] && git -C "$1" rev-parse --is-inside-work-tree &>/dev/null
+    [[ -d $1 ]] && git -C "$1" rev-parse --is-inside-work-tree &>"$_ignore"
 }
 
 ## Tests if the current commit in the specified directory is on the latest stable tag.
 ## Usage: is_on_or_after_latest_stable_tag <directory> <stable-tag-regex> [<skip-fetch>]
 function is_latest_stable_tag()
 {
-    if [[ $# != 2 ]]; then
+    if [[ $# -lt 2 || $# -gt 3 ]]; then
         error "The function is_latest_stable_tag() takes 2 arguments: directory and regular expression for stable tag." \
               "A third argument may be specified to fetch latest in main changes from remote."
     fi
-    if [[ ! -d $1 ]]; then
+    if [[ ! -d "$1" ]]; then
         error "The specified directory '$1' does not exist."
     fi
-    if [[ -z $2 ]]; then
+    if [[ -z "$2" ]]; then
         error "The regular expression for stable tag cannot be empty."
     fi
     ((errors == 0 )) || return 2
@@ -121,7 +123,7 @@ function is_latest_stable_tag()
     local latest_tag current_commit tag_commit
 
     is_git_repo "$1" || return 2
-    if [[ $3 != "true" ]]; then
+    if [[ $# -eq 3 && "$3" != "true" ]]; then
         git -C "$1" fetch origin main --quiet
     fi
 
@@ -131,7 +133,7 @@ function is_latest_stable_tag()
 
     current_commit=$(git -C "$1" rev-parse HEAD)
 
-    tag_commit=$(git -C "$1" rev-parse "$latest_tag^{commit}" 2>/dev/null)
+    tag_commit=$(git -C "$1" rev-parse "$latest_tag^{commit}" 2>"$_ignore")
 
     [[ "$current_commit" == "$tag_commit" ]]
 }
@@ -140,14 +142,14 @@ function is_latest_stable_tag()
 ## Usage: is_after_latest_stable_tag <directory> <stable-tag-regex> [<skip-fetch>]
 function is_after_latest_stable_tag()
 {
-    if [[ $# != 2 ]]; then
+    if [[ $# -lt 2 || $# -gt 3 ]]; then
         error "The function is_after_latest_stable_tag() takes 2 arguments: directory and regular expression for stable tag." \
               "A third argument may be specified to fetch latest in main changes from remote."
     fi
-    if [[ ! -d $1 ]]; then
+    if [[ ! -d "$1" ]]; then
         error "The specified directory '$1' does not exist."
     fi
-    if [[ -z $2 ]]; then
+    if [[ -z "$2" ]]; then
         error "The regular expression for stable tag cannot be empty."
     fi
     ((errors == 0 )) || return 2
@@ -155,7 +157,7 @@ function is_after_latest_stable_tag()
     local latest_tag tag_commit commits_after
 
     is_git_repo "$1" || return 2
-    if [[ $3 != "true" ]]; then
+    if [[ $# -eq 3 && "$3" != "true" ]]; then
         git -C "$1" fetch origin main --quiet
     fi
 
@@ -163,10 +165,10 @@ function is_after_latest_stable_tag()
     latest_tag=$(git -C "$1" tag | grep -E "$2" | sort -V | tail -n1)
     [[ -n $latest_tag ]] || return 1
 
-    tag_commit=$(git -C "$1" rev-parse "$latest_tag^{commit}" 2>/dev/null)
+    tag_commit=$(git -C "$1" rev-parse "$latest_tag^{commit}" 2>"$_ignore")
 
     # Check if current commit is after the latest stable tag
-    commits_after=$(git -C "$1" rev-list "$tag_commit..HEAD" --count 2>/dev/null)
+    commits_after=$(git -C "$1" rev-list "$tag_commit..HEAD" --count 2>"$_ignore")
     [[ $commits_after -gt 0 ]]
 }
 
@@ -174,14 +176,14 @@ function is_after_latest_stable_tag()
 ## Usage: is_on_or_after_latest_stable_tag <directory> <stable-tag-regex> [<skip-fetch>]
 function is_on_or_after_latest_stable_tag()
 {
-    if [[ $# != 2 ]]; then
+    if [[ $# -lt 2 || $# -gt 3 ]]; then
         error "The function is_on_or_after_latest_stable_tag() takes 2 arguments: directory and regular expression for stable tag." \
               "A third argument may be specified to fetch latest in main changes from remote."
     fi
-    if [[ ! -d $1 ]]; then
+    if [[ ! -d "$1" ]]; then
         error "The specified directory '$1' does not exist."
     fi
-    if [[ -z $2 ]]; then
+    if [[ -z "$2" ]]; then
         error "The regular expression for stable tag cannot be empty."
     fi
     ((errors == 0 )) || return 2
@@ -189,7 +191,7 @@ function is_on_or_after_latest_stable_tag()
     local latest_tag tag_commit
 
     is_git_repo "$1" || return 2
-    if [[ $3 != "true" ]]; then
+    if [[ $# -eq 3 && "$3" != "true" ]]; then
         git -C "$1" fetch origin main --quiet
     fi
 
@@ -197,9 +199,9 @@ function is_on_or_after_latest_stable_tag()
     latest_tag=$(git -C "$1" tag | grep -E "$2" | sort -V | tail -n1)
     [[ -n $latest_tag ]] || return 1
 
-    tag_commit=$(git -C "$1" rev-parse "$latest_tag^{commit}" 2>/dev/null)
+    tag_commit=$(git -C "$1" rev-parse "$latest_tag^{commit}" 2>"$_ignore")
 
     # Check if current commit is on or after the latest stable tag
     # Returns 0 if tag commit is an ancestor of HEAD (i.e., HEAD is at or after the tag)
-    git -C "$1" merge-base --is-ancestor "$tag_commit" HEAD &>/dev/null
+    git -C "$1" merge-base --is-ancestor "$tag_commit" HEAD &>"$_ignore"
 }

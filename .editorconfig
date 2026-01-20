@@ -1,3 +1,4 @@
+# All files
 [*]
 guidelines = 128 dashed, 80 dotted, 50 dotted #160 solid
 
@@ -16,7 +17,6 @@ file_header_template = SPDX-License-Identifier: MIT\nCopyright (c) 2025 Val Mela
 dotnet_diagnostic.IDE0073.severity = warning
 
 #### Core EditorConfig Options ####
-
 # Indentation and spacing
 indent_size = 4
 indent_style = space
