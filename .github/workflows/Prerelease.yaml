@@ -23,6 +23,8 @@ on:
 env:
   PACKAGE_PROJECTS: >-
     ["src/Ulid/Ulid.csproj"]
+
+  # Ensure the NUGET_API_*KEY secret below corresponds to the server selected here.
   NUGET_SERVER: ${{ vars.NUGET_SERVER || 'github' }}
 
 jobs:
@@ -48,7 +50,7 @@ jobs:
           dotnet_version='${{ vars.DOTNET_VERSION }}'
           minver_tag_prefix='${{ vars.MINVERTAGPREFIX || 'v' }}'
           minver_prerelease_id='${{ vars.MINVERDEFAULTPRERELEASEIDENTIFIERS || 'preview.0' }}'
-          reason="$minver_prerelease_id pre-release (PR to main)"
+          reason="Pre-release (PR approved to merge into main, automatically tagged with a pre-release tag)"
           save_package_artifacts='${{ vars.SAVE_PACKAGE_ARTIFACTS || 'false' }}'
 
           if [ '${{ github.event_name }}' == "workflow_dispatch" ]; then
@@ -58,9 +60,9 @@ jobs:
 
           # Set the outputs:
           {
+              echo "dotnet-version=${dotnet_version}"
               echo "package-projects=${package_projects}"
               echo "nuget-server=${nuget_server}"
-              echo "dotnet-version=${dotnet_version}"
               echo "minver-tag-prefix=${minver_tag_prefix}"
               echo "minver-prerelease-id=${minver_prerelease_id}"
               echo "reason=${reason}"
@@ -83,7 +85,7 @@ jobs:
       - get-params
     uses: vmelamed/vm2.DevOps/.github/workflows/_prerelease.yaml@main
     secrets:
-      # You don't need all three secrets, only the one corresponding to the chosen NuGet server in inputs.nuget-server or the default 'github'
+      # You don't need all three secrets, only the one corresponding to the chosen NuGet server above or the default 'github'
       NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
       NUGET_API_GITHUB_KEY: ${{ secrets.NUGET_API_GITHUB_KEY }}
       NUGET_API_NUGET_KEY: ${{ secrets.NUGET_API_NUGET_KEY }}

@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+# shellcheck disable=SC2148 # This script is intended to be sourced, not executed directly.
 
 # shellcheck disable=SC2154 # variable is referenced but not assigned.
 if ! declare -pF "error" > "$_ignore"; then
@@ -10,7 +10,8 @@ fi
 ## presses a key. If there is defined variable $quiet with value "true", the function will not display prompt and will
 ## not wait for response.
 # shellcheck disable=SC2154 # variable is referenced but not assigned.
-function press_any_key() {
+function press_any_key()
+{
     if [[ "$quiet" != true ]]; then
         read -n 1 -rsp 'Press any key to continue...' >&2
         echo
@@ -29,16 +30,13 @@ function confirm()
         error "The function confirm() requires at least one parameter: the prompt and a second, optional parameter -default response."
         return 2
     fi
-    if [[ -n "$2" && ! "$2" =~ ^[NYny]$ ]]; then
-        error "If a default response parameter is specified for the function confirm(), it must be either 'y' or 'n'"
-        exit 2
-    fi
-
-    local default
     local prompt="$1"
-
-    default=$(to_lower "${2:-y}")
-
+    local default
+    if [[ $# -eq 2 ]]; then
+        default=${2,,}
+    else
+        default="y"
+    fi
     if [[ "$quiet" == true ]]; then
         printf '%s' "$default"
         return 0
@@ -64,6 +62,7 @@ function confirm()
         error "Please enter y or n." >&2
         errors=$((errors - 1))
     done
+    [[ ${response,,} == "y" ]]
 }
 
 ## Displays a prompt and a list of options to the script user and asks them to choose one of the options.
@@ -74,7 +73,8 @@ function confirm()
 ## The first option is the default one.
 ## The result will be printed in stdout as the number of the chosen option.
 ## The function will exit with code 2 if less than 3 parameters are specified.
-function choose() {
+function choose()
+{
     if [[ $# -lt 3 ]]; then
         error "The function choose() requires 3 or more arguments: a prompt and at least two choices." >&2;
         return 2;
@@ -96,7 +96,7 @@ function choose() {
         else
             echo "  $i) $o" >&2
         fi
-        ((i++))
+        i=$((i+1))
     done
 
     local -i selection=1
@@ -111,4 +111,86 @@ function choose() {
         error "Invalid choice: $selection" >&2
     done
     return 0
+}
+
+## Prints the specified sequence of quoted values, separated by a separator and enclosed in parentheses.
+## The function can take optionally named parameters to customize the output:
+##   --quote|-q='<quote_char>': Specifies the quote character to use. Default is single quote (').
+##     You can also specify --quote='' for no quotes (empty string).
+##   --separator|-s='<separator_char>': Specifies the separator character to use. Default is comma (,).
+##     Special values for separator are: nl (newline) or $'\n', tab (tab character) or $'\t', and '' (no separator).
+##   --paren|-p='('|')'|'['|']'|'{'|'}'|'()'|'[]'|'{}': Specifies the type of parentheses to use. Default is no parentheses.
+##     Special values for separator is: nl (newline) or $'\n'.
+## Usage: print_sequence [--quote='<quote_char>'] [--separator='<separator_char>']
+##                        [--paren='('|')'|'['|']'|'{'|'}'|'()'|'[]'|'{}'|nl] <value1> [<value2> ...]
+## Note: The named parameters can be specified in any order before the list of values, but they should not be last.
+## Examples:
+##   print_sequence --quote='"' --separator='; ' --paren='()' apple banana cherry
+##     Output: ("apple"; "banana"; "cherry")
+##   print_sequence -p='[]' -s=' | ' 1 2 3 4 5
+##     Output: [1 | 2 | 3 | 4 | 5]
+##   print_sequence -p='[]' 1 2 3 4 5 -s=' | ' (putting a named parameter last spoils the output):
+##     Output: [1 | 2 | 3 | 4 | 5 | ]
+function print_sequence()
+{
+    open_paren=""
+    close_paren=""
+    quote="'"
+    separator=","
+    local arg
+    for arg in "$@"; do
+        case $arg in
+            --quote=*|-q=* )
+                quote="${arg#*=}"
+                ;;
+            --separator=*|-s=* )
+                separator="${arg#*=}"
+                # Handle special values
+                case "$separator" in
+                    nl) separator=$'\n' ;;
+                    tab) separator=$'\t' ;;
+                    * ) ;;
+                esac
+                ;;
+            --paren=*|--parenthesis=*|-p=* )
+                local paren_val="${arg#*=}"
+                case "$paren_val" in
+                    \(|\)|\(\) )
+                        open_paren="("
+                        close_paren=")"
+                        ;;
+                    \[|\]|\[\] )
+                        open_paren="["
+                        close_paren="]"
+                        ;;
+                    \{|\}|\{\} )
+                        open_paren="{"
+                        close_paren="}"
+                        ;;
+                    nl|$'\n'|'\n' )
+                        # Handle special values
+                        open_paren=$'\n'
+                        close_paren=$'\n'
+                        ;;
+                    * )
+                        warning "Unknown paren type: ${arg#*=}. Ignoring."
+                        open_paren=""
+                        close_paren=""
+                        ;;
+                esac
+                ;;
+            * ) ;;
+        esac
+    done
+
+    [[ -n "$open_paren" ]] && printf "%s" "$open_paren" || true
+    for arg in "$@"; do
+        [[ "$arg" == -* || "$arg" == --* ]] && continue || true
+        if [[ $arg != "${!#}" ]]; then
+            printf "%s%s%s%s" "$quote" "$arg" "$quote" "$separator"
+        else
+            printf "%s%s%s" "$quote" "$arg" "$quote"
+        fi
+    done
+    [[ -n "$close_paren" ]] && printf "%s" "$close_paren" || true
 }
