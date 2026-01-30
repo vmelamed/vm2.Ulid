@@ -1,4 +1,4 @@
-name: Publish NuGet Prerelease
+name: Publish NuGet Pre-Release
 
 on:
   pull_request:

@@ -1,4 +1,4 @@
-name: Publish NuGet Release
+name: Publish NuGet Stable Release
 
 on:
   push:
