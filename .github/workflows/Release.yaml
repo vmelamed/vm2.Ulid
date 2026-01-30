@@ -14,8 +14,13 @@ on:
 
 env:
   PACKAGE_PROJECTS: >-
-    ["src/Ulid/Ulid.csproj"]
+    [
+    "src/Ulid/Ulid.csproj"
+    ]
 
+  PREPROCESSOR_SYMBOLS: ""
+
+  # Ensure the NUGET_API_*KEY secret below corresponds to the server selected here.
   NUGET_SERVER: ${{ vars.NUGET_SERVER || 'github' }}
 
 jobs:
@@ -31,9 +36,11 @@ jobs:
     outputs:
       dotnet-version: ${{ steps.init-params.outputs.dotnet-version }}
       package-projects: ${{ steps.init-params.outputs.package-projects }}
-      nuget-server: ${{ steps.init-params.outputs.nuget-server }}
+      preprocessor-symbols: ${{ steps.init-params.outputs.preprocessor-symbols }}
       minver-tag-prefix: ${{ steps.init-params.outputs.minver-tag-prefix }}
+      minver-prerelease-id: ${{ steps.init-params.outputs.minver-prerelease-id }}
       reason: ${{ steps.init-params.outputs.reason }}
+      nuget-server: ${{ steps.init-params.outputs.nuget-server }}
       save-package-artifacts: ${{ steps.init-params.outputs.save-package-artifacts }}
     steps:
       - name: Gather parameters
@@ -41,10 +48,12 @@ jobs:
         shell: bash
         run: |
           package_projects='${{ env.PACKAGE_PROJECTS }}'
-          nuget_server='${{ env.NUGET_SERVER }}'
           dotnet_version='${{ vars.DOTNET_VERSION }}'
+          preprocessor_symbols='${{ env.PREPROCESSOR_SYMBOLS }}'
           minver_tag_prefix='${{ vars.MINVERTAGPREFIX || 'v' }}'
+          minver_prerelease_id='${{ vars.MINVERDEFAULTPRERELEASEIDENTIFIERS || 'preview.0' }}'
           reason="Stable Release (main was manually tagged with a release tag)"
+          nuget_server='${{ env.NUGET_SERVER }}'
           save_package_artifacts='${{ vars.SAVE_PACKAGE_ARTIFACTS || 'false' }}'
 
           if [ '${{ github.event_name }}' == "workflow_dispatch" ]; then
@@ -54,10 +63,12 @@ jobs:
           # Set the outputs:
           {
               echo "package-projects=${package_projects}"
-              echo "nuget-server=${nuget_server}"
               echo "dotnet-version=${dotnet_version}"
+              echo "preprocessor-symbols=${preprocessor_symbols}"
               echo "minver-tag-prefix=${minver_tag_prefix}"
+              echo "minver-prerelease-id=${minver_prerelease_id}"
               echo "reason=${reason}"
+              echo "nuget-server=${nuget_server}"
               echo "save-package-artifacts=${save_package_artifacts}"
           }  >> $GITHUB_OUTPUT
 
@@ -87,9 +98,11 @@ jobs:
       pull-requests: write # Required to comment on PRs
       checks: write # Required to create GitHub Checks
     with:
-      dotnet-version: ${{ vars.DOTNET_VERSION }}
+      dotnet-version: ${{ needs.get-params.outputs.dotnet-version }}
       package-projects: ${{ needs.get-params.outputs.package-projects }}
-      nuget-server: ${{ needs.get-params.outputs.nuget-server }}
-      reason: ${{ needs.get-params.outputs.reason }}
-      save-package-artifacts: ${{ fromJson(needs.get-params.outputs.save-package-artifacts) }}
+      preprocessor-symbols: ${{ needs.get-params.outputs.preprocessor-symbols }}
       minver-tag-prefix: ${{ needs.get-params.outputs.minver-tag-prefix }}
+      minver-prerelease-id: ${{ needs.get-params.outputs.minver-prerelease-id }}
+      reason: ${{ needs.get-params.outputs.reason }}
+      nuget-server: ${{ needs.get-params.outputs.nuget-server }}
+      save-package-artifacts: ${{ fromJson(needs.get-params.outputs.save-package-artifacts) }}

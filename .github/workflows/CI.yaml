@@ -14,8 +14,9 @@ on:
         description: Runners OS (one or more runners OS-es separate by comma, e.g. 'ubuntu-latest,windows-latest')
         type: string
         default: ubuntu-latest
-        # There is a known GitHub actions issue: the workflow dispatch UI doesn't properly handle JSON strings with quotes.
-        # E.g. for the input '["ubuntu-latest"]', the UI removes the inner quotes and it becomes the invalid JSON: '[ubuntu-latest]'.
+        # Note: there is a known GitHub actions issue: the workflow dispatch UI doesn't properly handle JSON strings with quotes -
+        # it removes the quotes. E.g. entering '["ubuntu-latest"]' in the UI prompt removes the inner quotes and it becomes the
+        # invalid JSON: '[ubuntu-latest]'.
 
       preprocessor-symbols:
         description: Define semicolon-separated preprocessor symbols to pass to the compiler
@@ -25,17 +26,26 @@ on:
 
 env:
   BUILD_PROJECTS: >-
-    ["./UlidType.slnx"]
+    [
+    "./UlidType.slnx"
+    ]
 
   TEST_PROJECTS: >-
-    ["test/UlidType.Tests/UlidType.Tests.csproj"]
+    [
+    "test/UlidType.Tests/UlidType.Tests.csproj"
+    ]
 
   BENCHMARK_PROJECTS: >-
-    ["benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj"]
+    [
+    "benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj"
+    ]
 
   PREPROCESSOR_SYMBOLS: ""
+
   RUNNERS_OS: >-
-    ["ubuntu-latest"]
+    [
+    "ubuntu-latest"
+    ]
 
 jobs:
   get-params:
@@ -63,8 +73,10 @@ jobs:
           build_projects='${{ env.BUILD_PROJECTS }}'
           test_projects='${{ env.TEST_PROJECTS }}'
           benchmark_projects='${{ env.BENCHMARK_PROJECTS }}'
+          runners_os='${{ env.RUNNERS_OS }}'
           dotnet_version='${{ vars.DOTNET_VERSION }}'
           configuration='${{ vars.CONFIGURATION }}'
+          preprocessor_symbols='${{ env.PREPROCESSOR_SYMBOLS }}'
           min_coverage_pct='${{ vars.MIN_COVERAGE_PCT }}'
           max_regression_pct='${{ vars.MAX_REGRESSION_PCT }}'
           minver_tag_prefix='${{ vars.MINVERTAGPREFIX }}'
@@ -72,14 +84,9 @@ jobs:
 
           if [ '${{ github.event_name }}' == "push" ]; then
               # Set the values for push events, and add SHORT_RUN to preprocessor_symbols for faster benchmark tests (less precise, yet acceptable for CI runs).
-              runners_os='${{ env.RUNNERS_OS }}'
               preprocessor_symbols='SHORT_RUN;${{ env.PREPROCESSOR_SYMBOLS }}'
-          elif [ '${{ github.event_name }}' == "pull_request" ]; then
-              # Set the values for pull_request events
-              runners_os='${{ env.RUNNERS_OS }}'
-              preprocessor_symbols='${{ env.PREPROCESSOR_SYMBOLS }}'
           elif [ '${{ github.event_name }}' == "workflow_dispatch" ]; then
-              # Get the values from the UI inputs of workflow_dispatch event. Convert comma-separated runner's OS values to JSON array
+              # Get the values from the UI inputs of workflow_dispatch event. Convert comma-separated runners' OS values to JSON array
               # There is a known GitHub actions issue: the workflow dispatch UI doesn't properly handle JSON strings with quotes.
               # E.g. for the input '["ubuntu-latest"]', the UI removes the inner quotes and it becomes the invalid JSON: '[ubuntu-latest]'.
               runners_os=$(echo "${{ inputs.runners-os }}" | jq -Rc 'split(",") | map(select(length > 0) | gsub("^\\s+|\\s+$";""))')
@@ -95,9 +102,9 @@ jobs:
               echo "test-projects=${test_projects}"
               echo "benchmark-projects=${benchmark_projects}"
               echo "runners-os=${runners_os}"
-              echo "preprocessor-symbols=${preprocessor_symbols}"
               echo "dotnet-version=${dotnet_version}"
               echo "configuration=${configuration}"
+              echo "preprocessor-symbols=${preprocessor_symbols}"
               echo "min-coverage-pct=${min_coverage_pct}"
               echo "max-regression-pct=${max_regression_pct}"
               echo "minver-tag-prefix=${minver_tag_prefix}"
@@ -118,13 +125,13 @@ jobs:
       pull-requests: write # Required to comment on PRs
       checks: write # Required to create GitHub Checks
     with:
+      build-projects: ${{ needs.get-params.outputs.build-projects }}
+      test-projects: ${{ needs.get-params.outputs.test-projects }}
+      benchmark-projects: ${{ needs.get-params.outputs.benchmark-projects }}
       runners-os: ${{ needs.get-params.outputs.runners-os }}
       dotnet-version: ${{ needs.get-params.outputs.dotnet-version }}
       configuration: ${{ needs.get-params.outputs.configuration }}
       preprocessor-symbols: ${{ needs.get-params.outputs.preprocessor-symbols }}
-      build-projects: ${{ needs.get-params.outputs.build-projects }}
-      test-projects: ${{ needs.get-params.outputs.test-projects }}
-      benchmark-projects: ${{ needs.get-params.outputs.benchmark-projects }}
       min-coverage-pct: ${{ fromJSON(needs.get-params.outputs.min-coverage-pct) }}
       max-regression-pct: ${{ fromJSON(needs.get-params.outputs.max-regression-pct) }}
       minver-tag-prefix: ${{ needs.get-params.outputs.minver-tag-prefix }}
