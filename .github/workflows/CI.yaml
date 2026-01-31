@@ -18,6 +18,11 @@ on:
         # it removes the quotes. E.g. entering '["ubuntu-latest"]' in the UI prompt removes the inner quotes and it becomes the
         # invalid JSON: '[ubuntu-latest]'.
 
+      preprocessor-symbols:
+        description: Space or Comma or Semicolon-separated preprocessor symbols to pass to the compiler
+        type: string
+        default: "SHORT_RUN" # *TODO* Adjust the default preprocessor symbols as needed.
+
 env:
   BUILD_PROJECTS: >-
     [
@@ -84,6 +89,7 @@ jobs:
               # There is a known GitHub actions issue: the workflow dispatch UI doesn't properly handle JSON strings with quotes.
               # E.g. for the input '["ubuntu-latest"]', the UI removes the inner quotes and it becomes the invalid JSON: '[ubuntu-latest]'.
               runners_os=$(echo "${{ inputs.runners-os }}" | jq -Rc 'split(",") | map(select(length > 0) | gsub("^\\s+|\\s+$";""))')
+              preprocessor_symbols=${preprocessor_symbols};${{ inputs.preprocessor-symbols }}
           else
               echo "Unsupported event: ${{ github.event_name }}"
               exit 5
