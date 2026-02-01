@@ -89,7 +89,7 @@ jobs:
               # There is a known GitHub actions issue: the workflow dispatch UI doesn't properly handle JSON strings with quotes.
               # E.g. for the input '["ubuntu-latest"]', the UI removes the inner quotes and it becomes the invalid JSON: '[ubuntu-latest]'.
               runners_os=$(echo "${{ inputs.runners-os }}" | jq -Rc 'split(",") | map(select(length > 0) | gsub("^\\s+|\\s+$";""))')
-              preprocessor_symbols=${preprocessor_symbols};${{ inputs.preprocessor-symbols }}
+              preprocessor_symbols="${preprocessor_symbols};${{ inputs.preprocessor-symbols }}"
           else
               echo "Unsupported event: ${{ github.event_name }}"
               exit 5
