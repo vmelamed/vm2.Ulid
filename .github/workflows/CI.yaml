@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
     inputs:
       runners-os:
-        description: Runners OS (one or more runners OS-es separate by comma, e.g. 'ubuntu-latest,windows-latest')
+        description: One or more, comma-separated runners OS-es
         type: string
         default: ubuntu-latest
         # Note: there is a known GitHub actions issue: the workflow dispatch UI doesn't properly handle JSON strings with quotes -
@@ -19,7 +19,7 @@ on:
         # invalid JSON: '[ubuntu-latest]'.
 
       preprocessor-symbols:
-        description: Space or Comma or Semicolon-separated preprocessor symbols to pass to the compiler
+        description: Space/comma/semicolon-separated preprocessor symbols
         type: string
         default: "SHORT_RUN" # *TODO* Adjust the default preprocessor symbols as needed.
 
