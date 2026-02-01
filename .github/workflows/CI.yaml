@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
     inputs:
       runners-os:
-        description: One or more, comma-separated runners OS-es
+        description: Comma-separated runners OS-es
         type: string
         default: ubuntu-latest
         # Note: there is a known GitHub actions issue: the workflow dispatch UI doesn't properly handle JSON strings with quotes -
@@ -19,32 +19,40 @@ on:
         # invalid JSON: '[ubuntu-latest]'.
 
       preprocessor-symbols:
-        description: Space/comma/semicolon-separated preprocessor symbols
+        description: Comma-separated preprocessor symbols
         type: string
         default: "SHORT_RUN" # *TODO* Adjust the default preprocessor symbols as needed.
 
 env:
-  BUILD_PROJECTS: >-
+  BUILD_PROJECTS: >
     [
     "./UlidType.slnx"
     ]
 
-  TEST_PROJECTS: >-
+  TEST_PROJECTS: >
     [
     "test/UlidType.Tests/UlidType.Tests.csproj"
     ]
 
-  BENCHMARK_PROJECTS: >-
+  BENCHMARK_PROJECTS: >
     [
     "benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj"
     ]
 
-  PREPROCESSOR_SYMBOLS: ""
-
-  RUNNERS_OS: >-
+  RUNNERS_OS: >
     [
     "ubuntu-latest"
     ]
+
+  PREPROCESSOR_SYMBOLS: ""
+
+  DOTNET_VERSION: ${{ vars.DOTNET_VERSION || '10.0.x' }} # The .NET SDK version to use.
+  CONFIGURATION: ${{ vars.CONFIGURATION || 'Release' }} # The build configuration: Debug, Release, etc.
+  MIN_COVERAGE_PCT: ${{ vars.MIN_COVERAGE_PCT || 80 }} # The minimum code coverage percentage required to pass the tests.
+  MAX_REGRESSION_PCT: ${{ vars.MAX_REGRESSION_PCT || 20 }} # The maximum allowed performance regression percentage for benchmarks to pass.
+  MINVERTAGPREFIX: ${{ vars.MINVERTAGPREFIX || 'v' }} # The MinVer tag prefix.
+  MINVERDEFAULTPRERELEASEIDENTIFIERS: ${{ vars.MINVERDEFAULTPRERELEASEIDENTIFIERS || 'preview.0' }} # The MinVer default pre-release identifiers.
+  VERBOSE: ${{ vars.VERBOSE || 'false' }} # Set to "true" to enable verbose logging in scripts.
 
 jobs:
   get-params:
@@ -68,22 +76,21 @@ jobs:
         id: init-params
         shell: bash
         run: |
-          # the following outputs are invariant - no matter how we trigger the workflow, they stay the same as specified in env:
           build_projects='${{ env.BUILD_PROJECTS }}'
           test_projects='${{ env.TEST_PROJECTS }}'
           benchmark_projects='${{ env.BENCHMARK_PROJECTS }}'
           runners_os='${{ env.RUNNERS_OS }}'
-          dotnet_version='${{ vars.DOTNET_VERSION }}'
-          configuration='${{ vars.CONFIGURATION }}'
+          dotnet_version='${{ env.DOTNET_VERSION }}'
+          configuration='${{ env.CONFIGURATION }}'
           preprocessor_symbols='${{ env.PREPROCESSOR_SYMBOLS }}'
-          min_coverage_pct='${{ vars.MIN_COVERAGE_PCT }}'
-          max_regression_pct='${{ vars.MAX_REGRESSION_PCT }}'
-          minver_tag_prefix='${{ vars.MINVERTAGPREFIX }}'
-          minver_prerelease_id='${{ vars.MINVERDEFAULTPRERELEASEIDENTIFIERS }}'
+          min_coverage_pct='${{ env.MIN_COVERAGE_PCT }}'
+          max_regression_pct='${{ env.MAX_REGRESSION_PCT }}'
+          minver_tag_prefix='${{ env.MINVERTAGPREFIX }}'
+          minver_prerelease_id='${{ env.MINVERDEFAULTPRERELEASEIDENTIFIERS }}'
 
           if [ '${{ github.event_name }}' == "push" ]; then
               # Set the values for push events, and add SHORT_RUN to preprocessor_symbols for faster benchmark tests (less precise, yet acceptable for CI runs).
-              preprocessor_symbols='SHORT_RUN;${{ env.PREPROCESSOR_SYMBOLS }}'
+              preprocessor_symbols="${preprocessor_symbols};SHORT_RUN"
           elif [ '${{ github.event_name }}' == "workflow_dispatch" ]; then
               # Get the values from the UI inputs of workflow_dispatch event. Convert comma-separated runners' OS values to JSON array
               # There is a known GitHub actions issue: the workflow dispatch UI doesn't properly handle JSON strings with quotes.
