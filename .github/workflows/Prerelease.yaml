@@ -26,7 +26,7 @@ env:
     "src/Ulid/Ulid.csproj"
     ]
 
-  PREPROCESSOR_SYMBOLS: ''
+  PREPROCESSOR_SYMBOLS: ""
   NUGET_SERVER: ${{ vars.NUGET_SERVER || 'github' }} # Ensure the NUGET_API_*KEY secrets corresponds to the server selected here.
   CONFIGURATION: ${{ vars.CONFIGURATION || 'Release' }} # The build configuration: Debug, Release, etc.
   DOTNET_VERSION: ${{ vars.DOTNET_VERSION || '10.0.x' }} # The .NET SDK version to use.
