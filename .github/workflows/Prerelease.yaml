@@ -16,7 +16,7 @@ on:
         default: preview
 
       reason:
-        description: "Reason for manual pre-release"
+        description: "Reason for manual pre-release (not allowed symbols: ; | & $ ` \\ < > ( ) { } new-line )"
         required: true
         type: string
 
@@ -61,7 +61,7 @@ jobs:
           minver_prerelease_id='${{ env.MINVERDEFAULTPRERELEASEIDENTIFIERS || 'preview.0' }}'
           nuget_server='${{ env.NUGET_SERVER }}'
           save_package_artifacts='${{ env.SAVE_PACKAGE_ARTIFACTS || 'false' }}'
-          reason="Pre-release (PR approved to merge into main, automatically tagged with a pre-release tag)"
+          reason="Pre-release: PR approved, tagged with pre-release tag."
 
           if [ '${{ github.event_name }}' == "workflow_dispatch" ]; then
               minver_prerelease_id='${{ inputs.minver-prerelease-id }}'

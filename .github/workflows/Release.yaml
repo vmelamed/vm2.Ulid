@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       reason:
-        description: "Reason for manual release"
+        description: "Reason for manual release (not allowed symbols: ; | & $ ` \\ < > ( ) { } new-line )"
         required: true
         type: string
 
@@ -48,7 +48,7 @@ jobs:
           minver_prerelease_id='${{ env.MINVERDEFAULTPRERELEASEIDENTIFIERS }}'
           nuget_server='${{ env.NUGET_SERVER }}'
           save_package_artifacts='${{ env.SAVE_PACKAGE_ARTIFACTS || 'false' }}'
-          reason="Stable Release (main was manually tagged with a release tag)"
+          reason="Stable Release main tagged with release tag."
 
           if [ '${{ github.event_name }}' == "workflow_dispatch" ]; then
               reason='${{ inputs.reason }}'
