@@ -140,6 +140,13 @@
         <Using Include="FluentAssertions" />
     </ItemGroup>
 
+    <!-- Copy repo-level test configuration to test output directory -->
+    <ItemGroup Condition="$(IsTestProject) == 'true'">
+        <Content Include="$(RepoRoot)testconfig.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
     <!-- ================ Test Library Projects' Settings ================ -->
     <!-- Test stack:
           Microsoft Testing Platform (MTP) with
