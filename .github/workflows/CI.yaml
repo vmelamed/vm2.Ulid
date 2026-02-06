@@ -56,7 +56,7 @@ env:
 
 jobs:
   get-params:
-    name: Finalize parameters from variables, inputs, secrets and defaults
+    name: Prepare input from env, vars, secrets, inputs, and defaults
     runs-on: ubuntu-latest # in this workflow the runner doesn't matter - we're just preparing the inputs for the next workload(s).
     if: ${{ github.event_name != 'push' || !contains(github.event.head_commit.message, '[skip ci]') }}
     outputs:
@@ -72,7 +72,7 @@ jobs:
       minver-tag-prefix: ${{ steps.init-params.outputs.minver-tag-prefix }}
       minver-prerelease-id: ${{ steps.init-params.outputs.minver-prerelease-id }}
     steps:
-      - name: Gather parameters
+      - name: Prepare argument values
         id: init-params
         shell: bash
         run: |
@@ -118,7 +118,7 @@ jobs:
           }  >> $GITHUB_OUTPUT
 
   call-ci:
-    name: Build, Test, Benchmarks
+    name: "CI: Build, Test, Benchmarks"
     needs:
       - get-params
     uses: vmelamed/vm2.DevOps/.github/workflows/_ci.yaml@main
