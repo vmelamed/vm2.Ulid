@@ -11,7 +11,7 @@ on:
 env:
   PACKAGE_PROJECTS: >
     [
-    "src/Ulid/Ulid.csproj"
+    "src/UlidType/UlidType.csproj"
     ]
 
   PREPROCESSOR_SYMBOLS: "" # Semicolon-separated preprocessor symbols to pass to the compiler.
