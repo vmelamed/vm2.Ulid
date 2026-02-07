@@ -5,7 +5,7 @@
 coverage:
   precision: 2 # Report coverage to 2 decimal places
   round: down # Round down coverage percentages
-  range: 70..100 # Green at 100%, red at 70%
+  range: 80..100 # Green at 100%, red at 80%
 
   status:
     project:
@@ -38,10 +38,10 @@ comment:
 ignore:
   # - "test/**" # Exclude test projects
   # - "tests/**" # Exclude test projects
-  # - "**/obj/**" # Exclude build artifacts
-  # - "**/bin/**"
   # - "**/*.Tests/**"
-  # - "**/Test.Utilities/**"
+  - "**/obj/**" # Exclude build artifacts
+  - "**/bin/**"
+  - "**/Test.Utilities/**"
   - "**/Migrations/**"
   - "**/*.g.cs" # Exclude generated code files
   - "**/*.Designer.cs"
@@ -50,3 +50,14 @@ ignore:
   - "**/Properties/**"
   - "**/*.config"
   - "**/*.xml"
+  - "**/*GeneratedRegex*.cs"
+  - "**/*d__*.cs"
+  - "**/*<>c*.cs"
+
+parsers:
+  cobertura:
+    branch_detection:
+      conditional: yes
+      loop: yes
+      method: yes
+      macro: yes

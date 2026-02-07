@@ -1,68 +1,73 @@
-name: Publish NuGet Release
-# After creating pay attention to the comments starting with CP - these are "Customize Points" to adjust the workflow to your repo needs.
+name: Publish NuGet Stable Release
 
 on:
-  push:
-    tags:
-      - "v[0-9]*.[0-9]*.[0-9]*" # trigger on version tags like v1.2.3
-
   workflow_dispatch:
     inputs:
       reason:
-        description: "Reason for manual release"
+        description: "Reason for manual release (not allowed symbols: ; | & $ ` \\ < > ( ) { } new-line )"
         required: true
         type: string
 
-      force-publish:
-        description: "Force publish"
-        type: boolean
-        default: false
-
 env:
-  # *CP* The projects to build and package as a JSON array of strings - path(s) to the project(s).
-  # An empty string means to build and package the root solution's projects or the root project, marked with <IsPackable>true</IsPackable>.
-  # Hint: to set the value as a valid JSON list of strings, use YAML folded style (>-), and double quotes around the strings, e.g.:
-  # BUILD_PROJECTS: >-
-  #   ["src/Project1/Project1.csproj", "src/Project2/Project2.csproj"]
-  PACKAGE_PROJECTS: ""
-  # CP. 'github' - GitHub Packages; 'nuget' - NuGet.org. Make sure the NUGET_API_KEY secret corresponds to the server selected here.
-  NUGET_SERVER: github
+  PACKAGE_PROJECTS: >
+    [
+    "src/UlidType/UlidType.csproj"
+    ]
+
+  PREPROCESSOR_SYMBOLS: "" # Semicolon-separated preprocessor symbols to pass to the compiler.
+  NUGET_SERVER: ${{ vars.NUGET_SERVER || 'github' }} # Ensure the NUGET_API_*KEY secrets corresponds to the server selected here.
+  CONFIGURATION: ${{ vars.CONFIGURATION || 'Release' }} # The build configuration: Debug, Release, etc.
+  DOTNET_VERSION: ${{ vars.DOTNET_VERSION || '10.0.x' }} # The .NET SDK version to use.
+  MINVERTAGPREFIX: ${{ vars.MINVERTAGPREFIX || 'v' }} # The MinVer tag prefix.
+  MINVERDEFAULTPRERELEASEIDENTIFIERS: ${{ vars.MINVERDEFAULTPRERELEASEIDENTIFIERS || 'preview.0' }} # The MinVer default pre-release identifiers.
+  VERBOSE: ${{ vars.VERBOSE || 'false' }} # Set to "true" to enable verbose logging in scripts.
 
 jobs:
   get-params:
     name: Prepare the parameters
     runs-on: ubuntu-latest
-    if: >+
-      ${{
-      github.event_name == 'workflow_dispatch' ||
-      !contains(github.ref_name,'-') &&
-      startsWith(github.ref, format('refs/tags/%s', vars.MinVerTagPrefix || 'v'))
-      }}
+    if: ${{ github.event_name == 'workflow_dispatch' }}
     outputs:
+      dotnet-version: ${{ steps.init-params.outputs.dotnet-version }}
       package-projects: ${{ steps.init-params.outputs.package-projects }}
+      preprocessor-symbols: ${{ steps.init-params.outputs.preprocessor-symbols }}
+      minver-tag-prefix: ${{ steps.init-params.outputs.minver-tag-prefix }}
+      minver-prerelease-id: ${{ steps.init-params.outputs.minver-prerelease-id }}
+      reason: ${{ steps.init-params.outputs.reason }}
       nuget-server: ${{ steps.init-params.outputs.nuget-server }}
-      force-publish: ${{ steps.init-params.outputs.force-publish }}
+      save-package-artifacts: ${{ steps.init-params.outputs.save-package-artifacts }}
     steps:
       - name: Gather parameters
         id: init-params
         shell: bash
         run: |
           package_projects='${{ env.PACKAGE_PROJECTS }}'
+          dotnet_version='${{ env.DOTNET_VERSION }}'
+          preprocessor_symbols='${{ env.PREPROCESSOR_SYMBOLS }}'
+          minver_tag_prefix='${{ env.MINVERTAGPREFIX }}'
+          minver_prerelease_id='${{ env.MINVERDEFAULTPRERELEASEIDENTIFIERS }}'
           nuget_server='${{ env.NUGET_SERVER }}'
-          force_publish=false
+          save_package_artifacts='${{ env.SAVE_PACKAGE_ARTIFACTS || 'false' }}'
+          reason="Stable Release (main manually tagged with a release tag)"
 
           if [ '${{ github.event_name }}' == "workflow_dispatch" ]; then
-            force_publish='${{ inputs.force-publish }}'
+              reason='${{ inputs.reason }}'
           fi
 
           # Set the outputs:
           {
-            echo "package-projects=${package_projects}"
-            echo "nuget-server=${nuget_server}"
-            echo "force-publish=${force_publish}"
+              echo "package-projects=${package_projects}"
+              echo "dotnet-version=${dotnet_version}"
+              echo "preprocessor-symbols=${preprocessor_symbols}"
+              echo "minver-tag-prefix=${minver_tag_prefix}"
+              echo "minver-prerelease-id=${minver_prerelease_id}"
+              echo "reason=${reason}"
+              echo "nuget-server=${nuget_server}"
+              echo "save-package-artifacts=${save_package_artifacts}"
           }  >> $GITHUB_OUTPUT
 
   log-trigger:
+    name: Log manual trigger reason
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
@@ -72,20 +77,26 @@ jobs:
           echo "::notice::Reason: ${{ inputs.reason }}"
 
   release:
-    name: Release
-    uses: vmelamed/vm2.DevOps/.github/workflows/_release.yaml@main
+    name: Release - package and publish NuGet stable release
     needs:
       - get-params
-    permissions:
-      contents: write
-      packages: write
+    uses: vmelamed/vm2.DevOps/.github/workflows/_release.yaml@main
     secrets:
-      # CP. the API key to use for publishing to GitHub NuGet packages or NuGet.org
-      # Make sure it corresponds to the 'nuget-server' below
-      NUGET_API_KEY: ${{ secrets.NUGET_API_NUGET_KEY }}
+      # You don't need all three secrets, only the one corresponding to the chosen NuGet server above or the default 'github'
+      NUGET_API_GITHUB_KEY: ${{ secrets.NUGET_API_GITHUB_KEY }}
+      NUGET_API_NUGET_KEY: ${{ secrets.NUGET_API_NUGET_KEY }}
+      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+    permissions:
+      contents: write # Required to checkout the code and create releases
+      packages: write # Required to publish GitHub Packages NuGet packages
+      pull-requests: write # Required to comment on PRs
+      checks: write # Required to create GitHub Checks
     with:
+      dotnet-version: ${{ needs.get-params.outputs.dotnet-version }}
       package-projects: ${{ needs.get-params.outputs.package-projects }}
-      dotnet-version: ${{ vars.DOTNET_VERSION }}
-      force-publish: ${{ fromJSON(needs.get-params.outputs.force-publish) }}
+      preprocessor-symbols: ${{ needs.get-params.outputs.preprocessor-symbols }}
+      minver-tag-prefix: ${{ needs.get-params.outputs.minver-tag-prefix }}
+      minver-prerelease-id: ${{ needs.get-params.outputs.minver-prerelease-id }}
+      reason: ${{ needs.get-params.outputs.reason }}
       nuget-server: ${{ needs.get-params.outputs.nuget-server }}
-      save-package-artifacts: true
+      save-package-artifacts: ${{ fromJson(needs.get-params.outputs.save-package-artifacts) }}
