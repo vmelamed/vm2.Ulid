@@ -1,6 +1,9 @@
 # Changelog
 
-This format follows:
+
+
+## v1.0.6 - 2026-02-09
+See prereleases below.This format follows:
 
 - [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 - [Semantic Versioning](https://semver.org/)
