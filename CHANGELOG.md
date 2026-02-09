@@ -1,19 +1,5 @@
 # Changelog
 
-
-
-## v1.0.5 - 2026-02-09
-See prereleases below.
-
-## v1.0.5 - 2026-02-09
-See prereleases below.
-
-
-
-
-
-﻿All notable changes to this project will be documented in this file.
-
 This format follows:
 
 - [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
@@ -47,13 +33,25 @@ This format follows:
 
 ---
 
-## [1.1.1] - 2026-01-02
+## [1.0.6] - 2026-02-09
+
+### Internal
+
+- build pipeline changes
+
+---
+
+## [1.0.5] - 2026-02-09
+
+### Internal
+
+- build pipeline changes
+
+## [1.0.4] - 2026-01-02
 
 ### Internal
 
 - Moved to the latest build pipeline templates from vm2.DevOps.
-
-## [1.1.0] - 2025-09-23
 
 ### Added
 
