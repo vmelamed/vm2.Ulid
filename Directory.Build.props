@@ -126,6 +126,41 @@
 
         <!-- Enable code coverage by default -->
         <EnableCodeCoverage>true</EnableCodeCoverage>
+
+        <!-- Default code coverage exclusions (can be overridden per-project) -->
+        <!-- Exclude test assemblies and common test infrastructure -->
+        <CoverageExcludeByFile>
+            **/bin/**;
+            **/obj/**;
+            **/*.Tests.dll;
+            "**/obj/**";
+            "**/bin/**";
+            "**/Test.Utilities/**";
+            "**/Migrations/**";
+            "**/*.g.cs";
+            "**/*.g.i.cs";
+            "**/*.Designer.cs";
+            "**/*AssemblyInfo.cs";
+            "**/Properties/**";
+            "**/*.config";
+            "**/*.xml";
+            "**/*GeneratedRegex*.cs";
+            "**/*d__*.cs";
+            "**/*&lt;&gt;c*.cs";
+        </CoverageExcludeByFile>
+        <CoverageExcludeByAttribute>
+            *ObsoleteAttribute;
+            *GeneratedCodeAttribute;
+            *CompilerGeneratedAttribute;
+            *ExcludeFromCodeCoverageAttribute;
+            *GeneratedRegexAttribute
+        </CoverageExcludeByAttribute>
+        <CoverageExclude>
+            .*\.Tests\.dll
+            .*\.Tests\.exe
+            .*\.Tests\.
+            Mono.*
+        </CoverageExclude>
     </PropertyGroup>
 
     <ItemGroup Condition="$(IsTestProject) == 'true'">
