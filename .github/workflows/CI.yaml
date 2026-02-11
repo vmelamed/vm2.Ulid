@@ -1,4 +1,5 @@
 name: "CI: Build, Test, Benchmark"
+
 on:
   push:
     branches:
@@ -6,7 +7,7 @@ on:
 
   pull_request:
     branches:
-      - "**" # trigger on PR for all branches
+      - "**" # trigger on PR for all branches.
 
   pull_request_review:
     types:

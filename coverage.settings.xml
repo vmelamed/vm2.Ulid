@@ -3,13 +3,9 @@
     <CodeCoverage>
         <!-- Match assemblies to include in coverage -->
         <ModulePaths>
-            <Include>
-                <ModulePath>.*Glob\.Api\.dll$</ModulePath>
-            </Include>
             <Exclude>
                 <ModulePath>.*Tests\.dll$</ModulePath>
                 <ModulePath>.*TestUtilities\.dll$</ModulePath>
-                <ModulePath>.*\.FakeFileSystem\.dll$</ModulePath>
             </Exclude>
         </ModulePaths>
 

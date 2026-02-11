@@ -6,5 +6,8 @@ global using System.Runtime.Serialization;
 global using System.Text;
 
 global using vm2.Providers;
+global using vm2.TestUtilities;
+
+global using static vm2.TestUtilities.TestUtilities;
 
 global using static vm2.Ulid;

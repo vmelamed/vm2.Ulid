@@ -17,6 +17,30 @@ using System.Text.Json.Serialization;
 public class UlidSysConverter : JsonConverter<Ulid>
 {
     /// <summary>
+    /// Writes the specified <see cref="Ulid"/> value as a raw JSON string using the provided <see cref="Utf8JsonWriter"/>.
+    /// </summary>
+    /// <param name="writer">
+    /// The <see cref="Utf8JsonWriter"/> to which the <see cref="Ulid"/> value will be written. Cannot be <c>null</c>.
+    /// </param>
+    /// <param name="value">The <see cref="Ulid"/> value to write.</param>
+    /// <param name="_">The <see cref="JsonSerializerOptions"/> to use during serialization. This parameter is not used in this
+    /// implementation but is required by the method signature.</param>
+    public override void Write(
+        Utf8JsonWriter writer,
+        Ulid value,
+        JsonSerializerOptions _)
+    {
+        Span<byte> utf8Chars = stackalloc byte[UlidStringLength];
+        var success = value.TryWrite(utf8Chars, true);
+
+        if (!success)
+            // Debug.Assert(false, "This should never happen because Ulid.TryWrite should only return false if the buffer is too small, and we are providing a buffer of the correct size.");
+            throw new JsonException("Could not serialize ULID value.");
+
+        writer.WriteStringValue(utf8Chars);
+    }
+
+    /// <summary>
     /// Reads and converts the JSON representation of a ULID (Universally Unique Lexicographically Sortable Identifier).
     /// </summary>
     /// <param name="reader">The <see cref="Utf8JsonReader"/> to read the JSON data from.</param>
@@ -35,30 +59,8 @@ public class UlidSysConverter : JsonConverter<Ulid>
         }
         catch (Exception ex) when (ex is not JsonException)
         {
+            // Debug.Assert(false, "This should never happen because TryParse should only throw if the input is invalid, and we are catching that case and throwing a JsonException.");
             throw new JsonException("Could not parse ULID value.", ex);
         }
-    }
-
-    /// <summary>
-    /// Writes the specified <see cref="Ulid"/> value as a raw JSON string using the provided <see cref="Utf8JsonWriter"/>.
-    /// </summary>
-    /// <param name="writer">
-    /// The <see cref="Utf8JsonWriter"/> to which the <see cref="Ulid"/> value will be written. Cannot be <c>null</c>.
-    /// </param>
-    /// <param name="value">The <see cref="Ulid"/> value to write.</param>
-    /// <param name="_">The <see cref="JsonSerializerOptions"/> to use during serialization. This parameter is not used in this
-    /// implementation but is required by the method signature.</param>
-    public override void Write(
-        Utf8JsonWriter writer,
-        Ulid value,
-        JsonSerializerOptions _)
-    {
-        Span<byte> utf8Chars = stackalloc byte[UlidStringLength];
-        var success = value.TryWrite(utf8Chars, true);
-
-        if (!success)
-            throw new JsonException("Could not serialize ULID value.");
-
-        writer.WriteStringValue(utf8Chars);
     }
 }
