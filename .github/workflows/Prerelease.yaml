@@ -46,6 +46,7 @@ jobs:
         github.event.workflow_run.conclusion == 'success' &&
         github.event.workflow_run.event == 'push' &&
         github.event.workflow_run.pull_requests[0] != null )
+        github.event.workflow_run.pull_requests[0] != null )
     outputs:
       dotnet-version: ${{ steps.init-params.outputs.dotnet-version }}
       package-projects: ${{ steps.init-params.outputs.package-projects }}
