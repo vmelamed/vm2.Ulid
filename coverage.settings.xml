@@ -31,11 +31,11 @@
                 <Source>.*\\&lt;RegexGenerator_g&gt;.*</Source>
 
                 <!-- Compiler-generated -->
-                <Source>.*\\&lt;&gt;c.*\.cs$</Source>
+                <Source>.*\\&lt;&gt;c.*\.cs$;*.MoveNext.*</Source>
                 <Source>.*\\d__.*\.cs$</Source>
 
                 <!-- Test files -->
-                <Source>.*\\Test\.Utilities\\.*</Source>
+                <Source>.*\\TestUtilities\\.*</Source>
                 <Source>.*\.Tests\\.*</Source>
             </Exclude>
         </Sources>
