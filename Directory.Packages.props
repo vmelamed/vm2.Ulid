@@ -1,42 +1,47 @@
 <Project>
-  <PropertyGroup>
-    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageVersion Include="System.CommandLine" Version="2.0.2" />
-    <PackageVersion Include="System.Configuration.ConfigurationManager" Version="10.0.2" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.3" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.CommandLine" Version="10.0.2" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.2" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.2" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Configuration" Version="10.0.2" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.2" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.2" />
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.2" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.2" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.2" />
-    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.2" />
-    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.102" />
-    <PackageVersion Include="MinVer" Version="7.0.0" />
-    <!-- The test stack: -->
-    <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.1.0" />
-    <PackageVersion Include="Microsoft.Testing.Platform" Version="2.0.2" />
-    <PackageVersion Include="Microsoft.Testing.Platform.MSBuild" Version="2.0.2" />
-    <PackageVersion Include="Microsoft.Testing.Extensions.Telemetry" Version="2.0.2" />
-    <PackageVersion Include="Microsoft.Testing.Extensions.TrxReport" Version="2.0.2" />
-    <PackageVersion Include="Microsoft.Testing.Extensions.TrxReport.Abstractions" Version="2.0.2" />
-    <PackageVersion Include="FluentAssertions" Version="8.8.0" />
-    <PackageVersion Include="xunit.v3.mtp-v2" Version="3.2.2" />
-    <PackageVersion Include="xunit.v3.extensibility.core" Version="3.2.2" />
-    <PackageVersion Include="xunit.v3.runner.inproc" Version="3.2.2" />
-    <PackageVersion Include="vm2.TestUtilities" Version="1.2.1" />
-    <!-- Benchmarking packages: -->
-    <!-- for running with Visual Studio profiler:<PackageVersion Include="Microsoft.VisualStudio.DiagnosticsHub.BenchmarkDotNetDiagnosers" Version="18.0.36421.1" />-->
-    <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
-    <PackageVersion Include="BenchmarkDotNet.Annotations" Version="0.15.8" />
-    <!-- Add project-specific packages here: -->
-    <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="9.0.8" />
-    <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
-  </ItemGroup>
+    <PropertyGroup>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+        <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageVersion Include="System.CommandLine" Version="2.0.3" />
+        <PackageVersion Include="System.Configuration.ConfigurationManager" Version="10.0.3" />
+        <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.3" />
+        <PackageVersion Include="Microsoft.Extensions.Configuration.CommandLine" Version="10.0.3" />
+        <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.3" />
+        <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.3" />
+        <PackageVersion Include="Microsoft.Extensions.Logging.Configuration" Version="10.0.3" />
+        <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.3" />
+        <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.3" />
+        <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.3" />
+        <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.3" />
+        <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.3" />
+        <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.3" />
+        <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.103" />
+        <PackageVersion Include="MinVer" Version="7.0.0" />
+
+        <!-- The test stack: -->
+        <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.1.0" />
+        <!-- 18.4.1? -->
+        <PackageVersion Include="Microsoft.Testing.Platform" Version="2.1.0" />
+        <PackageVersion Include="Microsoft.Testing.Platform.MSBuild" Version="2.1.0" />
+        <PackageVersion Include="Microsoft.Testing.Extensions.Telemetry" Version="2.1.0" />
+        <PackageVersion Include="Microsoft.Testing.Extensions.TrxReport" Version="2.1.0" />
+        <PackageVersion Include="Microsoft.Testing.Extensions.TrxReport.Abstractions" Version="2.1.0" />
+        <PackageVersion Include="FluentAssertions" Version="8.8.0" />
+        <PackageVersion Include="xunit.v3.mtp-v2" Version="3.2.2" />
+        <PackageVersion Include="xunit.v3.extensibility.core" Version="3.2.2" />
+        <PackageVersion Include="xunit.v3.runner.inproc" Version="3.2.2" />
+        <PackageVersion Include="vm2.TestUtilities" Version="1.2.2" />
+
+        <!-- Benchmarking packages: -->
+        <!-- for running with Visual Studio profiler:<PackageVersion Include="Microsoft.VisualStudio.DiagnosticsHub.BenchmarkDotNetDiagnosers" Version="18.0.36421.1" />-->
+        <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
+        <PackageVersion Include="BenchmarkDotNet.Annotations" Version="0.15.8" />
+
+        <!-- Add project-specific packages below this line: -->
+        <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="9.0.8" />
+        <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
+    </ItemGroup>
 </Project>
