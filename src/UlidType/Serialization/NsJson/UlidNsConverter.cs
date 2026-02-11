@@ -3,6 +3,8 @@
 
 namespace vm2.Serialization.NsJson;
 
+using System.Diagnostics;
+
 using Newtonsoft.Json;
 
 /// <summary>
