@@ -1,5 +1,24 @@
 ﻿# Universally Unique Lexicographically Sortable Identifier (ULID) for .NET
 
+[![CI](https://github.com/vmelamed/vm2.Ulid/actions/workflows/CI.yaml/badge.svg)](https://github.com/vmelamed/vm2.Ulid/actions/workflows/CI.yaml)
+[![codecov](https://codecov.io/gh/vmelamed/vm2.Ulid/branch/main/graph/badge.svg)](https://codecov.io/gh/vmelamed/vm2.Ulid)
+[![Release](https://github.com/vmelamed/vm2.Ulid/actions/workflows/Release.yaml/badge.svg)](https://github.com/vmelamed/vm2.Ulid/actions/workflows/Release.yaml)
+[![NuGet](https://img.shields.io/nuget/v/vm2.Ulid.Api.svg)](https://www.nuget.org/packages/vm2.Ulid.Api)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/vm2.Ulid.Api.svg)](https://www.nuget.org/packages/vm2.Ulid.Api/)
+[![License](https://img.shields.io/github/license/vmelamed/vm2.Ulid)](https://github.com/vmelamed/vm2.Ulid/blob/main/LICENSE)
+
+<!-- TOC tocDepth:2..5 chapterDepth:2..6 -->
+
+- [Overview](#overview)
+- [Short Comparison of ULID vs UUID (`System.Guid`)](#short-comparison-of-ulid-vs-uuid-systemguid)
+- [Prerequisites](#prerequisites)
+- [Basic Usage](#basic-usage)
+- [Why do I need `UlidFactory`?](#why-do-i-need-ulidfactory)
+- [Get the code](#get-the-code)
+- [Install the package (NuGet)](#install-the-package-nuget)
+- [Performance](#performance)
+
+<!-- /TOC -->
 ## Overview
 
 A small, fast, and spec-compliant [ULID](https://github.com/ulid/spec) (Universally Unique Lexicographically Sortable Identifier)
@@ -123,13 +142,14 @@ If a NuGet package is published for this project you can add it
   dotnet add vm2.Ulid package vm2.Ulid
   ```
 
-- Or from Visual Studio use the __Package Manager Console__:
+- Or from Visual Studio use the **Package Manager Console**:
 
   ```powershell
   Install-Package vm2.Ulid
   ```
 
 Build from source
+
 - Command line:
 
   ```bash
@@ -137,7 +157,8 @@ Build from source
   ```
 
 - Visual Studio:
-  - Open the solution and choose __Build Solution__ (or use __Rebuild__ as needed).
+-
+  - Open the solution and choose **Build Solution** (or use **Rebuild** as needed).
 
 Run the example:
 
@@ -149,14 +170,16 @@ Run the example:
 
 You can build and run the benchmark tests in release mode with:
 
-```
+```sh
 benchmarks/UlidType.Benchmarks/bin/Release/net9.0/UlidType.Benchmarks.exe --filter * --memory --artifacts ../../../BenchmarkDotNet.Artifacts
 ```
 
 Here are some benchmark results with similar Guid functions as baselines run on GitHub Actions:
 
-BenchmarkDotNet v0.15.3, Linux Ubuntu 24.04.3 LTS (Noble Numbat)<br/>
-AMD EPYC 7763 2.45GHz, 1 CPU, 4 logical and 2 physical cores .NET SDK 9.0.305<br/>
+BenchmarkDotNet v0.15.3, Linux Ubuntu 24.04.3 LTS (Noble Numbat)
+
+AMD EPYC 7763 2.45GHz, 1 CPU, 4 logical and 2 physical cores .NET SDK 9.0.305
+
 - [Host]     : .NET 9.0.9 (9.0.9, 9.0.925.41916), X64 RyuJIT x86-64-v3
 - DefaultJob : .NET 9.0.9 (9.0.9, 9.0.925.41916), X64 RyuJIT x86-64-v3
 
@@ -169,23 +192,24 @@ AMD EPYC 7763 2.45GHz, 1 CPU, 4 logical and 2 physical cores .NET SDK 9.0.305<br
 | UlidFactory.NewUlid  |  55.99 ns | 0.106 ns | 0.094 ns |  0.09 | 0.0024 |      40 B |          NA | PseudoRandom       |
 | Ulid.NewUlid         |  56.24 ns | 0.140 ns | 0.131 ns |  0.09 | 0.0024 |      40 B |          NA | PseudoRandom       |
 | Guid.NewGuid         | 595.64 ns | 0.416 ns | 0.368 ns |  1.00 |      - |         - |          NA | PseudoRandom       |
-|                      |           |          |          |       |        |           |             |
-| Guid.Parse           |  30.16 ns | 0.064 ns | 0.060 ns |  1.00 |      - |         - |          NA |
-| Ulid.ParseUtf8String |  77.28 ns | 0.256 ns | 0.239 ns |  2.56 | 0.0024 |      40 B |          NA |
-| Ulid.ParseString     |  80.95 ns | 0.300 ns | 0.266 ns |  2.68 | 0.0024 |      40 B |          NA |
-|                      |           |          |          |       |        |           |             |
-| Guid.ToString        |  16.38 ns | 0.087 ns | 0.082 ns |  1.00 | 0.0057 |      96 B |        1.00 |
-| Ulid.ToString        |  47.93 ns | 0.249 ns | 0.221 ns |  2.93 | 0.0048 |      80 B |        0.83 |
+|                      |           |          |          |       |        |           |             |                    |
+| Guid.Parse           |  30.16 ns | 0.064 ns | 0.060 ns |  1.00 |      - |         - |          NA |                    |
+| Ulid.ParseUtf8String |  77.28 ns | 0.256 ns | 0.239 ns |  2.56 | 0.0024 |      40 B |          NA |                    |
+| Ulid.ParseString     |  80.95 ns | 0.300 ns | 0.266 ns |  2.68 | 0.0024 |      40 B |          NA |                    |
+|                      |           |          |          |       |        |           |             |                    |
+| Guid.ToString        |  16.38 ns | 0.087 ns | 0.082 ns |  1.00 | 0.0057 |      96 B |        1.00 |                    |
+| Ulid.ToString        |  47.93 ns | 0.249 ns | 0.221 ns |  2.93 | 0.0048 |      80 B |        0.83 |                    |
 
 Legend:
-  - Mean      : Arithmetic mean of all measurements
-  - Error     : Half of 99.9% confidence interval
-  - StdDev    : Standard deviation of all measurements
-  - Ratio     : Mean of the ratio distribution ([Current]/[Baseline])
-  - RatioSD   : Standard deviation of the ratio distribution ([Current]/[Baseline])
-  - Gen0      : GC Generation 0 collects per 1000 operations
-  - Allocated : Allocated memory per single operation (managed only, inclusive, 1KB = 1024B)
-  - 1 ns      : 1 Nanosecond (0.000000001 sec)
+
+- Mean      : Arithmetic mean of all measurements
+- Error     : Half of 99.9% confidence interval
+- StdDev    : Standard deviation of all measurements
+- Ratio     : Mean of the ratio distribution ([Current]/[Baseline])
+- RatioSD   : Standard deviation of the ratio distribution ([Current]/[Baseline])
+- Gen0      : GC Generation 0 collects per 1000 operations
+- Allocated : Allocated memory per single operation (managed only, inclusive, 1KB = 1024B)
+- 1 ns      : 1 Nanosecond (0.000000001 sec)
 
 [^1]: `Guid.NewGuid` is ~10 times slower than `Ulid.NewUlid` because it uses a cryptographic random number generator on every
   call, whereas `Ulid.NewUlid` only uses it when the millisecond timestamp changes and if it doesn't, it just increments the
