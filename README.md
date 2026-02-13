@@ -1,10 +1,10 @@
 ﻿# Universally Unique Lexicographically Sortable Identifier (ULID) for .NET
 
-[![CI](https://github.com/vmelamed/vm2.Ulid/actions/workflows/CI.yaml/badge.svg)](https://github.com/vmelamed/vm2.Ulid/actions/workflows/CI.yaml)
-[![codecov](https://codecov.io/gh/vmelamed/vm2.Ulid/branch/main/graph/badge.svg)](https://codecov.io/gh/vmelamed/vm2.Ulid)
-[![Release](https://github.com/vmelamed/vm2.Ulid/actions/workflows/Release.yaml/badge.svg)](https://github.com/vmelamed/vm2.Ulid/actions/workflows/Release.yaml)
-[![NuGet](https://img.shields.io/nuget/v/vm2.Ulid.Api.svg)](https://www.nuget.org/packages/vm2.Ulid.Api)
-[![NuGet Downloads](https://img.shields.io/nuget/dt/vm2.Ulid.Api.svg)](https://www.nuget.org/packages/vm2.Ulid.Api/)
+[![CI](https://github.com/vmelamed/vm2.Ulid/actions/workflows/CI.yaml/badge.svg?branch=main)](https://github.com/vmelamed/vm2.Ulid/actions/workflows/CI.yaml)
+[![codecov](https://codecov.io/gh/vmelamed/vm2.Ulid/branch/main/graph/badge.svg?branch=main)](https://codecov.io/gh/vmelamed/vm2.Ulid)
+[![Release](https://github.com/vmelamed/vm2.Ulid/actions/workflows/Release.yaml/badge.svg?branch=main)](https://github.com/vmelamed/vm2.Ulid/actions/workflows/Release.yaml)
+[![NuGet](https://img.shields.io/nuget/v/vm2.Ulid.Api.svg?branch=main)](https://www.nuget.org/packages/vm2.Ulid.Api)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/vm2.Ulid.Api.svg?branch=main)](https://www.nuget.org/packages/vm2.Ulid.Api/)
 [![License](https://img.shields.io/github/license/vmelamed/vm2.Ulid)](https://github.com/vmelamed/vm2.Ulid/blob/main/LICENSE)
 
 <!-- TOC tocDepth:2..5 chapterDepth:2..6 -->
