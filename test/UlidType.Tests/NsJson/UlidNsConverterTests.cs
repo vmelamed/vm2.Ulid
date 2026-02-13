@@ -5,6 +5,8 @@ namespace vm2.UlidType.Tests.NsJson;
 
 using Newtonsoft.Json;
 
+using vm2.Serialization.NsJson;
+
 [ExcludeFromCodeCoverage]
 public class UlidNsConverterTests
 {
@@ -29,6 +31,15 @@ public class UlidNsConverterTests
         }
 
         public Subject1(string? id) => Id = id is null ? Ulid.Empty : new Ulid(id);
+    }
+
+    [Fact]
+    public void Test_CanConvert_Returns_True_For_Ulid_And_Nullable_Ulid()
+    {
+        var sut = new UlidNsConverter();
+
+        sut.CanConvert(typeof(Ulid)).Should().BeTrue();
+        sut.CanConvert(typeof(Ulid?)).Should().BeTrue();
     }
 
     // To fix IL2026, use the overloads of SerializeObject/DeserializeObject that accept a JsonSerializerSettings
@@ -67,7 +78,7 @@ public class UlidNsConverterTests
 
         var json = JsonConvert.SerializeObject(sut);
 
-        json.Should().Contain(@"""Id"":null");
+        json.Should().Be(@"{""Id"":null}");
     }
 
     [Fact]
@@ -114,6 +125,19 @@ public class UlidNsConverterTests
 
         var deserialize = () => JsonConvert.DeserializeObject<Subject1>(json);
 
-        var sut = deserialize.Should().Throw<JsonReaderException>().Which;
+        deserialize.Should().Throw<JsonReaderException>();
     }
+
+    [Fact]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "<Pending>")]
+    public void Test_NotNull_BadString_Ulid_Deserializes_From_Json_With_Newtonsoft_Json()
+    {
+        var ulid = new Ulid("01K5N3A2GJYH10NGHHTWQR4VBP");
+        var json = $@"{{ ""Id"": ""$%^&{ulid}"" }}";
+
+        var deserialize = () => JsonConvert.DeserializeObject<Subject>(json);
+
+        deserialize.Should().Throw<JsonReaderException>();
+    }
+
 }

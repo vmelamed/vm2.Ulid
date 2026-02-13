@@ -1,11 +1,12 @@
 name: Publish NuGet Pre-Release
 
 on:
-  pull_request:
+  workflow_run:
+    workflows: ["CI: Build, Test, Benchmark"]
     types:
-      - closed
+      - completed
     branches:
-      - main # trigger on PR merge to main branch
+      - main # trigger after CI completes for pushes to main (PR merges only, verified by pull_requests check)
 
   workflow_dispatch:
     inputs:
@@ -39,7 +40,13 @@ jobs:
   get-params:
     name: Prepare the parameters
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      ( github.event_name == 'workflow_run' &&
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.pull_requests &&
+        github.event.workflow_run.pull_requests[0] )
     outputs:
       dotnet-version: ${{ steps.init-params.outputs.dotnet-version }}
       package-projects: ${{ steps.init-params.outputs.package-projects }}

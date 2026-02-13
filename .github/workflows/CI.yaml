@@ -1,12 +1,18 @@
 name: "CI: Build, Test, Benchmark"
+
 on:
   push:
     branches:
-      - "**" # trigger on push for all branches or...
+      - "**" # trigger on push for all branches
 
   pull_request:
     branches:
-      - "**" # ...on PR for all branches.
+      - "**" # trigger on PR for all branches.
+
+  pull_request_review:
+    types:
+      - submitted # trigger after any submitted code review (comments, changes requested, approved, including Copilot);
+                  # jobs further restrict to approved reviews via `if: github.event.review.state == 'approved'`.
 
   workflow_dispatch:
     inputs:
@@ -22,6 +28,11 @@ on:
         description: Comma-separated preprocessor symbols
         type: string
         default: "SHORT_RUN" # *TODO* Adjust the default preprocessor symbols as needed.
+
+# Prevent duplicate runs: when pushing to a PR branch, cancel the push-triggered run in favor of the PR-triggered run
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
 
 env:
   BUILD_PROJECTS: >
@@ -58,7 +69,9 @@ jobs:
   get-params:
     name: Prepare input from env, vars, secrets, inputs, and defaults
     runs-on: ubuntu-latest # in this workflow the runner doesn't matter - we're just preparing the inputs for the next workload(s).
-    if: ${{ github.event_name != 'push' || !contains(github.event.head_commit.message, '[skip ci]') }}
+    if: |
+      ( github.event_name != 'push' || !contains(github.event.head_commit.message, '[skip ci]') ) &&
+      ( github.event_name != 'pull_request_review' || github.event.review.state == 'approved' )
     outputs:
       build-projects: ${{ steps.init-params.outputs.build-projects }}
       test-projects: ${{ steps.init-params.outputs.test-projects }}
@@ -97,6 +110,9 @@ jobs:
               # E.g. for the input '["ubuntu-latest"]', the UI removes the inner quotes and it becomes the invalid JSON: '[ubuntu-latest]'.
               runners_os=$(echo "${{ inputs.runners-os }}" | jq -Rc 'split(",") | map(select(length > 0) | gsub("^\\s+|\\s+$";""))')
               preprocessor_symbols="${preprocessor_symbols};${{ inputs.preprocessor-symbols }}"
+          elif [ '${{ github.event_name }}' == "pull_request" ] || [ '${{ github.event_name }}' == "pull_request_review" ]; then
+              # For pull requests and reviews, use default values from env (no modifications needed)
+              :
           else
               echo "Unsupported event: ${{ github.event_name }}"
               exit 5
@@ -125,6 +141,7 @@ jobs:
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       BENCHER_API_TOKEN: ${{ secrets.BENCHER_API_TOKEN }}
+      REPORTGENERATOR_LICENSE: ${{ secrets.REPORTGENERATOR_LICENSE }}
     permissions:
       contents: read # Required to checkout the code
       packages: read # Required to restore GitHub Packages NuGet packages

@@ -32,19 +32,14 @@ public class UlidNsConverter : JsonConverter
     /// <param name="serializer">The <see cref="JsonSerializer"/> used to customize the serialization process. Cannot be <c>null</c>.</param>
     public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
     {
-        if (value is null)
-        {
-            writer.WriteNull();
-            return;
-        }
-
         if (value is Ulid ulid)
         {
             writer.WriteValue(ulid.ToString());
             return;
         }
 
-        throw new JsonWriterException($"Expected value to be of type {typeof(Ulid)} or null, but got {value.GetType()}.");
+        // Debug.Assert(false, "This should never happen because JsonConvert.SerializeObject  should prevent it.");
+        throw new JsonWriterException($"Expected value to be of type {typeof(Ulid)} or null, but got {value?.GetType()}.");
     }
 
     /// <summary>
@@ -66,7 +61,10 @@ public class UlidNsConverter : JsonConverter
                 return null;
 
             if (reader.TokenType is not JsonToken.String)
+            {
+                // Debug.Assert(false, "This should never happen because JsonConvert.DeserializeObject should prevent it.");
                 throw new JsonReaderException($"Expected token type to be {JsonToken.String} or {JsonToken.Null}, but got {reader.TokenType}.");
+            }
 
             return Parse(reader.Value.ToString()!);
         }
