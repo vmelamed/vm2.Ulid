@@ -125,7 +125,7 @@ public class UlidNsConverterTests
 
         var deserialize = () => JsonConvert.DeserializeObject<Subject1>(json);
 
-        var sut = deserialize.Should().Throw<JsonReaderException>().Which;
+        deserialize.Should().Throw<JsonReaderException>();
     }
 
     [Fact]
@@ -137,7 +137,7 @@ public class UlidNsConverterTests
 
         var deserialize = () => JsonConvert.DeserializeObject<Subject>(json);
 
-        deserialize.Should().Throw<JsonReaderException>().Which;
+        deserialize.Should().Throw<JsonReaderException>();
     }
 
 }
