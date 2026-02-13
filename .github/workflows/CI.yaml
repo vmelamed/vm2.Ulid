@@ -28,6 +28,11 @@ on:
         type: string
         default: "SHORT_RUN" # *TODO* Adjust the default preprocessor symbols as needed.
 
+# Prevent duplicate runs: when pushing to a PR branch, cancel the push-triggered run in favor of the PR-triggered run
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 env:
   BUILD_PROJECTS: >
     [
