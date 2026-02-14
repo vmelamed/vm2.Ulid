@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <RootNamespace>vm2.UlidTool</RootNamespace>
+        <PackAsTool>true</PackAsTool>
+        <ToolCommandName>ulid</ToolCommandName>
+    </PropertyGroup>
+
+    <PropertyGroup Label="NuGet">
+        <PackageId>vm2.UlidTool</PackageId>
+        <Title>ULID Generator Command Line Tool</Title>
+        <Description>A command line tool for generating ULIDs (Universally Unique Lexicographically Sortable Identifiers).</Description>
+        <PackageTags>ULID CLI tool command-line generator .net core vm2</PackageTags>
+        <PackageProjectUrl>https://github.com/vmelamed/vm2.Ulid/tree/main/src/UlidTool</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/vmelamed/vm2.Ulid</RepositoryUrl>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../UlidType/UlidType.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="System.CommandLine" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="README.md" Pack="true" PackagePath="\">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="../../LICENSE" Pack="true" PackagePath="\">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="../../CHANGELOG.md" Pack="true" PackagePath="\">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+</Project>
