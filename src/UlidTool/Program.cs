@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Val Melamed
 
+global using System.CommandLine;
+
+global using vm2;
+
 const int MinUlidCount = 1;
 const int MaxUlidCount = 10000;
 

@@ -12,7 +12,7 @@
         <Project Path="benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj" />
     </Folder>
     <Folder Name="/examples/">
-        <Project Path="examples/GenerateUlids/GenerateUlids.csproj" />
+        <File Path="examples/GenerateUlids.cs" />
     </Folder>
     <Folder Name="/solution items/">
         <File Path=".editorconfig" />
@@ -23,7 +23,6 @@
         <File Path="Directory.Packages.props" />
         <File Path="LICENSE" />
         <File Path="README.md" />
-        <File Path="ReleaseProcess.md" />
         <File Path="test.runsettings" />
     </Folder>
     <Folder Name="/src/">
