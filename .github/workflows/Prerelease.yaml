@@ -22,7 +22,7 @@ on:
         type: string
 
 env:
-  PACKAGE_PROJECTS: |
+  PACKAGE_PROJECTS: >
     [
       "src/UlidType/UlidType.csproj",
       "src/UlidTool/UlidTool.csproj"
