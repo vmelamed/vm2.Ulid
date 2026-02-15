@@ -1,14 +1,5 @@
 # Changelog
 
-
-
-## v1.0.7 - 2026-02-13
-See prereleases below.
-
-## v1.0.7 - 2026-02-13
-See prereleases below.
-
-## v1.0.6 - 2026-02-09
 See prereleases below.This format follows:
 
 - [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
@@ -42,6 +33,14 @@ See prereleases below.This format follows:
 
 ---
 
+## v1.0.7 - 2026-02-13
+
+Update dependencies to .NET SDK 10.0.3 and latest build pipeline templates from vm2.DevOps.
+
+## v1.0.6 - 2026-02-09
+
+See prereleases below.
+
 ## [1.0.6] - 2026-02-09
 
 ### Internal
@@ -52,13 +51,9 @@ See prereleases below.This format follows:
 
 ## [1.0.5] - 2026-02-09
 
-### Internal
-
 - build pipeline changes
 
 ## [1.0.4] - 2026-01-02
-
-### Internal
 
 - Moved to the latest build pipeline templates from vm2.DevOps.
 
@@ -92,9 +87,6 @@ Small API changes that clarify the semantic of some input parameters:
 ### Performance
 
 - Small optimization of `UlidToString()`: Using the new `string.Create` (thank you Stephen Toub!).
-
-### Internal
-
 - build pipeline changes
 
 ---

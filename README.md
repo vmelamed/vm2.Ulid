@@ -159,34 +159,38 @@ benchmarking. The benchmarks are buildable and runnable from the command line us
 
 ## Build and Run the Example
 
-The example project is located in the `examples/GenerateUlids` directory. It is a simple console application that demonstrates
-the basic usage of the `vm2.Ulid` library. The example is buildable and runnable from the command line using the `dotnet` CLI.
+The example is a file-based application `GenerateUlids.cs` located in the `examples` directory. It demonstrates the basic usage
+of the `vm2.Ulid` library. The example is buildable and runnable from the command line using the `dotnet` CLI.
 
 - Command line:
 
   ```bash
-  dotnet run --project examples/GenerateUlids/GenerateUlids.csproj
+  dotnet run --file examples/GenerateUlids.cs
   ```
 
-- The example can also be run standalone after building the example project:
+  or just:
 
-  - build the example project only:
+  ```bash
+  dotnet examples/GenerateUlids.cs
+  ```
 
-    ```bash
-    dotnet build examples/GenerateUlids/GenerateUlids.csproj
-    ```
+- On a Linux/MacOS system with the .NET SDK installed, you can also run the example app directly:
 
-  - Run the example standalone (Linux/macOS):
+  ```bash
+  examples/GenerateUlids.cs
+  ```
 
-    ```bash
-    examples/GenerateUlids/bin/Debug/net10.0/GenerateUlids
-    ```
+  Provided that:
+  - the file has the execute permissions
+  - at least the first line of the file ends with `\n` (LF), not `\r\n` (CRLF)
+  - the file does not have a UTF-8 BOM (Byte Order Mark) at the beginning
 
-  - Run the example standalone (Windows):
+  These conditions can be met by running the following commands on a Linux system:
 
-    ```bash
-    examples/GenerateUlids/bin/Debug/net10.0/GenerateUlids.exe
-    ```
+  ```bash
+  chmod u+x examples/GenerateUlids.cs
+  dos2unix examples/GenerateUlids.cs
+  ```
 
 ## Basic Usage
 
