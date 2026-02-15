@@ -107,7 +107,7 @@ jobs:
              [ '${{ github.event_name }}' == "pull_request_review" ] || \
              ([ '${{ github.event_name }}' == "push" ] && [ '${{ github.ref_name }}' == "main" ]); then
               # For pull requests, reviews, and pushes to the main branch, use default values from env (no modifications needed)
-              :
+              skip_push='false'
           elif [ '${{ github.event_name }}' == "push" ] && [ '${{ github.ref_name }}' != "main" ]; then
               preprocessor_symbols="${preprocessor_symbols};SHORT_RUN"
               # Skip push-triggered CI when an open PR exists for this branch.
