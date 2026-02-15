@@ -24,7 +24,8 @@ on:
 env:
   PACKAGE_PROJECTS: >
     [
-    "src/UlidType/UlidType.csproj"
+    "src/UlidType/UlidType.csproj",
+    "src/UlidTool/UlidTool.csproj"
     ]
 
   PREPROCESSOR_SYMBOLS: ""
