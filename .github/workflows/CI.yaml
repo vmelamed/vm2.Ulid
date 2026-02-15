@@ -114,12 +114,10 @@ jobs:
           elif [ '${{ github.event_name }}' == "push" ] && [ '${{ github.ref_name }}' != "main" ]; then
               # Skip push-triggered CI when an open PR exists for this branch.
               export GH_TOKEN='${{ github.token }}'
-              if ! open_pr_count=$(gh pr list \
-                    --repo "${{ github.repository }}" \
-                    --head "${{ github.repository_owner }}:${{ github.ref_name }}" \
-                    --state open \
-                    --json number \
-                    --jq 'length'); then
+                if ! open_pr_count=$(gh api \
+                                        -H "X-GitHub-Api-Version: 2022-11-28" \
+                                        "repos/${{ github.repository }}/pulls?head=${{ github.repository_owner }}:${{ github.ref_name }}&state=open" \
+                                        --jq 'length'); then
                   open_pr_count=0
                   echo "Failed to query PRs via gh. Running push-triggered CI with SHORT_RUN." >> $GITHUB_STEP_SUMMARY
               fi
