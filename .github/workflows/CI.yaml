@@ -84,6 +84,7 @@ jobs:
       max-regression-pct: ${{ steps.init-params.outputs.max-regression-pct }}
       minver-tag-prefix: ${{ steps.init-params.outputs.minver-tag-prefix }}
       minver-prerelease-id: ${{ steps.init-params.outputs.minver-prerelease-id }}
+      skip-push: ${{ steps.init-params.outputs.skip-push }}
     steps:
       - name: Prepare argument values
         id: init-params
@@ -100,14 +101,26 @@ jobs:
           max_regression_pct='${{ env.MAX_REGRESSION_PCT }}'
           minver_tag_prefix='${{ env.MINVERTAGPREFIX }}'
           minver_prerelease_id='${{ env.MINVERDEFAULTPRERELEASEIDENTIFIERS }}'
+          skip_push='false'
 
           if [ '${{ github.event_name }}' == "pull_request" ] || \
              [ '${{ github.event_name }}' == "pull_request_review" ] || \
              ([ '${{ github.event_name }}' == "push" ] && [ '${{ github.ref_name }}' == "main" ]); then
-              # For pull requests, reviews, and main branch pushes, use default values from env (no modifications needed)
+              # For pull requests, reviews, and pushes to the main branch, use default values from env (no modifications needed)
               :
           elif [ '${{ github.event_name }}' == "push" ] && [ '${{ github.ref_name }}' != "main" ]; then
-                preprocessor_symbols="${preprocessor_symbols};SHORT_RUN"
+              preprocessor_symbols="${preprocessor_symbols};SHORT_RUN"
+              # Skip push-triggered CI when an open PR exists for this branch.
+              export GH_TOKEN='${{ github.token }}'
+              open_pr_count=$(gh pr list \
+                                  --repo "${{ github.repository }}" \
+                                  --head "${{ github.repository_owner }}:${{ github.ref_name }}" \
+                                  --state open \
+                                  --json number \
+                                  --jq 'length')
+              if [ "${open_pr_count}" -gt 0 ]; then
+                  skip_push='true'
+              fi
           elif [ '${{ github.event_name }}' == "workflow_dispatch" ]; then
               # Get the values from the UI inputs of workflow_dispatch event. Convert comma-separated runners' OS values to JSON array
               # There is a known GitHub actions issue: the workflow dispatch UI doesn't properly handle JSON strings with quotes.
@@ -132,12 +145,14 @@ jobs:
               echo "max-regression-pct=${max_regression_pct}"
               echo "minver-tag-prefix=${minver_tag_prefix}"
               echo "minver-prerelease-id=${minver_prerelease_id}"
+              echo "skip-push=${skip_push}"
           }  >> $GITHUB_OUTPUT
 
   call-ci:
     name: "Run CI: Build, Test, Benchmarks"
     needs:
       - get-params
+    if: ${{ needs.get-params.outputs.skip-push != 'true' }}
     uses: vmelamed/vm2.DevOps/.github/workflows/_ci.yaml@main
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
