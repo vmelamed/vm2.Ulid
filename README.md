@@ -54,9 +54,9 @@ unique identifiers (UUIDs or GUIDs) in certain scenarios:
 - In the canonical, 26-character, string representation of ULIDs **the first 10 characters encode the timestamp**, providing a
   human-readable indication of the creation time; and the remaining 16 characters encode the random component. Whereas in the
   UUID string representation the meaning of the groups depends on the version, and typically **does not provide a
-  straightforward way to extract the creation time**, therefore ULIDs can be used to **generate sortable identifiers** and are
-  not sortable chronologically. The most popular UUID version 4 all parts are randomly generated and do not include a timestamp
-  component at all.
+  straightforward way to extract the creation time**, therefore ULIDs can be used to **generate chronologically sortable
+  identifiers**. Even more so in the most popular UUID version 4: all parts are randomly generated and do not include a
+  timestamp component at all.
 - ULIDs are **binary-compatible with UUIDs** (both are 128-bit values), allowing for easy integration in systems that already
   use UUIDs
 
@@ -69,7 +69,7 @@ unique identifiers (UUIDs or GUIDs) in certain scenarios:
 - Using the dotnet CLI:
 
   ```bash
-  dotnet add vm2.Ulid package vm2.Ulid
+  dotnet add package vm2.Ulid
   ```
 
 - From Visual Studio **Package Manager Console**:
@@ -279,7 +279,7 @@ failure and potential performance bottleneck. Another approach is to use a conse
 across nodes, but this adds complexity and overhead.
 
 The choice of approach depends on the specific requirements and constraints of your distributed system. The problems outlined
-above are just a the first ones that come in mind. In any case, it is important to carefully consider the trade-offs between
+above are just the first ones that come in mind. In any case, it is important to carefully consider the trade-offs between
 uniqueness, monotonicity, performance, and complexity when designing your ULID generation strategy in a distributed environment.
 
 ## Performance

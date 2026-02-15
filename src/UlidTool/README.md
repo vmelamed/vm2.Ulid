@@ -72,7 +72,7 @@ Options:
 
 1. ULID (default)
 
-   26-character Base32 string, lexicographically sortable:
+   26-character Crockford's Base32 string, lexicographically sortable:
 
    ```bash
    ulid

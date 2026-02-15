@@ -31,5 +31,6 @@
     </Folder>
     <Folder Name="/test/">
         <Project Path="test/UlidType.Tests/UlidType.Tests.csproj" />
+        <Project Path="test/UlidTool.Tests/UlidTool.Tests.csproj" />
     </Folder>
 </Solution>
