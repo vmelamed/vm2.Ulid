@@ -110,7 +110,6 @@ jobs:
               skip_push='false'
               echo "Event: ${{ github.event_name }}. Using default parameters from env." >> $GITHUB_STEP_SUMMARY
           elif [ '${{ github.event_name }}' == "push" ] && [ '${{ github.ref_name }}' != "main" ]; then
-              preprocessor_symbols="${preprocessor_symbols};SHORT_RUN"
               # Skip push-triggered CI when an open PR exists for this branch.
               export GH_TOKEN='${{ github.token }}'
               open_pr_count=$(gh pr list \
@@ -119,9 +118,13 @@ jobs:
                                   --state open \
                                   --json number \
                                   --jq 'length')
+              preprocessor_symbols="${preprocessor_symbols};SHORT_RUN"
               if [ "${open_pr_count}" -gt 0 ]; then
                   echo "Open PR exists for this branch. Skipping push-triggered CI." >> $GITHUB_STEP_SUMMARY
                   skip_push='true'
+              else
+                  echo "No open PRs for this branch. Running push-triggered CI with SHORT_RUN preprocessor symbol." >> $GITHUB_STEP_SUMMARY
+                  skip_push='false'
               fi
           elif [ '${{ github.event_name }}' == "workflow_dispatch" ]; then
               # Get the values from the UI inputs of workflow_dispatch event. Convert comma-separated runners' OS values to JSON array
