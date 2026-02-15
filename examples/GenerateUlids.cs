@@ -1,23 +1,26 @@
-﻿// SPDX-License-Identifier: MIT
+#!/usr/bin/env dotnet
+
+// SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Val Melamed
 
-using System.Text;
-
-using vm2;
+#:property TargetFramework=net10.0
+#:project ../src/UlidType/UlidType.csproj
 
 using static System.Console;
+using static System.Text.Encoding;
+
+using vm2;
 
 WriteLine($"New Ulid:");
 WriteLine($"--------------------------");
 
-var ulidFactory = new UlidFactory();
 var ulid = Ulid.NewUlid();
 
 Display(ulid);
 
 WriteLine($"Ulid from UTF-8 string: \"{ulid}\" (round-trip)");
 WriteLine($"-----------------------------------------");
-var ulid2 = new Ulid(Encoding.UTF8.GetBytes(ulid.ToString()), true);
+var ulid2 = new Ulid(UTF8.GetBytes(ulid.ToString()), true);
 
 Display(ulid2);
 
