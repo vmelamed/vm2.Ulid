@@ -9,9 +9,10 @@ on:
         type: string
 
 env:
-  PACKAGE_PROJECTS: >
+  PACKAGE_PROJECTS: |
     [
-    "src/UlidType/UlidType.csproj"
+      "src/UlidType/UlidType.csproj",
+      "src/UlidTool/UlidTool.csproj"
     ]
 
   PREPROCESSOR_SYMBOLS: "" # Semicolon-separated preprocessor symbols to pass to the compiler.
