@@ -1,5 +1,13 @@
 # UlidTool - ULID Generator Command Line Tool
 
+[![CI](https://github.com/vmelamed/vm2.Ulid/actions/workflows/CI.yaml/badge.svg?branch=main)](https://github.com/vmelamed/vm2.Ulid/actions/workflows/CI.yaml)
+[![codecov](https://codecov.io/gh/vmelamed/vm2.Ulid/branch/main/graph/badge.svg?branch=main)](https://codecov.io/gh/vmelamed/vm2.Ulid)
+[![Release](https://github.com/vmelamed/vm2.Ulid/actions/workflows/Release.yaml/badge.svg?branch=main)](https://github.com/vmelamed/vm2.Ulid/actions/workflows/Release.yaml)
+
+[![NuGet Version](https://img.shields.io/nuget/v/vm2.UlidTool)](https://www.nuget.org/packages/vm2.UlidTool/)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/vm2.UlidTool.svg)](https://www.nuget.org/packages/vm2.UlidTool/)
+[![GitHub License](https://img.shields.io/github/license/vmelamed/vm2.Ulid)](https://github.com/vmelamed/vm2.Ulid/blob/main/LICENSE)
+
 <!-- TOC tocDepth:2..5 chapterDepth:2..6 -->
 
 - [Installation](#installation)
@@ -7,17 +15,16 @@
 - [What is a ULID?](#what-is-a-ulid)
 - [Command Line Options](#command-line-options)
 - [Output Formats](#output-formats)
+  - [Format Abbreviation](#format-abbreviation)
 - [Examples](#examples)
-  - [Generate test data](#generate-test-data)
-  - [Create GUID-compatible IDs](#create-guid-compatible-ids)
-  - [Inspect ULID structure](#inspect-ulid-structure)
-- [Format Abbreviation](#format-abbreviation)
 - [Related Packages](#related-packages)
 - [License](#license)
 
 <!-- /TOC -->
 
-A CLI tool for generating ULIDs (Universally Unique Lexicographically Sortable Identifiers).
+A CLI tool for generating ULIDs (Universally Unique Lexicographically Sortable Identifiers). The tool is based on the
+[`vm2.Ulid`](https://github.com/vmelamed/vm2.Ulid/tree/main/src/UlidType) library and provides various output formats and
+options for generating ULIDs from the command line.
 
 ## Installation
 
@@ -96,7 +103,7 @@ Options:
    ulid -f detailed
    # ULID: 01K5ETWXTDG0ZK9PP9WMC6V4HY
    # GUID: 01934b8e-c6d9-7f40-9a99-f1c66d8c568e
-   #   Timestamp:    01K5ETWXTD      2024-01-15T10:30:45.123+00:00 (1705315845123)
+   #   Timestamp:    01K5ETWXTD       2024-01-15T10:30:45.123+00:00 (1705315845123)
    #   Random Bytes: G0ZK9PP9WMC6V4HY [ 0x7F, 0x40, 0x9A, 0x99, 0xF1, 0xC6, 0x6D, 0x8C, 0x56, 0x8E ]
    ```
 

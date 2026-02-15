@@ -13,15 +13,19 @@
 - [Overview](#overview)
 - [Short Comparison of ULID vs UUID (`System.Guid`)](#short-comparison-of-ulid-vs-uuid-systemguid)
 - [Prerequisites](#prerequisites)
-- [Install the package (NuGet)](#install-the-package-nuget)
-- [Get the code](#get-the-code)
-- [Build from the source code](#build-from-the-source-code)
+- [Install the Package (NuGet)](#install-the-package-nuget)
+- [Quick Start](#quick-start)
+- [Get the Code](#get-the-code)
+- [Build from the Source Code](#build-from-the-source-code)
 - [Tests](#tests)
 - [Benchmark Tests](#benchmark-tests)
 - [Build and Run the Example](#build-and-run-the-example)
 - [Basic Usage](#basic-usage)
-- [Why do I need `UlidFactory`?](#why-do-i-need-ulidfactory)
-  - [The `UlidFactory` in a distributed system](#the-ulidfactory-in-a-distributed-system)
+- [Why Do I Need `UlidFactory`?](#why-do-i-need-ulidfactory)
+  - [The `vm2.UlidFactory` Class](#the-vm2ulidfactory-class)
+    - [Randomness Provider (`vm2.IRandomNumberGenerator`)](#randomness-provider-vm2irandomnumbergenerator)
+    - [Timestamp Provider (`vm2.ITimestampProvider`)](#timestamp-provider-vm2itimestampprovider)
+  - [The `UlidFactory` in a Distributed System](#the-ulidfactory-in-a-distributed-system)
 - [Performance](#performance)
 - [Related Packages](#related-packages)
 - [License](#license)
@@ -29,42 +33,31 @@
 <!-- /TOC -->
 ## Overview
 
-A small, fast, and spec-compliant [ULID](https://github.com/ulid/spec) (Universally Unique Lexicographically Sortable Identifier)
-implementation for .NET.
+A small, fast, and spec-compliant .NET package that implements
+[Universally Unique Lexicographically Sortable Identifier (ULID)](https://github.com/ulid/spec).
 
 ULIDs combine a 48-bit timestamp (milliseconds since Unix epoch) with 80 bits of randomness, producing compact 128-bit
 identifiers that are lexicographically sortable by creation time.
 
-This package exposes a `vm2.Ulid` value type and an `vm2.UlidFactory` for stable, monotonic generation.
+This package exposes a `vm2.Ulid` value type and a `vm2.UlidFactory` for stable, monotonic generation.
 
 ## Short Comparison of ULID vs UUID (`System.Guid`)
 
-The universaly unique lexicographically sortable identifiers (ULIDs) offer some advantages over the traditional universally
-unique identifiers (UUIDs or GUIDs) in certain scenarios:
+Universally unique lexicographically sortable identifiers (ULIDs) offer advantages over traditional globally unique
+identifiers (GUIDs, or UUIDs) in some scenarios:
 
-- **Lexicographical Sorting**: ULIDs are designed to be lexicographically sortable, which may be beneficial for **database
-  indexing** and retrieval
-- **Timestamp Component**: the most significant six bytes of the ULIDs are a timestamp component, allowing for **chronological
-  ordering** of the identifiers
-- **Change monotonically**: this can improve performance in certain database scenarios and cause **less fragmentation**. For
-  identifiers generated in quick succession (within the same millisecond) the random component monotonically increments
-- **Compact Representation**: the canonical representation of ULIDs is more compact compared to UUIDs: they are represented as
-  a 26-character, case-insensitive string (Crockford Base32), while UUIDs are typically represented as a 36 hexadecimal
-  characters, divided into five groups separated by hyphens, following the pattern: 8-4-4-4-12.
-- In the canonical, 26-character, string representation of ULIDs **the first 10 characters encode the timestamp**, providing a
-  human-readable indication of the creation time; and the remaining 16 characters encode the random component. Whereas in the
-  UUID string representation the meaning of the groups depends on the version, and typically **does not provide a
-  straightforward way to extract the creation time**, therefore ULIDs can be used to **generate chronologically sortable
-  identifiers**. Even more so in the most popular UUID version 4: all parts are randomly generated and do not include a
-  timestamp component at all.
-- ULIDs are **binary-compatible with UUIDs** (both are 128-bit values), allowing for easy integration in systems that already
-  use UUIDs
+- **Lexicographic sorting**: lexicographically sortable identifiers, useful for **database indexing**
+- **Timestamp component**: most significant six bytes encode time, enabling **chronological ordering**
+- **Monotonic change**: reduced fragmentation for high-frequency generation within the same millisecond
+- **Compact representation**: 26-character Crockford Base32 string vs 36-character GUID hex with hyphens (8-4-4-4-12)
+- **Readable time hint**: first 10 characters encode the timestamp; GUIDs do not expose creation time in a consistent way
+- **Binary compatibility**: 128-bit values, easy integration with GUID-based systems
 
 ## Prerequisites
 
 - .NET 10.0 or later
 
-## Install the package (NuGet)
+## Install the Package (NuGet)
 
 - Using the dotnet CLI:
 
@@ -78,11 +71,30 @@ unique identifiers (UUIDs or GUIDs) in certain scenarios:
   Install-Package vm2.Ulid
   ```
 
-## Get the code
+## Quick Start
 
-You can clone the the [GitHub repository](https://github.com/vm2/vm2.Ulid). The project is in the `src/UlidType` directory.
+- Install package
 
-## Build from the source code
+  ```bash
+  dotnet add package vm2.Ulid
+  ```
+
+- Generate ULID
+
+  ```csharp
+  using vm2;
+
+  UlidFactory factory = new UlidFactory();
+  Ulid ulid = factory.NewUlid();
+  ```
+
+For testing, database seeding, and other automation, use the [vm2.UlidTool](https://github.com/vmelamed/vm2.Ulid/blob/main/src/UlidTool) CLI.
+
+## Get the Code
+
+You can clone the [GitHub repository](https://github.com/vm2/vm2.Ulid). The project is in the `src/UlidType` directory.
+
+## Build from the Source Code
 
 - Command line:
 
@@ -95,9 +107,8 @@ You can clone the the [GitHub repository](https://github.com/vm2/vm2.Ulid). The 
 
 ## Tests
 
-The test project is located in the `test` directory. It is using the new MTP v2 with the xUnit framework v3.2.2, which may or
-may not be compatible with your version of Visual Studio but the tests are buildable and runnable from the command line using
-the `dotnet` CLI. Which, of course, also works from Visual Studio Code under various OS-es.
+The test project is in the `test` directory. It uses MTP v2 with xUnit v3.2.2. Compatibility varies by Visual Studio version.
+Tests are buildable and runnable from the command line using the `dotnet` CLI and from Visual Studio Code across OSes.
 
 - Command line:
 
@@ -114,22 +125,16 @@ the `dotnet` CLI. Which, of course, also works from Visual Studio Code under var
     dotnet build test/UlidType.Tests/UlidType.Tests.csproj # the test project only
     ```
 
-  - Run the tests standalone (Linux/macOS):
+  - Run the tests standalone:
 
     ```bash
     test/UlidType.Tests/bin/Debug/net10.0/UlidType.Tests
     ```
 
-  - Run the tests standalone (Windows):
-
-    ```bash
-    test/UlidType.Tests/bin/Debug/net10.0/UlidType.Tests.exe
-    ```
-
 ## Benchmark Tests
 
-The benchmark tests project is located in the `benchmarks` directory. It is using the BenchmarkDotNet v0.13.8 library for
-benchmarking. The benchmarks are buildable and runnable from the command line using the `dotnet` CLI.
+The benchmark tests project is in the `benchmarks` directory. It uses BenchmarkDotNet v0.13.8. Benchmarks are buildable and
+runnable from the command line using the `dotnet` CLI.
 
 - Command line:
 
@@ -159,8 +164,8 @@ benchmarking. The benchmarks are buildable and runnable from the command line us
 
 ## Build and Run the Example
 
-The example is a file-based application `GenerateUlids.cs` located in the `examples` directory. It demonstrates the basic usage
-of the `vm2.Ulid` library. The example is buildable and runnable from the command line using the `dotnet` CLI.
+The example is a file-based application `GenerateUlids.cs` in the `examples` directory. It demonstrates basic usage of the
+`vm2.Ulid` library. The example is buildable and runnable from the command line using the `dotnet` CLI.
 
 - Command line:
 
@@ -174,16 +179,16 @@ of the `vm2.Ulid` library. The example is buildable and runnable from the comman
   dotnet examples/GenerateUlids.cs
   ```
 
-- On a Linux/MacOS system with the .NET SDK installed, you can also run the example app directly:
+- On a Linux/macOS system with the .NET SDK installed, you can also run the example app directly:
 
   ```bash
   examples/GenerateUlids.cs
   ```
 
   Provided that:
-  - the file has the execute permissions
-  - at least the first line of the file ends with `\n` (LF), not `\r\n` (CRLF)
-  - the file does not have a UTF-8 BOM (Byte Order Mark) at the beginning
+  - execute permission set
+  - first line ends with `\n` (LF), not `\r\n` (CRLF)
+  - no UTF-8 Byte Order Mark (BOM) at the beginning
 
   These conditions can be met by running the following commands on a Linux system:
 
@@ -197,16 +202,15 @@ of the `vm2.Ulid` library. The example is buildable and runnable from the comman
 ```csharp
 using vm2;
 
-// Recommended: create and reuse more than one UlidFactory-ies, e.g. one per DB table or entity type which require ULIDs.
-// This ensures that ULIDs generated in different contexts have their own monotonicity guarantees.
+// Recommended: reuse multiple UlidFactory instances, e.g. one per table or entity type.
+// Ensures independent monotonicity per context.
 
 UlidFactory factory = new UlidFactory();
 
 Ulid ulid1 = factory.NewUlid();
 Ulid ulid2 = factory.NewUlid();
 
-// Using the default internal factory ensures thread-safety and monotonicity within the same millisecond for ULIDs generated in
-// different contexts of the app or service.
+// Default internal factory ensures thread safety and same-millisecond monotonicity across contexts.
 
 Ulid ulid = Ulid.NewUlid();
 
@@ -242,56 +246,70 @@ Debug.Assert(ulid1 == ulidCopy1 &&                      // Parsed ULIDs are equa
              ulid1 == ulidCopy2);
 ```
 
-## Why do I need `UlidFactory`?
+## Why Do I Need `UlidFactory`?
 
-One of the requirements for the ULIDs is that they increase monotonically within the same millisecond. This means that if you
-generate multiple ULIDs in the same millisecond, each subsequent ULID must be greater than the previous one by one in the least
-significant byte(s). To ensure conformance to this requirement, there must be a ULID generating object (factory) that keeps
-track of the timestamp and the last generated random bytes. If during generation of a ULID the factory finds out that the
-current timestamp is the same as the timestamp of the previous generation to the millisecond, the factory must increment the
-previous random part and use this new value, rather than generating new random values.
+ULIDs must increase monotonically within the same millisecond. When multiple ULIDs are generated in a single millisecond, each
+subsequent ULID is greater by one in the least significant byte(s). A ULID factory tracks the timestamp and the last random
+bytes for each call. When the timestamp matches the previous generation, the factory increments the prior random part instead of
+generating a new random value.
 
-The `UlidFactory` class encapsulates this logic, providing a simple interface for generating ULIDs that meet this requirement.
+### The `vm2.UlidFactory` Class
 
-It is prudent to create and reuse more than one `UlidFactory` instances, e.g. one per DB table or entity type which require
-ULIDs. The ULID factory(s) are thread-safe and ensure monotonicity of the generated ULIDs in different contexts of an
-application or a service.
+The `vm2.UlidFactory` class encapsulates the requirements and exposes a simple interface for generating ULIDs. Use multiple
+`vm2.UlidFactory` instances when needed, e.g. one per database table or entity type.
 
-By default the `UlidFactory` uses a cryptographic random number generator (`vm2.UlidRandomProviders.CryptoRandom`), which is
-suitable for most applications. If you need a different source of randomness (e.g. for testing or performance reasons) or you
-are concerned about the source of entropy, you can explicitly specify that the factory should use the pseudo-random number
-generator `vm2.UlidRandomProviders.PseudoRandom`. You can also provide your own, thread-safe implementation of
-`vm2.IRandomNumberGenerator` to the factory.
+In simple scenarios, use the static method `vm2.Ulid.NewUlid()` instead of `vm2.UlidFactory`. It uses a single internal static
+factory instance with a cryptographic random number generator.
 
-In contrast, if you do not want to use the `vm2.UlidFactory` directly, you can use the static `vm2.Ulid.NewUlid()` method, which
-uses an internal static factory instance with a cryptographic random number generator.
+ULID factories are thread-safe and ensure monotonicity of generated ULIDs across application contexts.
+The factory uses two providers: one for the random bytes and one for the timestamp.
 
-### The `UlidFactory` in a distributed system
+Use dependency injection to construct the factory and manage the providers. DI keeps the provider lifetimes explicit, makes
+testing simple, and enforces a single, consistent configuration across the app or service.
 
-In a distributed system, it is important to ensure that ULIDs generated on different nodes do not collide and maintain their
-monotonicity. One way to achieve this is to have a separate `UlidFactory` instance on each node, each with its own unique
-node identifier. This way, even if two nodes generate ULIDs at the same millisecond, the ULIDs will be different due to the
-different node identifiers. However, this approach breaks the global monotonicity requirement across all nodes.
+#### Randomness Provider (`vm2.IRandomNumberGenerator`)
 
-To maintain global monotonicity in a distributed system, one simple approach is to use a centralized service to generate ULIDs
-for all nodes. This ensures that ULIDs are unique and monotonic across the entire system, but it introduces a single point of
-failure and potential performance bottleneck. Another approach is to use a consensus algorithm to coordinate ULID generation
-across nodes, but this adds complexity and overhead.
+By default the `vm2.UlidFactory` uses a thread-safe, cryptographic random number generator
+(`vm2.UlidRandomProviders.CryptoRandom`), which is suitable for most applications. If you need a different source of randomness,
+e.g. for testing purposes, for performance reasons, or if you are concerned about your source of entropy (`/dev/random`), you
+can explicitly specify that the factory should use the pseudo-random number generator `vm2.UlidRandomProviders.PseudoRandom`.
+You can also provide your own, thread-safe implementation of `vm2.IRandomNumberGenerator` to the factory.
 
-The choice of approach depends on the specific requirements and constraints of your distributed system. The problems outlined
-above are just the first ones that come in mind. In any case, it is important to carefully consider the trade-offs between
-uniqueness, monotonicity, performance, and complexity when designing your ULID generation strategy in a distributed environment.
+#### Timestamp Provider (`vm2.ITimestampProvider`)
+
+By default, the timestamp provider uses `DateTime.UtcNow` converted to Unix epoch time in milliseconds. If you need a different
+source of time, e.g. for testing purposes, you can provide your own implementation of `vm2.ITimestampProvider` to the factory.
+
+### The `UlidFactory` in a Distributed System
+
+In distributed database applications and services, ULIDs are often generated across many nodes. Design for collision avoidance
+and monotonicity from the start. Node-local monotonicity does not imply global monotonicity, and clock skew can surface quickly
+under load.
+
+One approach uses a separate `UlidFactory` instance on each node with a unique node identifier. ULIDs remain distinct even when
+generated in the same millisecond. However, global monotonicity across all nodes does not hold under this approach.
+
+To maintain global monotonicity, a centralized ULID service can generate ULIDs for all nodes. This ensures uniqueness and
+monotonicity across the system, at the cost of a single point of failure and a potential performance bottleneck. Time
+synchronization across nodes remains a challenge; clock skew can cause non-monotonic ULIDs if not handled properly.
+
+Another approach uses a consensus algorithm to coordinate ULID generation across nodes. This adds complexity and overhead.
+
+The choice depends on system requirements and constraints. Consider trade-offs among uniqueness, monotonicity, performance, and
+complexity when designing a distributed ULID strategy.
 
 ## Performance
 
-Here are some benchmark results with similar Guid functions as baselines run on GitHub Actions:
+Benchmark results vs similar Guid-generating functions, run on GitHub Actions:
 
+```text
 BenchmarkDotNet v0.15.3, Linux Ubuntu 24.04.3 LTS (Noble Numbat)
 
-AMD EPYC 7763 2.45GHz, 1 CPU, 4 logical and 2 physical cores .NET SDK 9.0.305
+AMD EPYC 7763 2.45GHz, 1 CPU, 4 logical and 2 physical cores. .NET SDK 9.0.305
 
 - [Host]     : .NET 9.0.9 (9.0.9, 9.0.925.41916), X64 RyuJIT x86-64-v3
 - DefaultJob : .NET 9.0.9 (9.0.9, 9.0.925.41916), X64 RyuJIT x86-64-v3
+```
 
 | Method               | Mean      | Error    | StdDev   | Ratio | Gen0   | Allocated | Alloc Ratio | RandomProviderType |
 |--------------------  |----------:|---------:|---------:|------:|-------:|----------:|------------:|------------------- |
@@ -327,8 +345,8 @@ doesn't, it simply increments the random part of the previous call.
 
 ## Related Packages
 
-- **[vm2.UlidTool](https://github.com/vmelamed/vm2.Ulid/blob/main/src/UlidTool)** - ULID Generator Command Line Tool
 - **[ULID Specification](https://github.com/ulid/spec)** - Official ULID spec
+- **[vm2.UlidTool](https://github.com/vmelamed/vm2.Ulid/blob/main/src/UlidTool)** - ULID Generator Command Line Tool
 
 ## License
 
