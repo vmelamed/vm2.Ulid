@@ -29,7 +29,7 @@ on:
         type: string
         default: "SHORT_RUN" # *TODO* Adjust the default preprocessor symbols as needed.
 
-# Prevent duplicate runs: when pushing to a PR branch, cancel the push-triggered run in favor of the PR-triggered run
+# Concurrency: cancel in-progress runs for the same ref
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
@@ -101,18 +101,19 @@ jobs:
           minver_tag_prefix='${{ env.MINVERTAGPREFIX }}'
           minver_prerelease_id='${{ env.MINVERDEFAULTPRERELEASEIDENTIFIERS }}'
 
-          if [ '${{ github.event_name }}' == "push" ]; then
-              # Set the values for push events, and add SHORT_RUN to preprocessor_symbols for faster benchmark tests (less precise, yet acceptable for CI runs).
-              preprocessor_symbols="${preprocessor_symbols};SHORT_RUN"
+          if [ '${{ github.event_name }}' == "pull_request" ] || \
+             [ '${{ github.event_name }}' == "pull_request_review" ] || \
+             ([ '${{ github.event_name }}' == "push" ] && [ '${{ github.ref_name }}' == "main" ]); then
+              # For pull requests, reviews, and main branch pushes, use default values from env (no modifications needed)
+              :
+          elif [ '${{ github.event_name }}' == "push" ] && [ '${{ github.ref_name }}' != "main" ]; then
+                preprocessor_symbols="${preprocessor_symbols};SHORT_RUN"
           elif [ '${{ github.event_name }}' == "workflow_dispatch" ]; then
               # Get the values from the UI inputs of workflow_dispatch event. Convert comma-separated runners' OS values to JSON array
               # There is a known GitHub actions issue: the workflow dispatch UI doesn't properly handle JSON strings with quotes.
               # E.g. for the input '["ubuntu-latest"]', the UI removes the inner quotes and it becomes the invalid JSON: '[ubuntu-latest]'.
               runners_os=$(echo "${{ inputs.runners-os }}" | jq -Rc 'split(",") | map(select(length > 0) | gsub("^\\s+|\\s+$";""))')
               preprocessor_symbols="${preprocessor_symbols};${{ inputs.preprocessor-symbols }}"
-          elif [ '${{ github.event_name }}' == "pull_request" ] || [ '${{ github.event_name }}' == "pull_request_review" ]; then
-              # For pull requests and reviews, use default values from env (no modifications needed)
-              :
           else
               echo "Unsupported event: ${{ github.event_name }}"
               exit 5
