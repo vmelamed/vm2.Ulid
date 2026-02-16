@@ -2,6 +2,9 @@
 
 
 
+## v1.0.8 - 2026-02-16
+See prereleases below.
+
 
 
 See prereleases below. This format follows:
