@@ -40,11 +40,21 @@ See prereleases below. This format follows:
 
 ---
 
-## v1.0.7 - 2026-02-13
+## [1.0.8] - 2026-02-14
+
+### Added
+
+UlidTool project to provide a command-line interface for generating and parsing ULIDs. The tool is built on top of the `vm2.Ulid` library and can be used for quick ULID generation or parsing without writing code.
+
+### Internal
+
+- build pipeline changes to include the new UlidTool project in the CI process and package it for release.
+
+## [1.0.7] - 2026-02-13
 
 Update dependencies to .NET SDK 10.0.3 and latest build pipeline templates from vm2.DevOps.
 
-## v1.0.6 - 2026-02-09
+## [1.0.6] - 2026-02-09
 
 See prereleases below.
 
