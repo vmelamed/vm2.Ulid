@@ -11,10 +11,10 @@ on:
   workflow_dispatch:
     inputs:
       minver-prerelease-id:
-        description: "Prerelease prefix (e.g. preview, alpha, beta, rc1, etc.)"
+        description: "Prerelease prefix (e.g. preview.0, alpha, beta, rc1, etc.)"
         type: string
         required: true
-        default: preview
+        default: preview.0
 
       reason:
         description: "Reason for manual pre-release (not allowed symbols: ; | & $ ` \\ < > ( ) { } new-line )"
