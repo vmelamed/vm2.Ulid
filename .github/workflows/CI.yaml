@@ -166,7 +166,7 @@ jobs:
           }  >> $GITHUB_OUTPUT
 
   call-ci:
-    name: "Run CI: Build, Test, Benchmarks"
+    name: "Run CI: Build, Test, Benchmark, Pack"
     needs:
       - get-params
     if: ${{ needs.get-params.outputs.skip-push != 'true' }}

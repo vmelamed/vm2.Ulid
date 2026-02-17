@@ -2,7 +2,7 @@ name: Publish NuGet Pre-Release
 
 on:
   workflow_run:
-    workflows: ["CI: Build, Test, Benchmark"]
+    workflows: ["CI: Build, Test, Benchmark, Pack"]
     types:
       - completed
     branches:
