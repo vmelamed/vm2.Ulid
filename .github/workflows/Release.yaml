@@ -87,6 +87,7 @@ jobs:
       NUGET_API_GITHUB_KEY: ${{ secrets.NUGET_API_GITHUB_KEY }}
       NUGET_API_NUGET_KEY: ${{ secrets.NUGET_API_NUGET_KEY }}
       NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+      RELEASE_PAT: ${{ secrets.RELEASE_PAT }} # Optional Personal Access Token for pushing commits and tags if GITHUB_TOKEN permissions are insufficient.
     permissions:
       contents: write # Required to checkout the code and create releases
       packages: write # Required to publish GitHub Packages NuGet packages
