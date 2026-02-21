@@ -75,7 +75,7 @@ public readonly partial struct Ulid
     /// symbols (the decimal digits) used to represent decimal numbers is 10 (Radix 10), the number of the Crockford digits is 32<br/>
     /// (Radix 32).<br/>
     /// </summary>
-    public static readonly uint UlidRadix = 32; // = CrockfordDigits.Length - the radix of a Crockford number
+    public const uint UlidRadix = 32; // = CrockfordDigits.Length - the radix of a Crockford number
 
     /// <summary>
     /// The number of bits that represent a digit in a ULID.
@@ -84,7 +84,7 @@ public readonly partial struct Ulid
     /// This constant defines the number of bits to shift in binary to string operations involving ULIDs. It is primarily used <br/>
     /// to adjust or manipulate ULID components during encoding or decoding processes.
     /// </remarks>
-    public static readonly int BitsPerUlidDigit = 5; // 1 << BitsPerUlidDigit == CrockfordDigits.Length
+    public const int BitsPerUlidDigit = 5; // 1 << BitsPerUlidDigit == CrockfordDigits.Length
 
     /// <summary>
     /// Represents the bit-mask (<c>0b_0001_1111 / 0x1F / 31</c>) used to extract the least significant digit of a ULID value. If<br/>
@@ -95,12 +95,12 @@ public readonly partial struct Ulid
     /// This constant is derived from the bit shift value defined by <see cref="BitsPerUlidDigit"/> and is used in operations <br/>
     /// involving ULID character manipulation.
     /// </remarks>
-    public static readonly int UlidDigitMask = 0b_0001_1111; // the numeric value of the digit CrockfordDigits.Last()
+    public const int UlidDigitMask = 0b_0001_1111; // the numeric value of the digit CrockfordDigits.Last()
 
     /// <summary>
     /// Represents the fixed length of a ULID (Universally Unique Lexicographically Sortable Identifier) string. It is 26 characters long.
     /// </summary>
-    public static readonly int UlidStringLength = (int)Math.Ceiling((float)UlidBitsLength / BitsPerUlidDigit);
+    public const int UlidStringLength = 26; // (int)Math.Ceiling((float)UlidBitsLength / BitsPerUlidDigit);
 
     /// <summary>
     /// The value where all bits of the Ulid value are set to zero. Also, represents the smallest possible value of the
@@ -119,8 +119,12 @@ public readonly partial struct Ulid
     /// </summary>
     public const string UlidStringRegex = $"(?i)[{CrockfordDigits}]{{26}}";
 
-    internal static byte[] CrockfordDigitValues =
-    [
+    static readonly int CrockfordDigitValuesLength = CrockfordDigitValues.Length;
+
+    // A ReadOnlySpan<byte> property returning a byte literal would be stored in static data (no heap allocation) and is immune to mutation.
+    static ReadOnlySpan<byte> CrockfordDigitValues => [
+         255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+         255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
           0, // 0
           1, // 1
           2, // 2
@@ -196,7 +200,14 @@ public readonly partial struct Ulid
          29, // x
          30, // y
          31, // z
+        255, // {
+        255, // |
+        255, // }
+        255, // ~
+        255, // DEL
+        255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+        255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+        255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+        255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     ];
-
-    internal static int Zero = '0';
 }

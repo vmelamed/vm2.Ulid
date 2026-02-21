@@ -8,9 +8,8 @@ namespace vm2;
 /// </summary>
 /// <remarks>
 /// A ULID is a 128-bit identifier that combines a timestamp with a random component, ensuring both uniqueness and lexicographical<br/>
-/// lexicographical order. This struct provides methods for creating, parsing, and manipulating ULIDs, as well as converting them<br/>
-/// to other formats such as strings or GUIDs. ULIDs are commonly used in distributed systems where unique, sortable identifiers<br/>
-/// are required.
+/// order. This struct provides methods for creating, parsing, and manipulating ULIDs, as well as converting them to other formats<br/>
+/// such as strings or GUIDs. ULIDs are commonly used in distributed systems where unique, sortable identifiers are required.
 /// </remarks>
 [Newtonsoft.Json.JsonConverter(typeof(UlidNsConverter))]
 [System.Text.Json.Serialization.JsonConverter(typeof(UlidSysConverter))]
@@ -24,14 +23,14 @@ public readonly partial struct Ulid :
     IIncrementOperators<Ulid>,
     IMinMaxValue<Ulid>
 {
-    static UlidFactory? _defaultFactory;
+    static UlidFactory _defaultFactory = new();
 
     readonly ReadOnlyMemory<byte> _ulidBytes;
 
     /// <summary>
     /// Gets a read-only buffer of bytes representing the underlying data of the ULID.
     /// </summary>
-    public readonly ReadOnlySpan<byte> Bytes => _ulidBytes.Span;
+    public ReadOnlySpan<byte> Bytes => _ulidBytes.Span;
 
     /// <summary>
     /// Extracts and converts the ULID's Unix timestamp component into a <see cref="DateTimeOffset"/> representation.
@@ -39,7 +38,7 @@ public readonly partial struct Ulid :
     /// <remarks>
     /// The returned <see cref="DateTimeOffset"/> represents the date and time encoded in the ULID.
     /// </remarks>
-    public readonly DateTimeOffset Timestamp
+    public DateTimeOffset Timestamp
     {
         get
         {
@@ -56,18 +55,25 @@ public readonly partial struct Ulid :
     /// <remarks>
     /// The returned byte array represents the random portion of the ULID.
     /// </remarks>
-    public readonly ReadOnlySpan<byte> RandomBytes => Bytes[RandomBegin..RandomEnd];
+    public ReadOnlySpan<byte> RandomBytes => Bytes[RandomBegin..RandomEnd];
 
     /// <summary>
-    /// Generates a new unique ULID (Universally Unique Lexicographically Sortable Identifier).
+    /// Generates a new unique ULID (Universally Unique Lexicographically Sortable Identifier) using the default random provider
+    /// and the default clock.
     /// </summary>
     /// <remarks>
     /// This method uses an internal, default <see cref="UlidFactory"/> instance to create a new ULID.<br/>
     /// Consider using your own factories that generate separate sequences of ULIDs, e.g. a factory per DB table or per entity type.<br/>
     /// </remarks>
     /// <returns>A new <see cref="Ulid"/> instance representing a unique identifier.</returns>
-    public static Ulid NewUlid(IUlidRandomProvider? ulidRandomProvider = null)
-        => (_defaultFactory ??= new UlidFactory(ulidRandomProvider)).NewUlid();
+    public static Ulid NewUlid()
+        => _defaultFactory.NewUlid();
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Ulid"/> struct with all bits set to zero, representing the smallest possible value of the <see cref="Ulid"/> type.
+    /// </summary>
+    public Ulid()
+        => _ulidBytes = new ReadOnlyMemory<byte>(new byte[UlidBytesLength]);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Ulid"/> struct using the passed in <paramref name="bytes"/>.<br/>
@@ -85,7 +91,7 @@ public readonly partial struct Ulid :
     /// Otherwise, the input bytes are treated as the raw byte representation of a ULID and the length of the <paramref name="bytes"/><br/>
     /// must be at least <see cref="UlidBytesLength"/>.
     /// </param>
-    public Ulid(in ReadOnlySpan<byte> bytes, bool isUtf8)
+    public Ulid(ReadOnlySpan<byte> bytes, bool isUtf8)
     {
         if (isUtf8)
         {
@@ -118,8 +124,8 @@ public readonly partial struct Ulid :
     /// <summary>
     /// Initializes a new instance of the <see cref="Ulid"/> struct from the bytes of the specified <see cref="Guid"/>.
     /// </summary>
-    /// <param name="source">The string representation of the ULID to parse. Must be a valid ULID string.</param>
-    public Ulid(in Guid source)
+    /// <param name="source">A <see cref="Guid"/> to initialize the ULID from.</param>
+    public Ulid(Guid source)
         : this(source.ToByteArray(), false)
     {
     }
@@ -132,7 +138,7 @@ public readonly partial struct Ulid :
     /// </remarks>
     /// <param name="unixTimestamp">The timestamp representing the creation time of the ULID.</param>
     /// <param name="randomBytes">A read-only buffer of 10 bytes representing the unique identifier portion of the ULID.</param>
-    public Ulid(long unixTimestamp, in ReadOnlySpan<byte> randomBytes)
+    public Ulid(long unixTimestamp, ReadOnlySpan<byte> randomBytes)
     {
         if (randomBytes.Length != RandomLength)
             throw new ArgumentException(
@@ -162,7 +168,7 @@ public readonly partial struct Ulid :
     /// The .NET <see cref="DateTime"/> representing the creation time of the ULID. Should be in UTC, otherwise assumes local time.
     /// </param>
     /// <param name="randomBytes">A read-only buffer of 10 randomBytes representing the unique identifier portion of the ULID.</param>
-    public Ulid(DateTime dateTime, in ReadOnlySpan<byte> randomBytes)
+    public Ulid(DateTime dateTime, ReadOnlySpan<byte> randomBytes)
         : this(new DateTimeOffset(dateTime).ToUnixTimeMilliseconds(), randomBytes)
     {
     }
@@ -178,7 +184,7 @@ public readonly partial struct Ulid :
     /// The timestamp representing the creation time of the ULID. Should be in UTC, otherwise assumes local time.
     /// </param>
     /// <param name="randomBytes">A read-only buffer of 10 randomBytes representing the unique identifier portion of the ULID.</param>
-    public Ulid(DateTimeOffset dateTime, in ReadOnlySpan<byte> randomBytes)
+    public Ulid(DateTimeOffset dateTime, ReadOnlySpan<byte> randomBytes)
         : this(dateTime.ToUnixTimeMilliseconds(), randomBytes)
     {
     }
@@ -187,46 +193,40 @@ public readonly partial struct Ulid :
     /// Converts the current ULID value to its equivalent Guid representation.
     /// </summary>
     /// <returns></returns>
-    public readonly Guid ToGuid() => new(Bytes);
+    public Guid ToGuid() => new(Bytes);
 
     /// <summary>
     /// Converts the current ULID instance to its equivalent Base32 (the default) string representation.
     /// </summary>
     /// <remarks>
-    /// The string representation follows the standard ULID format, which is a 26-character case-sensitive alphanumeric string.<br/>
-    /// This method is optimized for performance and avoids unnecessary allocations.
+    /// The string representation follows the standard ULID format, which is a 26 uppercase alphanumeric string.<br/>
     /// </remarks>
     /// <returns>A 26-character string that represents the current ULID instance.</returns>
-    public override string ToString()
-    {
-        Memory<char> buffer = new char[UlidStringLength];
-        TryWrite(buffer.Span);
-        return string.Create(UlidStringLength, 0, (s, _) => buffer.Span.CopyTo(s));
-    }
+    public override string ToString() => string.Create(UlidStringLength, this, static (span, ulid) => ulid.TryWrite(span));
 
     #region Implicit conversions
     /// <summary>
-    /// Defines an explicit conversion from a <see cref="Ulid"/> to its string representation.
+    /// Defines an implicit conversion from a <see cref="Ulid"/> to its string representation.
     /// </summary>
-    public static implicit operator string(in Ulid ulid) => ulid.ToString();
+    public static implicit operator string(Ulid ulid) => ulid.ToString();
 
     /// <summary>
     /// Defines an implicit conversion from a string to a <see cref="Ulid"/> instance.
     /// </summary>
     /// <param name="s"></param>
-    public static implicit operator Ulid(in string s) => new(s);
+    public static implicit operator Ulid(string s) => new(s);
 
     /// <summary>
     /// Defines an implicit conversion from a <see cref="Ulid"/> to a <see cref="Guid"/> and vice versa.
     /// </summary>
     /// <param name="ulid"></param>
-    public static implicit operator Guid(in Ulid ulid) => ulid.ToGuid();
+    public static implicit operator Guid(Ulid ulid) => ulid.ToGuid();
 
     /// <summary>
     /// Defines an implicit conversion from a <see cref="Guid"/> to a <see cref="Ulid"/> instance.
     /// </summary>
     /// <param name="guid"></param>
-    public static implicit operator Ulid(in Guid guid) => new(guid);
+    public static implicit operator Ulid(Guid guid) => new(guid);
     #endregion
 
     /// <summary>
@@ -236,7 +236,7 @@ public readonly partial struct Ulid :
     /// <returns>
     /// <see langword="true"/> if the current instance is equal to the specified <see cref="Ulid"/> instance; otherwise, <see langword="false"/>.
     /// </returns>
-    public bool Equals(Ulid other) => Bytes.SequenceCompareTo(other.Bytes) == 0;
+    public bool Equals(Ulid other) => Bytes.SequenceEqual(other.Bytes);
 
     /// <summary>
     /// Determines whether the specified object is equal to the current instance.
@@ -255,8 +255,7 @@ public readonly partial struct Ulid :
     public override int GetHashCode()
     {
         HashCode hc = new();
-        foreach (var b in Bytes)
-            hc.Add(b);
+        hc.AddBytes(Bytes);
         return hc.ToHashCode();
     }
 
@@ -282,7 +281,7 @@ public readonly partial struct Ulid :
     /// Attempts to write the string representation of the ULID to the specified character buffer using the Crockford Base32 encoding.
     /// </summary>
     /// <remarks>
-    /// The method encodes the ULID as a 26-character string using the Crockford Base32 alphabetSpan. The caller must ensure that the<br/>
+    /// The method encodes the ULID as a 26-character string using the Crockford Base32 alphabet. The caller must ensure that the<br/>
     /// <paramref name="destination"/> buffer has sufficient capacity to hold the resulting string. If the buffer is smaller than<br/>
     /// <see cref="UlidStringLength"/>, the method returns <see langword="false"/>  and does not modify the destination buffer.
     /// </remarks>
@@ -291,10 +290,10 @@ public readonly partial struct Ulid :
     /// <see cref="UlidStringLength"/> or more.
     /// </param>
     /// <returns>
-    /// <see langword="true"/> if the ULID string representation was successfully written to the  <paramref name="destination"/> buffer; otherwise,<br/>
-    /// <see langword="false"/> if the buffer is too small.
+    /// <see langword="true"/> if the ULID string representation was successfully written to the <paramref name="destination"/> buffer;<br/>
+    /// otherwise, <see langword="false"/> if the buffer is too small.
     /// </returns>
-    public readonly bool TryWrite(in Span<char> destination)
+    public bool TryWrite(Span<char> destination)
     {
         if (destination.Length < UlidStringLength)
             return false;
@@ -312,42 +311,17 @@ public readonly partial struct Ulid :
     }
 
     /// <summary>
-    /// Attempts to write the ULID bytes to the specified destination buffer. If <paramref name="asUtf8"/> is <see langword="true"/>,<br/>
-    /// the <paramref name="destination"/> must have at least <see cref="UlidStringLength"/> bytes and the method writes the ULID as a 26-character<br/>
-    /// UTF-8 encoded string representation; otherwise, the <paramref name="destination"/> must have at least <see cref="UlidBytesLength"/> bytes and<br/>
-    /// the method writes the raw 16-byte representation of the ULID.
+    /// Attempts to write the ULID bytes to the specified destination buffer. The <paramref name="destination"/> must have at least<br/>
+    /// <see cref="UlidBytesLength"/> bytes and if it does, the method writes the raw 16-byte representation of the ULID in it.
     /// </summary>
     /// <param name="destination">
     /// The buffer to which the ULID representation will be written.
     /// </param>
-    /// <param name="asUtf8">
-    /// If <see langword="true"/>, the ULID is written as a 26-character UTF-8 encoded string representation, requiring at least<br/>
-    /// <see cref="UlidStringLength"/> bytes in the <paramref name="destination"/> buffer.<br/>
-    /// If <see langword="false"/>, the ULID is written as its raw 16-byte representation, requiring at least <see cref="UlidBytesLength"/><br/>
-    /// bytes in the <paramref name="destination"/> buffer.
-    /// </param>
     /// <returns>
     /// <see langword="true"/> if the ULID was successfully written to the destination buffer; otherwise, <see langword="false"/>.
     /// </returns>
-    public readonly bool TryWrite(Span<byte> destination, bool asUtf8)
+    public bool TryWrite(Span<byte> destination)
     {
-        if (asUtf8)
-        {
-            if (destination.Length < UlidStringLength)
-                return false;
-
-            var ulidAsNumber = ReadUInt128BigEndian(Bytes);
-
-            for (var i = 0; i < UlidStringLength; i++)
-            {
-                // get the least significant 5 bits from the number and convert it to character
-                destination[UlidStringLength-i-1] = CrockfordDigitsUtf8[(byte)ulidAsNumber & UlidDigitMask];
-                ulidAsNumber >>>= BitsPerUlidDigit;
-            }
-
-            return true;
-        }
-
         if (destination.Length < UlidBytesLength)
             return false;
 
@@ -358,26 +332,42 @@ public readonly partial struct Ulid :
     /// <summary>
     /// Attempts to write the string representation of the ULID to the specified UTF-8 byte buffer using the Crockford Base32 encoding.
     /// </summary>
-    public readonly bool TryWriteUtf8(in Span<byte> destination) => TryWrite(destination, true);
+    public bool TryWriteUtf8(Span<byte> destination)
+    {
+        if (destination.Length < UlidStringLength)
+            return false;
+
+        var ulidAsNumber = ReadUInt128BigEndian(Bytes);
+
+        for (var i = 0; i < UlidStringLength; i++)
+        {
+            // get the least significant 5 bits from the number and convert it to character
+            destination[UlidStringLength-i-1] = CrockfordDigitsUtf8[(byte)ulidAsNumber & UlidDigitMask];
+            ulidAsNumber >>>= BitsPerUlidDigit;
+        }
+
+        return true;
+    }
 
     /// <summary>
     /// Attempts to parse the specified UTF-16 string representation of a ULID.
     /// </summary>
     /// <remarks>
-    /// This method does not throw an exception if the parsing fails. Instead, it returns <see langword="false"/> and sets <paramref name="result"/><br/>
-    /// to <see langword="null"/>.
+    /// This method does not throw an exception if the parsing fails. Instead, it returns <see langword="false"/> and sets
+    /// <paramref name="result"/> to an empty Ulid (all bytes set to zero).
     /// </remarks>
     /// <param name="sourceSpan">
-    /// The string as a read-only char buffer to parse as a ULID. This value can be <see langword="null"/>.
+    /// The string to parse to a ULID.
     /// </param>
     /// <param name="result">
-    /// When this method returns, contains the parsed <see cref="Ulid"/> if the parsing succeeded; otherwise, <see langword="null"/>.
+    /// If the parsing succeeded, on return will contain the parsed <see cref="Ulid"/>;
+    /// otherwise, an empty Ulid (all bytes set to zero).
     /// </param>
     /// <returns>
     /// <see langword="true"/> if the string was successfully parsed as a ULID; otherwise, <see langword="false"/>.
     /// </returns>
     public static bool TryParse(
-        in ReadOnlySpan<char> sourceSpan,
+        ReadOnlySpan<char> sourceSpan,
         out Ulid result)
     {
         result = Empty;
@@ -390,20 +380,17 @@ public readonly partial struct Ulid :
 
         for (var i = 0; i < UlidStringLength; i++)
         {
-            if (i > 0)
-                ulidAsNumber *= UlidRadix;
+            var crockfordChar = sourceSpan[i];
 
-            var crockfordIndex = sourceSpan[i] - '0';
-
-            if (crockfordIndex < 0 || crockfordIndex >= CrockfordDigitValues.Length)
+            if (crockfordChar >= CrockfordDigitValuesLength)
                 return false;
 
-            var digitValue = CrockfordDigitValues[crockfordIndex];
+            var digitValue = CrockfordDigitValues[crockfordChar];
 
             if (digitValue >= 32)
                 return false;
 
-            ulidAsNumber += digitValue;
+            ulidAsNumber = (ulidAsNumber << BitsPerUlidDigit) | digitValue;
         }
 
         // get the randomBytes of the UInt128 value
@@ -421,19 +408,19 @@ public readonly partial struct Ulid :
     /// </summary>
     /// <remarks>
     /// This method does not throw an exception if the parsing fails. Instead, it returns <see langword="false"/> and sets <paramref name="result"/><br/>
-    /// to <see langword="null"/>.
+    /// to an empty Ulid (all bytes set to zero).
     /// </remarks>
     /// <param name="sourceSpan">
-    /// The string as a read-only char buffer to parse as a ULID. This value can be <see langword="null"/>.
+    /// UTF-8 character (byte) buffer to parse as a ULID.
     /// </param>
     /// <param name="result">
-    /// When this method returns, contains the parsed <see cref="Ulid"/> if the parsing succeeded; otherwise, <see langword="null"/>.
+    /// When this method returns, contains the parsed <see cref="Ulid"/> if the parsing succeeded; otherwise, an empty Ulid (all bytes set to zero).
     /// </param>
     /// <returns>
     /// <see langword="true"/> if the string was successfully parsed as a ULID; otherwise, <see langword="false"/>.
     /// </returns>
     public static bool TryParse(
-        in ReadOnlySpan<byte> sourceSpan,
+        ReadOnlySpan<byte> sourceSpan,
         out Ulid result)
     {
         result = Empty;
@@ -446,20 +433,10 @@ public readonly partial struct Ulid :
 
         for (var i = 0; i < UlidStringLength; i++)
         {
-            if (i > 0)
-                ulidAsNumber *= UlidRadix;
-
-            var crockfordIndex = sourceSpan[i] - (byte)'0';
-
-            if (crockfordIndex < 0 || crockfordIndex >= CrockfordDigitValues.Length)
-                return false;
-
-            var digitValue = CrockfordDigitValues[crockfordIndex];
-
+            var digitValue = CrockfordDigitValues[sourceSpan[i]];
             if (digitValue >= 32)
                 return false;
-
-            ulidAsNumber += digitValue;
+            ulidAsNumber = (ulidAsNumber << BitsPerUlidDigit) | digitValue;
         }
 
         // get the randomBytes of the UInt128 value
@@ -478,7 +455,7 @@ public readonly partial struct Ulid :
     /// <param name="s">The string representation of the ULID to parse.</param>
     /// <returns>The <see cref="Ulid"/> instance that corresponds to the parsed string.</returns>
     /// <exception cref="ArgumentException">Thrown if the input string <paramref name="s"/> cannot be parsed as a valid ULID.</exception>
-    public static Ulid Parse(in ReadOnlySpan<byte> s)
+    public static Ulid Parse(ReadOnlySpan<byte> s)
         => TryParse(s, out var u)
                 ? u
                 : throw new ArgumentException("The input source does not represent a valid ULID.", nameof(s));
@@ -503,7 +480,7 @@ public readonly partial struct Ulid :
     /// <remarks>
     /// The method validates the input string against the ULID format and attempts to parse it into a <see cref="Ulid"/> instance.<br/>
     /// If the input string does not conform to the ULID format, the method returns <see langword="false"/> and the <paramref name="result"/><br/>
-    /// parameter is set to <see langword="null"/>.
+    /// parameter is set to <see cref="Ulid.Empty"/>.
     /// </remarks>
     /// <param name="source">
     /// The string representation of the ULID to parse. The string must conform to the ULID format.
@@ -512,7 +489,8 @@ public readonly partial struct Ulid :
     /// The format provider is not used here.
     /// </param>
     /// <param name="result">
-    /// When this method returns, contains the parsed <see cref="Ulid"/> value if the parsing succeeded; otherwise, <see langword="null"/>.
+    /// When this method returns, contains the parsed <see cref="Ulid"/> value if the parsing succeeded;
+    /// otherwise, an empty Ulid (all bytes set to zero).
     /// </param>
     /// <returns>
     /// <see langword="true"/> if the string was successfully parsed into a valid <see cref="Ulid"/>; otherwise, <see langword="false"/>.
@@ -522,9 +500,12 @@ public readonly partial struct Ulid :
         IFormatProvider? _,
         out Ulid result)
     {
-        result = new();
         if (string.IsNullOrWhiteSpace(source))
+        {
+            result = Empty;
             return false;
+        }
+
         return TryParse(source, out result);
     }
     #endregion
