@@ -107,11 +107,10 @@ jobs:
       NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
       NUGET_API_GITHUB_KEY: ${{ secrets.NUGET_API_GITHUB_KEY }}
       NUGET_API_NUGET_KEY: ${{ secrets.NUGET_API_NUGET_KEY }}
+      RELEASE_PAT: ${{ secrets.RELEASE_PAT }}
     permissions:
-      contents: write # Required to checkout the code and create releases
-      packages: write # Required to restore and publish GitHub Packages NuGet packages
-      pull-requests: write # Required to comment on PRs
-      checks: write # Required to create GitHub Checks
+      contents: write # Required to checkout the code, push changelog, and create tags
+      packages: read  # Required to restore GitHub Packages NuGet packages
     with:
       dotnet-version: ${{ needs.get-params.outputs.dotnet-version }}
       package-projects: ${{ needs.get-params.outputs.package-projects }}

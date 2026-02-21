@@ -88,12 +88,12 @@ public partial class UlidTests
         var ulid = new Ulid("01K5MVTR82AF7EA4DNPKQAVE3T"u8, true);
         Span<byte> buffer = stackalloc byte[UlidBytesLength+1];
 
-        ulid.TryWrite(buffer[..(UlidBytesLength-1)], false).Should().BeFalse();
+        ulid.TryWrite(buffer[..(UlidBytesLength-1)]).Should().BeFalse();
 
-        ulid.TryWrite(buffer[..UlidBytesLength], false).Should().BeTrue();
+        ulid.TryWrite(buffer[..UlidBytesLength]).Should().BeTrue();
         new Ulid(buffer, false).Should().Be(ulid);
 
-        ulid.TryWrite(buffer, false).Should().BeTrue();
+        ulid.TryWrite(buffer).Should().BeTrue();
         new Ulid(buffer, false).Should().Be(ulid);
     }
 

@@ -1,6 +1,6 @@
 <Solution>
     <Folder Name="/.github/">
-        <File Path=".github/dependabot.yaml" />
+        <File Path=".github/dependabot.yml" />
     </Folder>
     <Folder Name="/.github/workflows/">
         <File Path=".github/workflows/CI.yaml" />

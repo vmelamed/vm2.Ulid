@@ -1,23 +1,3 @@
-# Changelog
-
-
-
-
-
-## v1.0.9 - 2026-02-16
-See prereleases below.
-
-## v1.0.8 - 2026-02-16
-See prereleases below.
-
-
-
-See prereleases below. This format follows:
-
-- [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
-- [Semantic Versioning](https://semver.org/)
-- Version numbers are produced by [MinVer](./ReleaseProcess.md) from Git tags.
-
 <!--
 ## [Unreleased]
 
@@ -43,7 +23,21 @@ See prereleases below. This format follows:
 - (tooling, infrastructure, build pipeline changes)
 -->
 
----
+# Changelog
+
+## v1.0.9 - 2026-02-16
+
+See prereleases below.
+
+## v1.0.8 - 2026-02-16
+
+See prereleases below.
+
+See prereleases below. This format follows:
+
+- [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
+- [Semantic Versioning](https://semver.org/)
+- Version numbers are produced by [MinVer](./ReleaseProcess.md) from Git tags.
 
 ## [1.0.8] - 2026-02-14
 
