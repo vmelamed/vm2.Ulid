@@ -67,7 +67,7 @@ public class NewUlid
     [Benchmark(Description = "Ulid.NewUlid")]
     public Ulid Ulid_NewUlid() => Ulid.NewUlid();
 
-    [Benchmark(Description = $"Factory(RandomProviderType).NewUlid")]
+    [Benchmark(Description = $"Factory.NewUlid")]
     public Ulid Factory_NewUlid() => Factory.NewUlid();
 }
 
