@@ -378,6 +378,7 @@ public readonly partial struct Ulid :
         // parse the string into a UInt128 value first
         UInt128 ulidAsNumber = 0;
 
+        Debug.Assert(CrockfordDigitValuesLength == 256, "The length of the CrockfordDigitValues lookup table should be equal to the number of possible byte values (0-255) to ensure that all input characters can be mapped to a digit value or marked as invalid.");
         for (var i = 0; i < UlidStringLength; i++)
         {
             var crockfordChar = sourceSpan[i];
