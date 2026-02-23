@@ -273,12 +273,13 @@ By default the `vm2.UlidFactory` uses a thread-safe, cryptographic random number
 (`vm2.UlidRandomProviders.CryptoRandom`), which is suitable for most applications. If you need a different source of randomness,
 e.g. for testing purposes, for performance reasons, or if you are concerned about your source of entropy (`/dev/random`), you
 can explicitly specify that the factory should use the pseudo-random number generator `vm2.UlidRandomProviders.PseudoRandom`.
-You can also provide to the factory your own, thread-safe implementation of `vm2.IRandomNumberGenerator`.
+You can also provide your own, thread-safe implementation of `vm2.IRandomNumberGenerator` to the factory.
 
 #### Timestamp Provider (`vm2.ITimestampProvider`)
 
-By default, the timestamp provider uses `DateTime.UtcNow` converted to Unix epoch time in milliseconds. If you need a different
-source of time, e.g. for testing purposes, you can provide your own implementation of `vm2.ITimestampProvider` to the factory.
+By default, the timestamp provider uses `DateTimeOffset.UtcNow` converted to Unix epoch time in milliseconds. If you need a
+different source of time, e.g. for testing purposes, you can provide your own implementation of `vm2.ITimestampProvider` to the
+factory.
 
 ### The `UlidFactory` in a Distributed System
 
