@@ -31,7 +31,7 @@ public class UlidSysConverter : JsonConverter<Ulid>
         JsonSerializerOptions _)
     {
         Span<byte> utf8Chars = stackalloc byte[UlidStringLength];
-        var success = value.TryWrite(utf8Chars, true);
+        var success = value.TryWriteUtf8(utf8Chars);
 
         if (!success)
             // Debug.Assert(false, "This should never happen because Ulid.TryWrite should only return false if the buffer is too small, and we are providing a buffer of the correct size.");
