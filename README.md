@@ -258,14 +258,14 @@ generating a new random value.
 The `vm2.UlidFactory` class encapsulates the requirements and exposes a simple interface for generating ULIDs. Use multiple
 `vm2.UlidFactory` instances when needed, e.g. one per database table or entity type.
 
-In simple scenarios, use the static method `vm2.Ulid.NewUlid()` instead of `vm2.UlidFactory`. It uses a single internal static
-factory instance with a cryptographic random number generator.
-
 ULID factories are thread-safe and ensure monotonicity of generated ULIDs across application contexts.
 The factory uses two providers: one for the random bytes and one for the timestamp.
 
 Use dependency injection to construct the factory and manage the providers. DI keeps the provider lifetimes explicit, makes
 testing simple, and enforces a single, consistent configuration across the app or service.
+
+In simple scenarios, use the static method `vm2.Ulid.NewUlid()` instead of `vm2.UlidFactory`. It uses an internal single static
+factory instance with a cryptographic random number generator and `DateTimeOffset.UtcNow` based clock.
 
 #### Randomness Provider (`vm2.IRandomNumberGenerator`)
 
@@ -273,7 +273,7 @@ By default the `vm2.UlidFactory` uses a thread-safe, cryptographic random number
 (`vm2.UlidRandomProviders.CryptoRandom`), which is suitable for most applications. If you need a different source of randomness,
 e.g. for testing purposes, for performance reasons, or if you are concerned about your source of entropy (`/dev/random`), you
 can explicitly specify that the factory should use the pseudo-random number generator `vm2.UlidRandomProviders.PseudoRandom`.
-You can also provide your own, thread-safe implementation of `vm2.IRandomNumberGenerator` to the factory.
+You can also provide to the factory your own, thread-safe implementation of `vm2.IRandomNumberGenerator`.
 
 #### Timestamp Provider (`vm2.ITimestampProvider`)
 
@@ -302,7 +302,7 @@ complexity when designing a distributed ULID strategy.
 
 Benchmark results vs similar Guid-generating functions, run on GitHub Actions:
 
-```
+```text
 BenchmarkDotNet v0.15.8, Linux Ubuntu 24.04.3 LTS (Noble Numbat)
 AMD EPYC 7763 2.61GHz, 1 CPU, 4 logical and 2 physical cores
 .NET SDK 10.0.103
