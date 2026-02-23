@@ -1,3 +1,7 @@
+# Changelog
+
+
+
 <!--
 ## [Unreleased]
 
@@ -22,8 +26,6 @@
 ### Internal
 - (tooling, infrastructure, build pipeline changes)
 -->
-
-# Changelog
 
 ## v1.0.9 - 2026-02-16
 
