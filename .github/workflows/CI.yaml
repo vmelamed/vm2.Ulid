@@ -14,15 +14,15 @@ on:
       runners-os:
         description: Comma-separated runners OS-es
         type: string
-        default: ubuntu-latest
         # Note: there is a known GitHub actions issue: the workflow dispatch UI doesn't properly handle JSON strings with quotes -
         # it removes the quotes. E.g. entering '["ubuntu-latest"]' in the UI prompt removes the inner quotes and it becomes the
         # invalid JSON: '[ubuntu-latest]'.
+        default: ubuntu-latest
 
       preprocessor-symbols:
         description: Comma-separated preprocessor symbols
         type: string
-        default: "SHORT_RUN" # *TODO* Adjust the default preprocessor symbols as needed.
+        default: "SHORT_RUN"
 
 # Concurrency: cancel in-progress runs for the same ref
 concurrency:
@@ -74,24 +74,30 @@ jobs:
       pull-requests: read
     if: github.event_name != 'push' || !contains(github.event.head_commit.message, '[skip ci]')
     outputs:
-      build-projects: ${{ steps.init-params.outputs.build-projects }}
-      test-projects: ${{ steps.init-params.outputs.test-projects }}
-      benchmark-projects: ${{ steps.init-params.outputs.benchmark-projects }}
-      package-projects: ${{ steps.init-params.outputs.package-projects }}
-      runners-os: ${{ steps.init-params.outputs.runners-os }}
-      dotnet-version: ${{ steps.init-params.outputs.dotnet-version }}
-      configuration: ${{ steps.init-params.outputs.configuration }}
-      preprocessor-symbols: ${{ steps.init-params.outputs.preprocessor-symbols }}
-      min-coverage-pct: ${{ steps.init-params.outputs.min-coverage-pct }}
-      max-regression-pct: ${{ steps.init-params.outputs.max-regression-pct }}
-      minver-tag-prefix: ${{ steps.init-params.outputs.minver-tag-prefix }}
-      minver-prerelease-id: ${{ steps.init-params.outputs.minver-prerelease-id }}
-      skip-push: ${{ steps.init-params.outputs.skip-push }}
+      build-projects: ${{ steps.gather-params.outputs.build-projects }}
+      test-projects: ${{ steps.gather-params.outputs.test-projects }}
+      benchmark-projects: ${{ steps.gather-params.outputs.benchmark-projects }}
+      package-projects: ${{ steps.gather-params.outputs.package-projects }}
+      runners-os: ${{ steps.gather-params.outputs.runners-os }}
+      dotnet-version: ${{ steps.gather-params.outputs.dotnet-version }}
+      configuration: ${{ steps.gather-params.outputs.configuration }}
+      preprocessor-symbols: ${{ steps.gather-params.outputs.preprocessor-symbols }}
+      min-coverage-pct: ${{ steps.gather-params.outputs.min-coverage-pct }}
+      max-regression-pct: ${{ steps.gather-params.outputs.max-regression-pct }}
+      minver-tag-prefix: ${{ steps.gather-params.outputs.minver-tag-prefix }}
+      minver-prerelease-id: ${{ steps.gather-params.outputs.minver-prerelease-id }}
+      skip-push: ${{ steps.gather-params.outputs.skip-push }}
     steps:
-      - name: Prepare argument values
-        id: init-params
+      - name: Setup DevOps environment variables
+        id: setup-env
+        uses: vmelamed/vm2.DevOps/.github/actions/setup-env@main
+
+      - name: Gather argument values depending on the event
+        id: gather-params
         shell: bash
         run: |
+          source $DEVOPS_LIB_DIR/gh_core.sh
+
           build_projects='${{ env.BUILD_PROJECTS }}'
           test_projects='${{ env.TEST_PROJECTS }}'
           benchmark_projects='${{ env.BENCHMARK_PROJECTS }}'
@@ -106,56 +112,71 @@ jobs:
           minver_prerelease_id='${{ env.MINVERDEFAULTPRERELEASEIDENTIFIERS }}'
           skip_push='false'
 
-          if [ '${{ github.event_name }}' == "pull_request" ] || \
-             ([ '${{ github.event_name }}' == "push" ] && [ '${{ github.ref_name }}' == "main" ]); then
-              # For pull requests, reviews, and pushes to the main branch, use default values from env (no modifications needed)
-              echo "Event: ${{ github.event_name }}. Using default parameters from env." >> $GITHUB_STEP_SUMMARY
-          elif [ '${{ github.event_name }}' == "push" ] && [ '${{ github.ref_name }}' != "main" ]; then
-              # Skip push-triggered CI when an open PR exists for this branch.
+          if [[ '${{ github.event_name }}' == 'pull_request' ]] ||
+             ([[ '${{ github.event_name }}' == 'push' && '${{ github.ref_name }}' == 'main' ]]); then
+
+              # For pull requests, reviews, and pushes to the main branch, use the arg. values from env: vars, secrets, defaults
+              info "Event: ${{ github.event_name }}. Using arguments from env." | to_summary
+
+          elif [ '${{ github.event_name }}' == 'push' ] && [ '${{ github.ref_name }}' != 'main' ]; then
+              # For pushes to the main branch, use the arg. values from env: vars, secrets, defaults.
+              # To avoid duplicate runs on: 1) push to main, if 2) there is an open PR to main, skip the push-triggered CI.
+
               export GH_TOKEN='${{ github.token }}'
+
+              # how many open PRs exist for this branch?
               if ! open_pr_count=$(gh pr list \
-                --repo "${{ github.repository }}" \
-                --state open \
-                --json headRefName \
-                --jq 'map(select(.headRefName == "${{ github.ref_name }}")) | length'); then
+                                    --repo "${{ github.repository }}" \
+                                    --state open \
+                                    --json headRefName \
+                                    --jq 'map(select(.headRefName == "${{ github.ref_name }}")) | length'); then
                 open_pr_count=0
-                echo "Failed to query PRs via gh. Running push-triggered CI with SHORT_RUN." >> $GITHUB_STEP_SUMMARY
+                warning "Failed to query open PR-s via gh. Running push-triggered CI with SHORT_RUN." | to_summary
               fi
-              echo "Open PR count for '${{ github.ref_name }}': ${open_pr_count}" >> $GITHUB_STEP_SUMMARY
-              preprocessor_symbols="${preprocessor_symbols};SHORT_RUN"
+              info "Open PR count for '${{ github.ref_name }}': ${open_pr_count}" | to_summary
+
+              # if there are open PRs, skip push-triggered CI
               if [ "${open_pr_count}" -gt 0 ]; then
-                  echo "Open PR exists for this branch. Skipping push-triggered CI." >> $GITHUB_STEP_SUMMARY
+                  info "There are open PRs for this branch. Skipping push-triggered CI." | to_summary
                   skip_push='true'
               else
-                  echo "No open PRs for this branch. Running push-triggered CI with SHORT_RUN preprocessor symbol." >> $GITHUB_STEP_SUMMARY
+                  info "No open PRs for this branch. Running push-triggered CI with SHORT_RUN preprocessor symbol." | to_summary
+                  preprocessor_symbols="${preprocessor_symbols};SHORT_RUN"
               fi
+
           elif [ '${{ github.event_name }}' == "workflow_dispatch" ]; then
+
               # Get the values from the UI inputs of workflow_dispatch event. Convert comma-separated runners' OS values to JSON array
               # There is a known GitHub actions issue: the workflow dispatch UI doesn't properly handle JSON strings with quotes.
               # E.g. for the input '["ubuntu-latest"]', the UI removes the inner quotes and it becomes the invalid JSON: '[ubuntu-latest]'.
+
+              # For UI manually triggered runs (workflow_dispatch event), use the arg. values from env: vars, secrets, defaults
+              # and override with the inputs from the UI.
               runners_os=$(echo "${{ inputs.runners-os }}" | jq -Rc 'split(",") | map(select(length > 0) | gsub("^\\s+|\\s+$";""))')
               preprocessor_symbols="${preprocessor_symbols};${{ inputs.preprocessor-symbols }}"
+
           else
-              echo "Unsupported event: ${{ github.event_name }}"
+
+              echo "❌  ERROR: Unsupported event: ${{ github.event_name }}"
               exit 5
+
           fi
 
           # Set the outputs:
-          {
-              echo "build-projects=${build_projects}"
-              echo "test-projects=${test_projects}"
-              echo "benchmark-projects=${benchmark_projects}"
-              echo "package-projects=${package_projects}"
-              echo "runners-os=${runners_os}"
-              echo "dotnet-version=${dotnet_version}"
-              echo "configuration=${configuration}"
-              echo "preprocessor-symbols=${preprocessor_symbols}"
-              echo "min-coverage-pct=${min_coverage_pct}"
-              echo "max-regression-pct=${max_regression_pct}"
-              echo "minver-tag-prefix=${minver_tag_prefix}"
-              echo "minver-prerelease-id=${minver_prerelease_id}"
-              echo "skip-push=${skip_push}"
-          }  >> $GITHUB_OUTPUT
+          args_to_github_output \
+              build_projects \
+              test_projects \
+              benchmark_projects \
+              package_projects \
+              runners_os \
+              dotnet_version \
+              configuration \
+              preprocessor_symbols \
+              min_coverage_pct \
+              max_regression_pct \
+              minver_tag_prefix \
+              minver_prerelease_id \
+              skip_push
 
   call-ci:
     name: "Run CI: Build, Test, Benchmark, Pack"
