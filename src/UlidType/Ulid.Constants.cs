@@ -117,7 +117,7 @@ public readonly partial struct Ulid
     /// <summary>
     /// The regular expression pattern for validating ULID strings.
     /// </summary>
-    public const string UlidStringRegex = $"(?i)[{CrockfordDigits}]{{26}}";
+    public const string UlidStringRegex = $"(?i)[0-9A-Z-[ILOU]]{{26}}";
 
     static readonly int CrockfordDigitValuesLength = 256; // the number of possible byte values (0-255) - the length of the lookup table for parsing ULID strings
 
