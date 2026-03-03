@@ -24,6 +24,11 @@ on:
         type: string
         default: "SHORT_RUN"
 
+      reset-benchmark-thresholds:
+        description: Set to "true" to reset Bencher thresholds if some degradation is expected.
+        type: boolean
+        default: false
+
 # Concurrency: cancel in-progress runs for the same ref
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
@@ -64,6 +69,7 @@ env:
   MAX_REGRESSION_PCT: ${{ vars.MAX_REGRESSION_PCT || 20 }} # The maximum allowed performance regression percentage for benchmarks to pass.
   MINVERTAGPREFIX: ${{ vars.MINVERTAGPREFIX || 'v' }} # The MinVer tag prefix.
   MINVERDEFAULTPRERELEASEIDENTIFIERS: ${{ vars.MINVERDEFAULTPRERELEASEIDENTIFIERS || 'preview.0' }} # The MinVer default pre-release identifiers.
+  RESET_BENCHMARK_THRESHOLDS: ${{ vars.RESET_BENCHMARK_THRESHOLDS || 'false' }} # Set to "true" to reset Bencher thresholds if some degradation is expected.
   VERBOSE: ${{ vars.VERBOSE || 'false' }} # Set to "true" to enable verbose logging in scripts.
 
 jobs:
@@ -86,6 +92,7 @@ jobs:
       max-regression-pct: ${{ steps.gather-params.outputs.max-regression-pct }}
       minver-tag-prefix: ${{ steps.gather-params.outputs.minver-tag-prefix }}
       minver-prerelease-id: ${{ steps.gather-params.outputs.minver-prerelease-id }}
+      reset-benchmark-thresholds: ${{ steps.gather-params.outputs.reset-benchmark-thresholds }}
       skip-push: ${{ steps.gather-params.outputs.skip-push }}
     steps:
       - name: Setup DevOps environment variables
@@ -110,17 +117,22 @@ jobs:
           max_regression_pct='${{ env.MAX_REGRESSION_PCT }}'
           minver_tag_prefix='${{ env.MINVERTAGPREFIX }}'
           minver_prerelease_id='${{ env.MINVERDEFAULTPRERELEASEIDENTIFIERS }}'
+          reset_benchmark_thresholds='${{ env.RESET_BENCHMARK_THRESHOLDS }}'
           skip_push='false'
 
           if [[ '${{ github.event_name }}' == 'pull_request' ]] ||
-             ([[ '${{ github.event_name }}' == 'push' && '${{ github.ref_name }}' == 'main' ]]); then
+             [[ '${{ github.event_name }}' == 'push' && '${{ github.ref_name }}' == 'main' ]]; then
 
-              # For pull requests, reviews, and pushes to the main branch, use the arg. values from env: vars, secrets, defaults
-              info "Event: ${{ github.event_name }}. Using arguments from env." | to_summary
+              # For pull requests and pushes to the main branch, use the arg. values from env: vars, secrets, defaults
+              info "Event: ${{ github.event_name }}. Using the argument values from the environment: vars, secrets, defaults." | to_summary
 
           elif [ '${{ github.event_name }}' == 'push' ] && [ '${{ github.ref_name }}' != 'main' ]; then
-              # For pushes to the main branch, use the arg. values from env: vars, secrets, defaults.
-              # To avoid duplicate runs on: 1) push to main, if 2) there is an open PR to main, skip the push-triggered CI.
+
+              # For pushes to the non-main branch, use the argument values from the environment: vars, secrets, defaults.
+              # To avoid duplicate runs when:
+              #     1) push to main AND
+              #     2) there is an open PR to main, then
+              #     => skip the push-triggered CI.
 
               export GH_TOKEN='${{ github.token }}'
 
@@ -135,12 +147,12 @@ jobs:
               fi
               info "Open PR count for '${{ github.ref_name }}': ${open_pr_count}" | to_summary
 
-              # if there are open PRs, skip push-triggered CI
+              # if there are open PRs, skip push-triggered CI - rely on the PR to trigger it
               if [ "${open_pr_count}" -gt 0 ]; then
-                  info "There are open PRs for this branch. Skipping push-triggered CI." | to_summary
+                  info "There are open PRs for this branch: skip the CI triggered by the push." | to_summary
                   skip_push='true'
               else
-                  info "No open PRs for this branch. Running push-triggered CI with SHORT_RUN preprocessor symbol." | to_summary
+                  info "No open PRs for this branch. Running push-triggered CI with SHORT_RUN preprocessor symbol for faster benchmarks." | to_summary
                   preprocessor_symbols="${preprocessor_symbols};SHORT_RUN"
               fi
 
@@ -154,6 +166,7 @@ jobs:
               # and override with the inputs from the UI.
               runners_os=$(echo "${{ inputs.runners-os }}" | jq -Rc 'split(",") | map(select(length > 0) | gsub("^\\s+|\\s+$";""))')
               preprocessor_symbols="${preprocessor_symbols};${{ inputs.preprocessor-symbols }}"
+              reset_benchmark_thresholds="${{ inputs.reset-benchmark-thresholds }}"
 
           else
 
@@ -176,6 +189,7 @@ jobs:
               max_regression_pct \
               minver_tag_prefix \
               minver_prerelease_id \
+              reset_benchmark_thresholds \
               skip_push
 
   call-ci:
@@ -206,3 +220,4 @@ jobs:
       max-regression-pct: ${{ fromJSON(needs.get-params.outputs.max-regression-pct) }}
       minver-tag-prefix: ${{ needs.get-params.outputs.minver-tag-prefix }}
       minver-prerelease-id: ${{ needs.get-params.outputs.minver-prerelease-id }}
+      reset-benchmark-thresholds: ${{ needs.get-params.outputs.reset-benchmark-thresholds == 'true' }}
