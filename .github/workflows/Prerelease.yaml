@@ -76,7 +76,7 @@ jobs:
           source $DEVOPS_LIB_DIR/gh_core.sh
 
           dotnet_version='${{ env.DOTNET_VERSION }}'
-          package_projects=issafe_json_array '${{ env.PACKAGE_PROJECTS }}' '[]' is_safe_existing_file
+          package_projects=is_safe_json_array '${{ env.PACKAGE_PROJECTS }}' '[]' is_safe_existing_file
           package_projects_len=$(jq 'length // 0' <<< "$package_projects")
           preprocessor_symbols='${{ env.PREPROCESSOR_SYMBOLS }}'
           minver_tag_prefix='${{ env.MINVERTAGPREFIX || 'v' }}'
