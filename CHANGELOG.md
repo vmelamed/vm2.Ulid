@@ -50,10 +50,6 @@ Update dependencies to .NET SDK 10.0.3 and latest build pipeline templates from 
 
 ## [1.0.6] - 2026-02-09
 
-See prereleases below.
-
-## [1.0.6] - 2026-02-09
-
 ### Internal
 
 - build pipeline changes

@@ -124,7 +124,7 @@ jobs:
              [[ '${{ github.event_name }}' == 'push' && '${{ github.ref_name }}' == 'main' ]]; then
 
               # For pull requests and pushes to the main branch, use the arg. values from env: vars, secrets, defaults
-              info "Event: ${{ github.event_name }}. Using the argument values from the environment: vars, secrets, defaults." | to_summary
+              info "Event: ${{ github.event_name }}. Using the argument values from the environment: vars, secrets, defaults." | to_stdout
 
           elif [ '${{ github.event_name }}' == 'push' ] && [ '${{ github.ref_name }}' != 'main' ]; then
 
@@ -143,16 +143,16 @@ jobs:
                                     --json headRefName \
                                     --jq 'map(select(.headRefName == "${{ github.ref_name }}")) | length'); then
                 open_pr_count=0
-                warning "Failed to query open PR-s via gh. Running push-triggered CI with SHORT_RUN." | to_summary
+                warning "Failed to query open PR-s via gh. Running push-triggered CI with SHORT_RUN." | to_stdout
               fi
-              info "Open PR count for '${{ github.ref_name }}': ${open_pr_count}" | to_summary
+              info "Open PR count for '${{ github.ref_name }}': ${open_pr_count}" | to_stdout
 
               # if there are open PRs, skip push-triggered CI - rely on the PR to trigger it
               if [ "${open_pr_count}" -gt 0 ]; then
-                  info "There are open PRs for this branch: skip the CI triggered by the push." | to_summary
+                  info "There are open PRs for this branch: skip the CI triggered by the push." | to_stdout
                   skip_push='true'
               else
-                  info "No open PRs for this branch. Running push-triggered CI with SHORT_RUN preprocessor symbol for faster benchmarks." | to_summary
+                  info "No open PRs for this branch. Running push-triggered CI with SHORT_RUN preprocessor symbol for faster benchmarks." | to_stdout
                   preprocessor_symbols="${preprocessor_symbols};SHORT_RUN"
               fi
 
@@ -170,7 +170,7 @@ jobs:
 
           else
 
-              echo "❌  ERROR: Unsupported event: ${{ github.event_name }}"
+              error "Unsupported event: ${{ github.event_name }}" | to_stderr
               exit 5
 
           fi
