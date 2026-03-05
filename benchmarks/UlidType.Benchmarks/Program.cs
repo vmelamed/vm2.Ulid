@@ -1,31 +1,40 @@
 ﻿// SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Val Melamed
 
-namespace vm2.Benchmarks;
+BenchmarkSwitcher
+    .FromAssembly(typeof(Program).Assembly)
+    .Run(args, GetConfig(args))
+    ;
 
-public static class Program
+static IConfig GetConfig(string[] args)
 {
-    public static void Main(string[] args)
-    {
-        var artifactsFolder = "./BenchmarkDotNet.Artifacts/results";
-
-        for (var i = 0; i < args.Length; i++)
-            if ((args[i] == "--artifacts" || args[i] == "i") && i+1 < args.Length)
-                artifactsFolder = args[i+1];
-
-        BenchmarkSwitcher
-            .FromAssembly(typeof(Program).Assembly)
-            .Run(
-                args,
 #if DEBUG
-                        // for debugging the benchmarks only
-                        new DebugInProcessConfig()
+    var config = new DebugInProcessConfig();   // for debugging the benchmarks only
 #else
-                        DefaultConfig
-                            .Instance
-                            .WithArtifactsPath(artifactsFolder)
-                            .WithOptions(ConfigOptions.StopOnFirstError)
+    var config = DefaultConfig.Instance;
 #endif
-            );
-    }
+    var options = ConfigOptions.StopOnFirstError;
+    var artifactsFolder = "./BenchmarkDotNet.Artifacts/results";
+
+    for (var i = 0; i < args.Length; i++)
+        switch (args[i])
+        {
+            case "--artifacts":
+                if (i + 1 < args.Length)
+                    artifactsFolder = args[i + 1];
+                else
+                    Console.WriteLine($"Warning: --artifacts option requires a path argument. Using the default path {artifactsFolder}.");
+                break;
+
+            case "--disable-optimizations-validator":
+                options |= ConfigOptions.DisableOptimizationsValidator;
+                break;
+        }
+
+    return config
+#if RELEASE
+            .WithArtifactsPath(artifactsFolder)
+            .WithOptions(options)
+#endif
+            ;
 }
