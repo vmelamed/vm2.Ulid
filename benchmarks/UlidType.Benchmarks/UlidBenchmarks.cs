@@ -130,7 +130,9 @@ public class ParseUlid
     {
         UlidFactory _factory = new();
 
+#if GUID_BASELINE
         _data1 = new(MaxDataItems, _ => Guid.NewGuid().ToString());
+#endif
         _data2 = new(MaxDataItems, _ => _factory.NewUlid().ToString());
         _data3 = new(MaxDataItems, _ => Encoding.UTF8.GetBytes(_factory.NewUlid().ToString()));
     }
