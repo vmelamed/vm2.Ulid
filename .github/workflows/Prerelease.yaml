@@ -9,7 +9,7 @@ on:
     types:
       - completed
 
-  # we pre-release from main only, on manual trigger only
+  # we pre-release from main only, either automatically after CI completes on main or via manual trigger
   workflow_dispatch:
     inputs:
       minver-prerelease-id:
