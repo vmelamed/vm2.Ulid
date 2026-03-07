@@ -20,7 +20,9 @@ on:
         default: ubuntu-latest
 
       preprocessor-symbols:
-        description: Comma-separated preprocessor symbols
+        description: >-
+          Preprocessor symbols separated by semicolon, space, or comma. E.g. "SHORT_RUN;FEATURE_A;FEATURE_B" or
+          "SHORT_RUN FEATURE_A FEATURE_B" or "SHORT_RUN,FEATURE_A,FEATURE_B".
         type: string
         default: "SHORT_RUN"
 
@@ -74,7 +76,7 @@ env:
 
 jobs:
   get-params:
-    name: Prepare input from env, vars, secrets, inputs, and defaults
+    name: Pre-CI
     runs-on: ubuntu-latest # in this workflow the runner doesn't matter - we're just preparing the inputs for the next workload(s).
     permissions:
       pull-requests: read
@@ -196,8 +198,8 @@ jobs:
               reset_benchmark_thresholds \
               skip_push
 
-  call-ci:
-    name: "Run CI: Build, Test, Benchmark, Pack"
+  run-ci:
+    name: "Run CI"
     needs:
       - get-params
     if: ${{ needs.get-params.outputs.skip-push != 'true' }}
@@ -231,18 +233,20 @@ jobs:
   # workflow prefix, matrix params, inner job names, and event suffixes that are impossible to predict).
   ci-gate:
     name: CI
-    needs: [get-params, call-ci]
+    needs: [get-params, run-ci]
     if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Evaluate CI result
         run: |
-          if [[ "${{ needs.get-params.result }}" == "failure" || "${{ needs.get-params.result }}" == "cancelled" ]]; then
-            echo "::error::Parameter preparation failed"
-            exit 1
-          fi
-          if [[ "${{ needs.call-ci.result }}" == "failure" || "${{ needs.call-ci.result }}" == "cancelled" ]]; then
-            echo "::error::CI pipeline ${{ needs.call-ci.result }}"
-            exit 1
-          fi
-          echo "CI completed (get-params: ${{ needs.get-params.result }}, call-ci: ${{ needs.call-ci.result }})"
+          {
+              if [[ "${{ needs.get-params.result }}" == "failure" || "${{ needs.get-params.result }}" == "cancelled" ]]; then
+                echo "❌  ERROR: Arguments gathering and preparation failed"
+                exit 1
+              fi
+              if [[ "${{ needs.run-ci.result }}" == "failure" || "${{ needs.run-ci.result }}" == "cancelled" ]]; then
+                echo "❌  ERROR: CI pipeline ${{ needs.run-ci.result }}"
+                exit 1
+              fi
+              echo "✅  INFO: CI completed (get-params: ${{ needs.get-params.result }}, run-ci: ${{ needs.run-ci.result }})"
+          } >> GITHUB_STEP_SUMMARY
