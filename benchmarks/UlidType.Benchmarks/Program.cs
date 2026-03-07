@@ -16,20 +16,18 @@ static IConfig GetConfig(string[] args)
 #endif
                 ;
 
-    var options = ConfigOptions.StopOnFirstError;
     var artifactsFolder = "./BenchmarkDotNet.Artifacts/results";
+    var options = ConfigOptions.StopOnFirstError;
+
+    if (Environment.GetEnvironmentVariable("CI", EnvironmentVariableTarget.Process)?.ToLowerInvariant() is "true")
+        options |= ConfigOptions.DisableOptimizationsValidator;
+    ;
 
     for (var i = 0; i < args.Length; i++)
-        switch (args[i])
+        if (args[i] == "--artifacts" && ++i < args.Length)
         {
-            case "--artifacts":
-                if (i + 1 < args.Length)
-                    artifactsFolder = args[i + 1];
-                break;
-
-            case "--disable-optimizations-validator":
-                options |= ConfigOptions.DisableOptimizationsValidator;
-                break;
+            artifactsFolder = args[i];
+            break;  // this is all we needed to know from the command line arguments, so we can stop processing them
         }
 
     return config
