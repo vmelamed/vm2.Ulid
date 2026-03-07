@@ -21,7 +21,6 @@ static IConfig GetConfig(string[] args)
 
     if (Environment.GetEnvironmentVariable("CI", EnvironmentVariableTarget.Process)?.ToLowerInvariant() is "true")
         options |= ConfigOptions.DisableOptimizationsValidator;
-    ;
 
     for (var i = 0; i < args.Length; i++)
         if (args[i] == "--artifacts" && ++i < args.Length)
