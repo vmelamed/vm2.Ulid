@@ -76,15 +76,15 @@ jobs:
 
           # Set the outputs:
           args_to_github_output \
-              package-projects \
-              package-projects-len \
-              dotnet-version \
-              preprocessor-symbols \
-              minver-tag-prefix \
-              minver-prerelease-id \
+              package_projects \
+              package_projects_len \
+              dotnet_version \
+              preprocessor_symbols \
+              minver_tag_prefix \
+              minver_prerelease_id \
               reason \
-              nuget-server \
-              save-package-artifacts
+              nuget_server \
+              save_package_artifacts
 
   log-trigger:
     name: Log manual trigger reason
