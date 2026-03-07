@@ -225,3 +225,24 @@ jobs:
       minver-tag-prefix: ${{ needs.get-params.outputs.minver-tag-prefix }}
       minver-prerelease-id: ${{ needs.get-params.outputs.minver-prerelease-id }}
       reset-benchmark-thresholds: ${{ needs.get-params.outputs.reset-benchmark-thresholds == 'true' }}
+
+  # Gate job: single required status check for branch protection.
+  # Replaces per-job required checks that break with reusable workflows + matrix (check names include
+  # workflow prefix, matrix params, inner job names, and event suffixes that are impossible to predict).
+  ci-gate:
+    name: CI
+    needs: [get-params, call-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Evaluate CI result
+        run: |
+          if [[ "${{ needs.get-params.result }}" == "failure" || "${{ needs.get-params.result }}" == "cancelled" ]]; then
+            echo "::error::Parameter preparation failed"
+            exit 1
+          fi
+          if [[ "${{ needs.call-ci.result }}" == "failure" || "${{ needs.call-ci.result }}" == "cancelled" ]]; then
+            echo "::error::CI pipeline ${{ needs.call-ci.result }}"
+            exit 1
+          fi
+          echo "CI completed (get-params: ${{ needs.get-params.result }}, call-ci: ${{ needs.call-ci.result }})"
