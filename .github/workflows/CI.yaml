@@ -124,53 +124,57 @@ jobs:
              [[ '${{ github.event_name }}' == 'push' && '${{ github.ref_name }}' == 'main' ]]; then
 
               # For pull requests and pushes to the main branch, use the arg. values from env: vars, secrets, defaults
-              info "Event: ${{ github.event_name }}. Using the argument values from the environment: vars, secrets, defaults." | to_stdout
+
+              info "Event: ${{ github.event_name }}. Using the argument values from the environment: vars, secrets, defaults."
 
           elif [ '${{ github.event_name }}' == 'push' ] && [ '${{ github.ref_name }}' != 'main' ]; then
 
-              # For pushes to the non-main branch, use the argument values from the environment: vars, secrets, defaults.
               # To avoid duplicate runs when:
               #     1) push to main AND
-              #     2) there is an open PR to main, then
-              #     => skip the push-triggered CI.
+              #     2) there is an open PR to main
+              # then skip the push-triggered CI
+              # otherwise use the argument values from the CI environment: vars, secrets, defaults
 
               export GH_TOKEN='${{ github.token }}'
 
               # how many open PRs exist for this branch?
+
               if ! open_pr_count=$(gh pr list \
                                     --repo "${{ github.repository }}" \
                                     --state open \
                                     --json headRefName \
                                     --jq 'map(select(.headRefName == "${{ github.ref_name }}")) | length'); then
                 open_pr_count=0
-                warning "Failed to query open PR-s via gh. Running push-triggered CI with SHORT_RUN." | to_stdout
+                warning "Failed to query open PR-s via gh. Running push-triggered CI with SHORT_RUN."
               fi
-              info "Open PR count for '${{ github.ref_name }}': ${open_pr_count}" | to_stdout
+              info "Open PR count for '${{ github.ref_name }}': ${open_pr_count}"
 
               # if there are open PRs, skip push-triggered CI - rely on the PR to trigger it
+
               if [ "${open_pr_count}" -gt 0 ]; then
-                  info "There are open PRs for this branch: skip the CI triggered by the push." | to_stdout
+                  info "There are open PRs for this branch: skip the CI triggered by the push."
                   skip_push='true'
               else
-                  info "No open PRs for this branch. Running push-triggered CI with SHORT_RUN preprocessor symbol for faster benchmarks." | to_stdout
+                  info "No open PRs for this branch. Running push-triggered CI with SHORT_RUN preprocessor symbol for faster benchmarks."
                   preprocessor_symbols="${preprocessor_symbols};SHORT_RUN"
               fi
 
           elif [ '${{ github.event_name }}' == "workflow_dispatch" ]; then
 
-              # Get the values from the UI inputs of workflow_dispatch event. Convert comma-separated runners' OS values to JSON array
-              # There is a known GitHub actions issue: the workflow dispatch UI doesn't properly handle JSON strings with quotes.
+              # Get the values from the UI inputs of workflow_dispatch event. Convert comma-separated runners' OS values to JSON array because
+              # there is a known GitHub actions issue: the workflow dispatch UI doesn't properly handle JSON strings with quotes.
               # E.g. for the input '["ubuntu-latest"]', the UI removes the inner quotes and it becomes the invalid JSON: '[ubuntu-latest]'.
 
               # For UI manually triggered runs (workflow_dispatch event), use the arg. values from env: vars, secrets, defaults
-              # and override with the inputs from the UI.
+              # and override them with the inputs from the UI.
+
               runners_os=$(echo "${{ inputs.runners-os }}" | jq -Rc 'split(",") | map(select(length > 0) | gsub("^\\s+|\\s+$";""))')
               preprocessor_symbols="${preprocessor_symbols};${{ inputs.preprocessor-symbols }}"
               reset_benchmark_thresholds="${{ inputs.reset-benchmark-thresholds }}"
 
           else
 
-              error "Unsupported event: ${{ github.event_name }}" | to_stderr
+              error "Unsupported event: ${{ github.event_name }}"
               exit 5
 
           fi
