@@ -233,7 +233,9 @@ jobs:
   # workflow prefix, matrix params, inner job names, and event suffixes that are impossible to predict).
   postrun-ci:
     name: Postrun-CI
-    needs: [prerun-ci, run-ci]
+    needs:
+      - prerun-ci
+      - run-ci
     if: always()
     runs-on: ubuntu-latest
     steps:
