@@ -1,72 +1,56 @@
 # Changelog
 
+## v2.0.1-preview.2 - 2026-03-08
+
+### Changed
+
+Updated CHANGELOG.md.
+
 ## v2.0.0 - 2026-03-08
 
-> [!ATTENTION] Breaking change: removed the static methods `GetTimestampFromUlid(in ReadOnlySpan<byte> ulidBytes)` and `PutTimestampToUlid(in DateTime timestamp, Span<byte> ulidBytes)` from the `Ulid` struct, as they were not consistent with the rest of the API and had confusing semantics.
+See prereleases v2.0.0-preview.1 and v2.0.0-preview.2 below for full details.
 
-This is a breaking change because any code that called these methods will no longer compile. If users need to get or put timestamps in ULIDs, they can use the `UlidFactory` class with the appropriate providers instead.
+### Summary
 
-> [!ATTENTION] Breaking change: removed the parameter of the static method `Ulid.NewUlid(/*IUlidRandomProvider? ulidRandomProvider = null*/)`, as it had confusing side effect and was incomplete - had random provider but no timestamp provider. Now, the method simply generates a new ULID using the default random and timestamp providers.
-
-This is a breaking change because any code that called `Ulid.NewUlid()` with a custom random provider will no longer compile. If users need to use a custom random provider, they can create an instance of `UlidFactory` with the desired providers and call `factory.NewUlid()` instead.
-
-> [!ATTENTION] Breaking change: The constructor `public Ulid(in ReadOnlySpan<byte> bytes)` is now `public Ulid(in ReadOnlySpan<byte> bytes, bool isUtf8)`. This change was made to clarify the semantics of the constructor and avoid the ambiguity from the length of the input parameters.
-
-This is a breaking change because any code that called the constructor with a byte span will now need to specify whether the input is UTF-8 or raw bytes, which will require changes in the calling code.
-
-Added new static method `Ulid.TryWriteUtf8(Span<byte> destination)` to write ULIDs as UTF-8 encoded byte spans.
-
-Added new static methods `Ulid.ParseUtf8(in ReadOnlySpan<byte> utf8Bytes)` and `Ulid.TryParseUtf8(in ReadOnlySpan<byte> utf8Bytes, out Ulid result)` to parse ULIDs from UTF-8 encoded byte spans. The existing `Parse` and `TryParse` methods that take `ReadOnlySpan<char>` are still available and unchanged.
-
-Added implicit conversions between `Ulid` and `string` and between `Ulid` and `Guid`.
-
-Some performance improvements.
-
-DevOps changes internally.
+- **Breaking:** Removed `GetTimestampFromUlid`, `PutTimestampToUlid`, and optional parameter from `NewUlid`.
+- **Breaking:** Removed `TryWrite(Span<byte>, bool)` in favor of `TryWriteUtf8(Span<byte>)`.
+- Added UTF-8 parse/write overloads, performance improvements.
 
 ## v2.0.0-preview.2 - 2026-03-08
+
+### Internal
 
 DevOps changes only.
 
 ## v2.0.0-preview.1 - 2026-02-24
 
-feat!: mark v2.0.0 as breaking changes
-
-BREAKING CHANGE: redesigned public API in PR #20
-
-This format follows:
-
-- [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
-- [Semantic Versioning](https://semver.org/)
-- Version numbers are produced by [MinVer](./ReleaseProcess.md) from Git tags.
-
-<!--
-## [Unreleased]
-### Added
-- (add new features here)
-### Changed
-- (add behavior changes here)
-### Fixed
-- (add bug fixes here)
-### Performance
-- (add performance improvements here)
 ### Removed
-- (add removed/obsolete items here)
-### Security
-- (add security-related changes here)
-### Internal
-- (tooling, infrastructure, build pipeline changes)
--->
+
+> [!WARNING] Breaking change: removed the static methods `GetTimestampFromUlid(in ReadOnlySpan<byte> ulidBytes)` and `PutTimestampToUlid(in DateTime timestamp, Span<byte> ulidBytes)` from the `Ulid` struct, as they were not consistent with the rest of the API and had confusing semantics.
+
+This is a breaking change because any code that called these methods will no longer compile. If users need to get or put timestamps in ULIDs, they can use the `UlidFactory` class with the appropriate providers instead.
+
+> [!WARNING] Breaking change: removed the parameter of the static method `Ulid.NewUlid(/*IUlidRandomProvider? ulidRandomProvider = null*/)`, as it had confusing side effects and was incomplete: it accepted a random provider but no timestamp provider. Now, the method simply generates a new ULID using the default random and timestamp providers.
+
+This is a breaking change because any code that called `Ulid.NewUlid()` with a custom random provider will no longer compile. If users need to use a custom random provider, they can create an instance of `UlidFactory` with the desired providers and call `factory.NewUlid()` instead.
+
+> [!WARNING] Breaking change: removed the method `public readonly bool TryWrite(Span<byte> destination, bool asUtf8)`. Use `public readonly bool TryWriteUtf8(in Span<byte> destination)` instead, to clarify the semantics of writing ULIDs as UTF-8 encoded byte spans.
+
+### Added
+
+Added new overloads `Ulid.Parse(ReadOnlySpan<byte> utf8Bytes)` and `Ulid.TryParse(ReadOnlySpan<byte> utf8Bytes, out Ulid result)` to parse ULIDs from UTF-8 encoded byte spans. The existing `Parse` and `TryParse` methods that take `ReadOnlySpan<char>` are still available and unchanged.
+
+### Performance
+
+Some performance improvements in **`parse`** and **`write`** families of methods.
 
 ## v1.0.9 - 2026-02-16
 
-See prereleases below.
+### Internal
 
-## v1.0.8 - 2026-02-16
+DevOps build pipeline changes.
 
-See prereleases below.
-
-## [1.0.8] - 2026-02-14
+## v1.0.8 - 2026-02-14
 
 ### Added
 
@@ -74,86 +58,75 @@ UlidTool project to provide a command-line interface for generating and parsing 
 
 ### Internal
 
-- build pipeline changes to include the new UlidTool project in the CI process and package it for release.
+Build pipeline changes to include the new UlidTool project in the CI process and package it for release.
 
-## [1.0.7] - 2026-02-13
+## v1.0.7 - 2026-02-13
 
-Update dependencies to .NET SDK 10.0.3 and latest build pipeline templates from vm2.DevOps.
+### Changed
 
-## [1.0.6] - 2026-02-09
+Dependencies to .NET SDK 10.0.3 and latest build pipeline templates from vm2.DevOps.
+
+## v1.0.6 - 2026-02-09
 
 ### Internal
 
-- build pipeline changes
+DevOps build pipeline changes
 
----
+## v1.0.5 - 2026-02-09
 
-## [1.0.5] - 2026-02-09
+### Internal
 
-- build pipeline changes
+DevOps build pipeline changes
 
-## [1.0.4] - 2026-01-02
-
-- Moved to the latest build pipeline templates from vm2.DevOps.
+## v1.0.4 - 2026-01-02
 
 ### Added
 
-- IClock interface and SystemClock implementation to get the current time used by UlidFactory (testsbility!).
+- IClock interface and SystemClock implementation to get the current time used by UlidFactory (testability!).
 - JSON serializers for both `System.Text.Json` and `Newtonsoft.Json`
 - Method `public readonly bool TryWriteUtf8(in Span<byte> destination)` (see also [Changed](#changed) below)
 - Implicit conversion to/from `string` and `Guid`
 - Unit tests for the new features above and the fixed bug below.
-- A lot of CI/CD workflow improvements and scripts to automate the release process (see also [Internal](#internal) below).
 
 ### Changed
 
 Small API changes that clarify the semantic of some input parameters:
 
-- Change the constructor `public Ulid(in ReadOnlySpan<byte> bytes)` to `public Ulid(in ReadOnlySpan<byte> bytes, bool isUtf8)`.
-  The constructor used to guess whether the input is raw bytes or UTF-8 sequence of characters by the length of the parameter
-  `bytes`. Now, let the caller state their intention explicitly.
-- Similar change for `public readonly bool TryWrite(Span<byte> destination, bool asUtf8)` - added the explicit parameter
-  `asUtf8`.
-- Keeping the semantics of the `Parse` and `TryParse` methods: always parsing either UTF-16 characters (`ReadOnlySpan<char>`) or
-  UTF-8 characters (`ReadOnlySpan<byte>`).
+- Change the constructor `public Ulid(in ReadOnlySpan<byte> bytes)` to `public Ulid(in ReadOnlySpan<byte> bytes, bool isUtf8)`. The constructor used to guess whether the input is raw bytes or UTF-8 sequence of characters by the length of the parameter `bytes`. Now, let the caller state their intention explicitly.
+- Similar change for `public readonly bool TryWrite(Span<byte> destination, bool asUtf8)` - added the explicit parameter `asUtf8`.
+- Keeping the semantics of the `Parse` and `TryParse` methods: always parsing either UTF-16 characters (`ReadOnlySpan<char>`) or UTF-8 characters (`ReadOnlySpan<byte>`).
 - Minor stylistic code changes.
 
 ### Fixed
 
-- Fixed bug where the UlidFactory could produce non-monotonic ULIDs when called within the same millisecond and the last byte of
-  the previous ULID was `0xFF`.
+- Fixed bug where the UlidFactory could produce non-monotonic ULIDs when called within the same millisecond and the last byte of the previous ULID was `0xFF`.
 
 ### Performance
 
 - Small optimization of `UlidToString()`: Using the new `string.Create` (thank you Stephen Toub!).
-- build pipeline changes
 
----
+### Internal
 
-## [1.0.3] - Skipped
+DevOps build pipeline changes
 
----
+## v1.0.3 - Skipped
 
-## [1.0.2] - 2025-09-19
+## v1.0.2 - 2025-09-19
 
 ### Changed
 
 - Suppress creation of packages for the example project(s).
 
----
-
-## [1.0.1] - 2025-09-19
+## v1.0.1 - 2025-09-19
 
 ### Changed
 
 - Changed the package name from `vm2.Ulid` to `Vm.Ulid`.
 - Changed also in the README.md and other documentation files.
 
-## [1.0.0] - 2025-09-19
+## v1.0.0 - 2025-09-19
 
 - The initial version.
-
----
 
 ## Usage Notes
 
@@ -188,4 +161,26 @@ When you create a stable tag (e.g. `v1.2.0`):
 
 ## Link References
 
-(Adjust initial tag if your first stable differs.)
+This format follows:
+
+- [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
+- [Semantic Versioning](https://semver.org/)
+- Version numbers are produced by [MinVer](./ReleaseProcess.md) from Git tags.
+
+<!--
+## [Unreleased]
+### Added
+- (add new features here)
+### Changed
+- (add behavior changes here)
+### Fixed
+- (add bug fixes here)
+### Performance
+- (add performance improvements here)
+### Removed
+- (add removed/obsolete items here)
+### Security
+- (add security-related changes here)
+### Internal
+- (tooling, infrastructure, build pipeline changes)
+-->
