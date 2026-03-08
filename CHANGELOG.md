@@ -1,9 +1,5 @@
 # Changelog
 
-
-
-
-
 All notable changes to this project will be documented in this file.
 
 This format follows:
@@ -51,10 +47,6 @@ UlidTool project to provide a command-line interface for generating and parsing 
 ## [1.0.7] - 2026-02-13
 
 Update dependencies to .NET SDK 10.0.3 and latest build pipeline templates from vm2.DevOps.
-
-## [1.0.6] - 2026-02-09
-
-See prereleases below.
 
 ## [1.0.6] - 2026-02-09
 

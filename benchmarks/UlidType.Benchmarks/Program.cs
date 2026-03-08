@@ -1,31 +1,36 @@
 ﻿// SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Val Melamed
 
-namespace vm2.Benchmarks;
+BenchmarkSwitcher
+    .FromAssembly(typeof(Program).Assembly)
+    .Run(args, GetConfig(args))
+    ;
 
-public static class Program
+static IConfig GetConfig(string[] args)
 {
-    public static void Main(string[] args)
-    {
-        var artifactsFolder = "./BenchmarkDotNet.Artifacts/results";
-
-        for (var i = 0; i < args.Length; i++)
-            if ((args[i] == "--artifacts" || args[i] == "i") && i+1 < args.Length)
-                artifactsFolder = args[i+1];
-
-        BenchmarkSwitcher
-            .FromAssembly(typeof(Program).Assembly)
-            .Run(
-                args,
+    var config =
 #if DEBUG
-                        // for debugging the benchmarks only
-                        new DebugInProcessConfig()
+                new DebugInProcessConfig()   // for debugging the benchmarks only
 #else
-                        DefaultConfig
-                            .Instance
-                            .WithArtifactsPath(artifactsFolder)
-                            .WithOptions(ConfigOptions.StopOnFirstError)
+                DefaultConfig.Instance
 #endif
-            );
-    }
+                ;
+
+    var artifactsFolder = "./BenchmarkDotNet.Artifacts/results";
+    var options = ConfigOptions.StopOnFirstError;
+
+    if (Environment.GetEnvironmentVariable("CI", EnvironmentVariableTarget.Process)?.ToLowerInvariant() is "true")
+        options |= ConfigOptions.DisableOptimizationsValidator;
+
+    for (var i = 0; i < args.Length; i++)
+        if (args[i] == "--artifacts" && ++i < args.Length)
+        {
+            artifactsFolder = args[i];
+            break;  // this is all we needed to know from the command line arguments, so we can stop processing them
+        }
+
+    return config
+            .WithArtifactsPath(artifactsFolder)
+            .WithOptions(options)
+            ;
 }
