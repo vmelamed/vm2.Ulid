@@ -40,4 +40,5 @@ commit_parsers = [
     { message = "^test", group = "Internal" },
     { message = "^chore", group = "Internal" },
     { message = "^revert", group = "Removed" },
+    { message = "^security", group = "Security" },
 ]
