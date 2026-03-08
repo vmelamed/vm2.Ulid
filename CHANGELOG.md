@@ -1,6 +1,5 @@
 # Changelog
 
-
 ## v2.0.1-preview.1 - 2026-03-08
 
 ### Internal
@@ -12,6 +11,7 @@ DevOps changes only.
 ### Internal
 
 DevOps changes only.
+
 ## v2.0.1-preview.2 - 2026-03-08
 
 ### Changed
