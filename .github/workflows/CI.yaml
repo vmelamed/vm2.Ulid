@@ -75,8 +75,8 @@ env:
   VERBOSE: ${{ vars.VERBOSE || 'false' }} # Set to "true" to enable verbose logging in scripts.
 
 jobs:
-  get-params:
-    name: Pre-CI
+  prerun-ci:
+    name: Prerun-CI
     runs-on: ubuntu-latest # in this workflow the runner doesn't matter - we're just preparing the inputs for the next workload(s).
     permissions:
       pull-requests: read
@@ -201,8 +201,8 @@ jobs:
   run-ci:
     name: "Run CI"
     needs:
-      - get-params
-    if: ${{ needs.get-params.outputs.skip-push != 'true' }}
+      - prerun-ci
+    if: ${{ needs.prerun-ci.outputs.skip-push != 'true' }}
     uses: vmelamed/vm2.DevOps/.github/workflows/_ci.yaml@main
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
@@ -214,33 +214,33 @@ jobs:
       pull-requests: write # Required to comment on PRs
       checks: write # Required to create GitHub Checks
     with:
-      build-projects: ${{ needs.get-params.outputs.build-projects }}
-      test-projects: ${{ needs.get-params.outputs.test-projects }}
-      benchmark-projects: ${{ needs.get-params.outputs.benchmark-projects }}
-      package-projects: ${{ needs.get-params.outputs.package-projects }}
-      runners-os: ${{ needs.get-params.outputs.runners-os }}
-      dotnet-version: ${{ needs.get-params.outputs.dotnet-version }}
-      configuration: ${{ needs.get-params.outputs.configuration }}
-      preprocessor-symbols: ${{ needs.get-params.outputs.preprocessor-symbols }}
-      min-coverage-pct: ${{ fromJSON(needs.get-params.outputs.min-coverage-pct) }}
-      max-regression-pct: ${{ fromJSON(needs.get-params.outputs.max-regression-pct) }}
-      minver-tag-prefix: ${{ needs.get-params.outputs.minver-tag-prefix }}
-      minver-prerelease-id: ${{ needs.get-params.outputs.minver-prerelease-id }}
-      reset-benchmark-thresholds: ${{ needs.get-params.outputs.reset-benchmark-thresholds == 'true' }}
+      build-projects: ${{ needs.prerun-ci.outputs.build-projects }}
+      test-projects: ${{ needs.prerun-ci.outputs.test-projects }}
+      benchmark-projects: ${{ needs.prerun-ci.outputs.benchmark-projects }}
+      package-projects: ${{ needs.prerun-ci.outputs.package-projects }}
+      runners-os: ${{ needs.prerun-ci.outputs.runners-os }}
+      dotnet-version: ${{ needs.prerun-ci.outputs.dotnet-version }}
+      configuration: ${{ needs.prerun-ci.outputs.configuration }}
+      preprocessor-symbols: ${{ needs.prerun-ci.outputs.preprocessor-symbols }}
+      min-coverage-pct: ${{ fromJSON(needs.prerun-ci.outputs.min-coverage-pct) }}
+      max-regression-pct: ${{ fromJSON(needs.prerun-ci.outputs.max-regression-pct) }}
+      minver-tag-prefix: ${{ needs.prerun-ci.outputs.minver-tag-prefix }}
+      minver-prerelease-id: ${{ needs.prerun-ci.outputs.minver-prerelease-id }}
+      reset-benchmark-thresholds: ${{ needs.prerun-ci.outputs.reset-benchmark-thresholds == 'true' }}
 
   # Gate job: single required status check for branch protection.
   # Replaces per-job required checks that break with reusable workflows + matrix (check names include
   # workflow prefix, matrix params, inner job names, and event suffixes that are impossible to predict).
-  ci-gate:
-    name: CI
-    needs: [get-params, run-ci]
+  postrun-ci:
+    name: Postrun-CI
+    needs: [prerun-ci, run-ci]
     if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Evaluate CI result
         run: |
           {
-              if [[ "${{ needs.get-params.result }}" == "failure" || "${{ needs.get-params.result }}" == "cancelled" ]]; then
+              if [[ "${{ needs.prerun-ci.result }}" == "failure" || "${{ needs.prerun-ci.result }}" == "cancelled" ]]; then
                 echo "❌  ERROR: Arguments gathering and preparation failed"
                 exit 1
               fi
@@ -248,5 +248,5 @@ jobs:
                 echo "❌  ERROR: CI pipeline ${{ needs.run-ci.result }}"
                 exit 1
               fi
-              echo "✅  INFO: CI completed (get-params: ${{ needs.get-params.result }}, run-ci: ${{ needs.run-ci.result }})"
-          } >> GITHUB_STEP_SUMMARY
+              echo "✅  INFO: CI completed (prerun-ci: ${{ needs.prerun-ci.result }}, run-ci: ${{ needs.run-ci.result }})"
+          } >> "$GITHUB_STEP_SUMMARY"
