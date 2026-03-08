@@ -1,6 +1,15 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+
+
+## v2.0.0 - 2026-03-08
+See prereleases below.
+
+## v2.0.0-preview.2 - 2026-03-08
+See prereleases below.
+
+## v2.0.0-preview.1 - 2026-02-24
+See prereleases below.All notable changes to this project will be documented in this file.
 
 This format follows:
 
