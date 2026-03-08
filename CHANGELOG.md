@@ -1,15 +1,38 @@
 # Changelog
 
-
-
 ## v2.0.0 - 2026-03-08
-See prereleases below.
+
+> [!ATTENTION] Breaking change: removed the static methods `GetTimestampFromUlid(in ReadOnlySpan<byte> ulidBytes)` and `PutTimestampToUlid(in DateTime timestamp, Span<byte> ulidBytes)` from the `Ulid` struct, as they were not consistent with the rest of the API and had confusing semantics.
+
+This is a breaking change because any code that called these methods will no longer compile. If users need to get or put timestamps in ULIDs, they can use the `UlidFactory` class with the appropriate providers instead.
+
+> [!ATTENTION] Breaking change: removed the parameter of the static method `Ulid.NewUlid(/*IUlidRandomProvider? ulidRandomProvider = null*/)`, as it had confusing side effect and was incomplete - had random provider but no timestamp provider. Now, the method simply generates a new ULID using the default random and timestamp providers.
+
+This is a breaking change because any code that called `Ulid.NewUlid()` with a custom random provider will no longer compile. If users need to use a custom random provider, they can create an instance of `UlidFactory` with the desired providers and call `factory.NewUlid()` instead.
+
+> [!ATTENTION] Breaking change: The constructor `public Ulid(in ReadOnlySpan<byte> bytes)` is now `public Ulid(in ReadOnlySpan<byte> bytes, bool isUtf8)`. This change was made to clarify the semantics of the constructor and avoid the ambiguity from the length of the input parameters.
+
+This is a breaking change because any code that called the constructor with a byte span will now need to specify whether the input is UTF-8 or raw bytes, which will require changes in the calling code.
+
+Added new static method `Ulid.TryWriteUtf8(Span<byte> destination)` to write ULIDs as UTF-8 encoded byte spans.
+
+Added new static methods `Ulid.ParseUtf8(in ReadOnlySpan<byte> utf8Bytes)` and `Ulid.TryParseUtf8(in ReadOnlySpan<byte> utf8Bytes, out Ulid result)` to parse ULIDs from UTF-8 encoded byte spans. The existing `Parse` and `TryParse` methods that take `ReadOnlySpan<char>` are still available and unchanged.
+
+Added implicit conversions between `Ulid` and `string` and between `Ulid` and `Guid`.
+
+Some performance improvements.
+
+DevOps changes internally.
 
 ## v2.0.0-preview.2 - 2026-03-08
-See prereleases below.
+
+DevOps changes only.
 
 ## v2.0.0-preview.1 - 2026-02-24
-See prereleases below.All notable changes to this project will be documented in this file.
+
+feat!: mark v2.0.0 as breaking changes
+
+BREAKING CHANGE: redesigned public API in PR #20
 
 This format follows:
 
