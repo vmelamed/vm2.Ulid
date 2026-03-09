@@ -15,11 +15,8 @@ env:
     "src/UlidType/UlidType.csproj",
     "src/UlidTool/UlidTool.csproj"
     ]
-
-  # Ensure the NUGET_API_*KEY secrets corresponds to the server selected here.
   NUGET_SERVER: ${{ vars.NUGET_SERVER || 'github' }}
   PREPROCESSOR_SYMBOLS: ""
-
   CONFIGURATION: ${{ vars.CONFIGURATION || 'Release' }} # The build configuration: Debug, Release, etc.
   DOTNET_VERSION: ${{ vars.DOTNET_VERSION || '10.0.x' }} # The .NET SDK version to use.
   MINVERTAGPREFIX: ${{ vars.MINVERTAGPREFIX || 'v' }} # The MinVer tag prefix.
@@ -72,21 +69,22 @@ jobs:
 
           if [ '${{ github.event_name }}' == "workflow_dispatch" ]; then
               # For UI manually triggered runs (workflow_dispatch event), use the arg. values from env: vars, secrets, defaults
-              # and override with the inputs from the UI
+              # and override with the inputs from the UI:
+
               reason='${{ inputs.reason }}'
           fi
 
           # Set the outputs:
           args_to_github_output \
-                  package_projects \
-                  package_projects_len \
-                  dotnet_version \
-                  preprocessor_symbols \
-                  minver_tag_prefix \
-                  minver_prerelease_id \
-                  reason \
-                  nuget_server \
-                  save_package_artifacts
+              package_projects \
+              package_projects_len \
+              dotnet_version \
+              preprocessor_symbols \
+              minver_tag_prefix \
+              minver_prerelease_id \
+              reason \
+              nuget_server \
+              save_package_artifacts
 
   log-trigger:
     name: Log manual trigger reason

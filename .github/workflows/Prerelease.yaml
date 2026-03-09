@@ -9,7 +9,7 @@ on:
     types:
       - completed
 
-  # we pre-release from main only, either automatically after CI completes on main or via manual trigger
+  # we pre-release from main only, on manual trigger only
   workflow_dispatch:
     inputs:
       minver-prerelease-id:
@@ -24,7 +24,7 @@ on:
         type: string
 
 env:
-  PACKAGE_PROJECTS: >-
+  PACKAGE_PROJECTS: >
     [
     "src/UlidType/UlidType.csproj",
     "src/UlidTool/UlidTool.csproj"
@@ -78,12 +78,6 @@ jobs:
         run: |
           source $DEVOPS_LIB_DIR/gh_core.sh
 
-          trace "Current working directory: $(pwd)"
-          trace "Event name: ${{ github.event_name }}"
-          trace "Git ref: ${{ github.ref }}"
-          trace "Git ref name: ${{ github.ref_name }}"
-          trace "Workspace: ${{ github.workspace }}"
-
           dotnet_version='${{ env.DOTNET_VERSION }}'
           package_projects=$(is_safe_json_array '${{ env.PACKAGE_PROJECTS }}' '[]' is_safe_existing_file)
           package_projects_len=$(jq 'length // 0' <<< "$package_projects")
@@ -103,15 +97,15 @@ jobs:
           fi
 
           args_to_github_output \
-          package_projects \
-          package_projects_len \
-          dotnet_version \
-          preprocessor_symbols \
-          minver_tag_prefix \
-          minver_prerelease_id \
-          reason \
-          nuget_server \
-          save_package_artifacts
+              package_projects \
+              package_projects_len \
+              dotnet_version \
+              preprocessor_symbols \
+              minver_tag_prefix \
+              minver_prerelease_id \
+              reason \
+              nuget_server \
+              save_package_artifacts
 
   log-trigger:
     name: Log manual trigger reason
