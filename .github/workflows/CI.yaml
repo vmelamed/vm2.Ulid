@@ -37,11 +37,11 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  BUILD_PROJECTS: >
+  BUILD_PROJECTS: >-
     [
     "./vm2.Ulid.slnx"
     ]
-  TEST_PROJECTS: >
+  TEST_PROJECTS: >-
     [
     "test/UlidType.Tests/UlidType.Tests.csproj"
     ]
@@ -54,7 +54,7 @@ env:
     "src/UlidType/UlidType.csproj",
     "src/UlidTool/UlidTool.csproj"
     ]
-  RUNNERS_OS: >
+  RUNNERS_OS: >-
     [
     "ubuntu-latest"
     ]
