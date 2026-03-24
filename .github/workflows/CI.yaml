@@ -21,13 +21,13 @@ on:
 
       preprocessor-symbols:
         description: >-
-          Preprocessor symbols separated by semicolon, space, or comma. E.g. "SHORT_RUN;FEATURE_A;FEATURE_B" or
-          "SHORT_RUN FEATURE_A FEATURE_B" or "SHORT_RUN,FEATURE_A,FEATURE_B".
+          Preprocessor symbols separated by semicolon, space, or comma. E.g. "SHORT_RUN FEAT_A" or
+          "SHORT_RUN;FEAT_A" or "SHORT_RUN,FEAT_A".
         type: string
         default: "SHORT_RUN"
 
       reset-benchmark-thresholds:
-        description: Set to "true" to reset Bencher thresholds if some degradation is expected.
+        description: Check to reset Bencher thresholds if some degradation is expected.
         type: boolean
         default: false
 
@@ -101,10 +101,10 @@ jobs:
         run: |
           source $DEVOPS_LIB_DIR/gh_core.sh
 
-          build_projects='${{ env.BUILD_PROJECTS || '' }}'
-          test_projects='${{ env.TEST_PROJECTS || '' }}'
-          benchmark_projects='${{ env.BENCHMARK_PROJECTS || '' }}'
-          package_projects='${{ env.PACKAGE_PROJECTS || '' }}'
+          build_projects='${{ env.BUILD_PROJECTS || '[]' }}'
+          test_projects='${{ env.TEST_PROJECTS || '[]' }}'
+          benchmark_projects='${{ env.BENCHMARK_PROJECTS || '[]' }}'
+          package_projects='${{ env.PACKAGE_PROJECTS || '[]' }}'
           runners_os='${{ env.RUNNERS_OS || '["ubuntu-latest"]' }}'
           dotnet_version='${{ env.DOTNET_VERSION || '10.0.x' }}'
           configuration='${{ env.CONFIGURATION || 'Release' }}'

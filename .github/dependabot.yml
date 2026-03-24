@@ -1,8 +1,17 @@
 version: 2
+registries:
+  github-packages:
+    type: nuget-feed
+    url: https://nuget.pkg.github.com/vmelamed/index.json
+    username: vmelamed
+    password: ${{secrets.GH_PACKAGES_TOKEN}}
+
 updates:
   # Update NuGet packages
   - package-ecosystem: "nuget"
     directory: "/"
+    registries:
+      - github-packages
     schedule:
       interval: "weekly"
       day: "monday"
