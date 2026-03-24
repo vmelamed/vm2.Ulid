@@ -15,6 +15,7 @@ env:
     "src/UlidType/UlidType.csproj",
     "src/UlidTool/UlidTool.csproj"
     ]
+  # Ensure the NUGET_API_KEY secret is issued by the server selected here.
   NUGET_SERVER: ${{ vars.NUGET_SERVER || 'github' }}
   PREPROCESSOR_SYMBOLS: ""
   CONFIGURATION: ${{ vars.CONFIGURATION || 'Release' }} # The build configuration: Debug, Release, etc.
@@ -103,10 +104,8 @@ jobs:
     uses: vmelamed/vm2.DevOps/.github/workflows/_release.yaml@main
     secrets:
       RELEASE_PAT: ${{ secrets.RELEASE_PAT }} # Required PAT for pushing changelog and tags past branch protection.
-      # You don't need all of the next three secrets, only the one corresponding to the chosen NuGet server above or the default 'github'
-      NUGET_API_GITHUB_KEY: ${{ secrets.NUGET_API_GITHUB_KEY }}
+      # Make sure to set the API key issued by the selected NuGet server.
       NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-      NUGET_API_NUGET_KEY: ${{ secrets.NUGET_API_NUGET_KEY }}
     permissions:
       contents: write # Required to checkout the code, push changelog, and create tags
       packages: write # Required to add stable NuGet packages

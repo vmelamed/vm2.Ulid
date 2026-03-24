@@ -1,0 +1,24 @@
+name: "Auto-merge Dependabot PRs"
+
+# Automatically enables auto-merge (rebase) on Dependabot PRs.
+# GitHub will merge the PR once all required status checks pass.
+#
+# To auto-merge ALL PRs (not just Dependabot), remove the `if:` condition below.
+
+on:
+  pull_request:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enable auto-merge
+        run: gh pr merge "$PR_URL" --auto --rebase
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
