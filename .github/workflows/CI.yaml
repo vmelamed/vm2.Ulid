@@ -64,8 +64,8 @@ env:
   MAX_REGRESSION_PCT: ${{ vars.MAX_REGRESSION_PCT || 20 }} # The maximum allowed performance regression percentage for benchmarks to pass.
   MINVERTAGPREFIX: ${{ vars.MINVERTAGPREFIX || 'v' }} # The MinVer tag prefix.
   MINVERDEFAULTPRERELEASEIDENTIFIERS: ${{ vars.MINVERDEFAULTPRERELEASEIDENTIFIERS || 'preview.0' }} # The MinVer default pre-release identifiers.
-  RESET_BENCHMARK_THRESHOLDS: ${{ vars.RESET_BENCHMARK_THRESHOLDS || 'false' }} # Set to "true" to reset Bencher thresholds if some degradation is expected.
-  VERBOSE: ${{ vars.VERBOSE || 'false' }} # Set to "true" to enable verbose logging in scripts.
+  RESET_BENCHMARK_THRESHOLDS: ${{ vars.RESET_BENCHMARK_THRESHOLDS }} # Set the variable to "true" to reset Bencher thresholds if some degradation is expected.
+  VERBOSE: ${{ vars.VERBOSE }} # Set the variable to "true" to enable verbose logging in scripts.
 
 jobs:
   prerun-ci:
@@ -105,14 +105,14 @@ jobs:
           benchmark_projects='${{ env.BENCHMARK_PROJECTS || '[]' }}'
           package_projects='${{ env.PACKAGE_PROJECTS || '[]' }}'
           runners_os='${{ env.RUNNERS_OS || '["ubuntu-latest"]' }}'
-          dotnet_version='${{ env.DOTNET_VERSION || '10.0.x' }}'
-          configuration='${{ env.CONFIGURATION || 'Release' }}'
-          preprocessor_symbols='${{ env.PREPROCESSOR_SYMBOLS || '' }}'
-          min_coverage_pct='${{ env.MIN_COVERAGE_PCT || 80 }}'
-          max_regression_pct='${{ env.MAX_REGRESSION_PCT || 20 }}'
-          minver_tag_prefix='${{ env.MINVERTAGPREFIX || 'v' }}'
-          minver_prerelease_id='${{ env.MINVERDEFAULTPRERELEASEIDENTIFIERS || 'preview.0' }}'
-          reset_benchmark_thresholds='${{ env.RESET_BENCHMARK_THRESHOLDS || 'false' }}'
+          dotnet_version='${{ env.DOTNET_VERSION }}'
+          configuration='${{ env.CONFIGURATION }}'
+          preprocessor_symbols='${{ env.PREPROCESSOR_SYMBOLS }}'
+          min_coverage_pct='${{ env.MIN_COVERAGE_PCT }}'
+          max_regression_pct='${{ env.MAX_REGRESSION_PCT }}'
+          minver_tag_prefix='${{ env.MINVERTAGPREFIX }}'
+          minver_prerelease_id='${{ env.MINVERDEFAULTPRERELEASEIDENTIFIERS }}'
+          reset_benchmark_thresholds='${{ env.RESET_BENCHMARK_THRESHOLDS }}'
           skip_push='false'
 
           if [[ '${{ github.event_name }}' == 'pull_request' ]] ||
