@@ -21,13 +21,12 @@ on:
 
       preprocessor-symbols:
         description: >-
-          Preprocessor symbols separated by semicolon, space, or comma. E.g. "SHORT_RUN FEAT_A" or
-          "SHORT_RUN;FEAT_A" or "SHORT_RUN,FEAT_A".
+          Preprocessor symbols separated by semicolon, space, or comma. E.g. "ABC XYZ" or "ABC;XYZ" or "ABC,XYZ".
         type: string
         default: "SHORT_RUN"
 
       reset-benchmark-thresholds:
-        description: Check to reset Bencher thresholds if some degradation is expected.
+        description: Reset Bencher thresholds if degradation is expected.
         type: boolean
         default: false
 
