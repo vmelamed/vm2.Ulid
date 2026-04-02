@@ -115,14 +115,14 @@ jobs:
           reset_benchmark_thresholds='${{ env.RESET_BENCHMARK_THRESHOLDS }}'
           skip_push='false'
 
-          if [[ '${{ github.event_name }}' == 'pull_request' ]] ||
-             [[ '${{ github.event_name }}' == 'push' && '${{ github.ref_name }}' == 'main' ]]; then
+          if [[ '${{ github.event_name }}' == 'pull_request' ||
+                '${{ github.event_name }}' == 'push' && '${{ github.ref_name }}' == 'main' ]]; then
 
               # For pull requests and pushes to the main branch, use the arg. values from env: vars, secrets, defaults
 
               info "Event: ${{ github.event_name }}. Using the argument values from the environment: vars, secrets, defaults."
 
-          elif [ '${{ github.event_name }}' == 'push' ] && [ '${{ github.ref_name }}' != 'main' ]; then
+          elif [[ '${{ github.event_name }}' == 'push' && '${{ github.ref_name }}' != 'main' ]]; then
 
               # To avoid duplicate runs when:
               #     1) push to main AND
@@ -134,19 +134,19 @@ jobs:
 
               # how many open PRs exist for this branch?
 
-              if ! open_pr_count=$(gh pr list \
+             open_pr_count=$(gh pr list \
                                     --repo "${{ github.repository }}" \
                                     --state open \
                                     --json headRefName \
-                                    --jq 'map(select(.headRefName == "${{ github.ref_name }}")) | length'); then
+                                    --jq 'map(select(.headRefName == "${{ github.ref_name }}")) | length') || {
                   open_pr_count=0
                   warning "Failed to query open PR-s via gh. Running push-triggered CI with SHORT_RUN."
-              fi
+              }
               info "Open PR count for '${{ github.ref_name }}': ${open_pr_count}"
 
               # if there are open PRs, skip push-triggered CI - rely on the PR to trigger it
 
-              if [ "${open_pr_count}" -gt 0 ]; then
+              if (( open_pr_count > 0 )); then
                   info "There are open PRs for this branch: skip the CI triggered by the push."
                   skip_push='true'
               else
@@ -154,7 +154,7 @@ jobs:
                   preprocessor_symbols="${preprocessor_symbols};SHORT_RUN"
               fi
 
-          elif [ '${{ github.event_name }}' == "workflow_dispatch" ]; then
+          elif [[ '${{ github.event_name }}' == "workflow_dispatch" ]]; then
 
               # Get the values from the UI inputs of workflow_dispatch event. Convert comma-separated runners' OS values to JSON array because
               # there is a known GitHub actions issue: the workflow dispatch UI doesn't properly handle JSON strings with quotes.

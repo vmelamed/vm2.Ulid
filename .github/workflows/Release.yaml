@@ -68,7 +68,7 @@ jobs:
           save_package_artifacts='${{ env.SAVE_PACKAGE_ARTIFACTS }}'
           reason="Stable Release (main manually tagged with a release tag)"
 
-          if [ '${{ github.event_name }}' == "workflow_dispatch" ]; then
+          if [[ '${{ github.event_name }}' == "workflow_dispatch" ]]; then
               # For UI manually triggered runs (workflow_dispatch event), use the arg. values from env: vars, secrets, defaults
               # and override with the inputs from the UI:
 
