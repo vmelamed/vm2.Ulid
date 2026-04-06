@@ -8,8 +8,8 @@ global using System.Numerics;
 global using System.Security.Cryptography;
 global using System.Text.Json;
 
-global using vm2.Serialization.NsJson;
-global using vm2.Serialization.SysJson;
+global using vm2.UlidSerialization.NsJson;
+global using vm2.UlidSerialization.SysJson;
 
 global using static System.Buffers.Binary.BinaryPrimitives;
 global using static vm2.Ulid;
