@@ -17,7 +17,6 @@ public readonly partial struct Ulid :
     IEquatable<Ulid>,
     IComparable<Ulid>,
     IParsable<Ulid>,
-    IEqualityComparer<Ulid>,
     IEqualityOperators<Ulid, Ulid, bool>,
     IComparisonOperators<Ulid, Ulid, bool>,
     IIncrementOperators<Ulid>,
@@ -539,14 +538,6 @@ public readonly partial struct Ulid :
 
     /// <inheritdoc/>
     public static bool operator >=(Ulid left, Ulid right) => left.CompareTo(right)>=0;
-    #endregion
-
-    #region IEqualityComparer<Ulid>
-    /// <inheritdoc/>
-    public bool Equals(Ulid x, Ulid y) => x.Equals(y);
-
-    /// <inheritdoc/>
-    public int GetHashCode(Ulid obj) => obj.GetHashCode();
     #endregion
 
     #region IIncrementOperators<Ulid>
