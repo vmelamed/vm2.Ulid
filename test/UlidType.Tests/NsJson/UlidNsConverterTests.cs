@@ -5,7 +5,7 @@ namespace vm2.UlidType.Tests.NsJson;
 
 using Newtonsoft.Json;
 
-using vm2.Serialization.NsJson;
+using vm2.UlidSerialization.NsJson;
 
 [ExcludeFromCodeCoverage]
 public class UlidNsConverterTests

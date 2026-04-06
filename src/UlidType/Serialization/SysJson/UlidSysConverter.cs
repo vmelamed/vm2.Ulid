@@ -1,7 +1,7 @@
 ﻿// SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Val Melamed
 
-namespace vm2.Serialization.SysJson;
+namespace vm2.UlidSerialization.SysJson;
 
 using System.Text.Json.Serialization;
 
