@@ -1,7 +1,7 @@
 #!/usr/bin/env dotnet
 
 // SPDX-License-Identifier: MIT
-// Copyright (c) 2025 Val Melamed
+// Copyright (c) 2025-2026 Val Melamed
 
 #:property TargetFramework=net10.0
 #:project ../src/UlidType/UlidType.csproj
