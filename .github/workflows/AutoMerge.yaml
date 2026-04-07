@@ -6,7 +6,7 @@ name: "Auto-merge Dependabot PRs"
 # To auto-merge ALL PRs (not just Dependabot), remove the `if:` condition below.
 
 on:
-  pull_request:
+  pull_request_target:
 
 permissions:
   contents: write
