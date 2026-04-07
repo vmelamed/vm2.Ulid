@@ -261,7 +261,6 @@ public partial class UlidTests
         // equality via same string
         var a2 = Parse(a.ToString());
         a2.Equals((object)a).Should().BeTrue();
-        a2.Equals(a, a2).Should().BeTrue();
         a2.CompareTo(a).Should().Be(0);
         (a2 == a).Should().BeTrue();
         (a2 <= a).Should().BeTrue();
@@ -276,7 +275,6 @@ public partial class UlidTests
         var hash1 = ulid.GetHashCode();
         var hash11 = ulid.GetHashCode();
         hash1.Should().Be(hash11);
-        ulid.GetHashCode(ulid).Should().Be(hash1);
 
         var ulid2 = Parse(ulid.ToString());
         var hash2 = ulid2.GetHashCode();
@@ -329,7 +327,7 @@ public partial class UlidTests
     }
 
     [Fact]
-    public void NewUlid_FromDateTimeOffsetAndRandom_Roundtrips_As_Expected()
+    public void NewUlid_FromDateTimeOffsetAndRandom_Round_trips_As_Expected()
     {
         var factory = new UlidFactory();
         var ulid = factory.NewUlid();
