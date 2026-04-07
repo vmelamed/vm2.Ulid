@@ -38,9 +38,6 @@ class PreGeneratedData<T>
 #else
 [SimpleJob(RuntimeMoniker.HostProcess)]
 #endif
-[MemoryDiagnoser]
-[JsonExporter]
-[Orderer(SummaryOrderPolicy.FastestToSlowest, MethodOrderPolicy.Declared)]
 public class NewUlid
 {
     [Params(nameof(CryptoRandom), nameof(PseudoRandom))]
@@ -78,9 +75,6 @@ public class NewUlid
 #else
 [SimpleJob(RuntimeMoniker.HostProcess)]
 #endif
-[MemoryDiagnoser]
-[JsonExporter]
-[Orderer(SummaryOrderPolicy.FastestToSlowest, MethodOrderPolicy.Declared)]
 public class UlidToString
 {
     const int MaxDataItems = 1000;
@@ -115,9 +109,6 @@ public class UlidToString
 #else
 [SimpleJob(RuntimeMoniker.HostProcess)]
 #endif
-[MemoryDiagnoser]
-[JsonExporter]
-[Orderer(SummaryOrderPolicy.FastestToSlowest, MethodOrderPolicy.Declared)]
 public class ParseUlid
 {
     const int MaxDataItems = 1000;
