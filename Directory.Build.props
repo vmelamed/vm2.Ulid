@@ -127,7 +127,6 @@
             IDE0021;IDE0022;IDE0039;IDE0065;IDE1006;IDE2000;IDE2002;IDE0058;IDE0290
         </NoWarn>
         <!-- Enable MTP v2 For more information on Microsoft Testing Platform support in xUnit.net, visit: https://xunit.net/docs/getting-started/v3/microsoft-testing-platform -->
-        <UseMicrosoftTestingPlatform>true</UseMicrosoftTestingPlatform>
         <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
 
         <!-- MTP v2: Configure coverage with coverage.settings.xml -->

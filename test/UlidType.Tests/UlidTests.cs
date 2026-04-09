@@ -442,7 +442,7 @@ public partial class UlidTests
     }
 
     [Fact]
-    public void ExplicitConversion_ToAndFrom_String_Works_As_Expected()
+    public void TypeConversions_ToAndFrom_String_Works_As_Expected()
     {
         var factory = new UlidFactory();
         var ulid = factory.NewUlid();
