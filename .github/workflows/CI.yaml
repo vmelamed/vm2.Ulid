@@ -38,25 +38,25 @@ concurrency:
 env:
   BUILD_PROJECTS: >-
     [
-      "./vm2.Ulid.slnx"
+    "./vm2.Ulid.slnx"
     ]
   TEST_PROJECTS: >-
     [
-      "test/UlidType.Tests/UlidType.Tests.csproj",
-      "test/UlidTool.Tests/UlidTool.Tests.csproj"
+    "test/UlidType.Tests/UlidType.Tests.csproj",
+    "test/UlidTool.Tests/UlidTool.Tests.csproj"
     ]
-  BENCHMARK_PROJECTS: >
+  BENCHMARK_PROJECTS: >-
     [
-      "benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj"
+    "benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj"
     ]
-  PACKAGE_PROJECTS: >
+  PACKAGE_PROJECTS: >-
     [
-      "src/UlidType/UlidType.csproj",
-      "src/UlidTool/UlidTool.csproj"
+    "src/UlidType/UlidType.csproj",
+    "src/UlidTool/UlidTool.csproj"
     ]
   RUNNERS_OS: >-
     [
-      "ubuntu-latest"
+    "ubuntu-latest"
     ]
   PREPROCESSOR_SYMBOLS: ""
   DOTNET_VERSION: ${{ vars.DOTNET_VERSION || '10.0.x' }} # The .NET SDK version to use.
