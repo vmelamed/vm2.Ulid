@@ -442,7 +442,7 @@ public partial class UlidTests
     }
 
     [Fact]
-    public void ImplicitConversion_ToAndFrom_String_Works_As_Expected()
+    public void ExplicitConversion_ToAndFrom_String_Works_As_Expected()
     {
         var factory = new UlidFactory();
         var ulid = factory.NewUlid();
@@ -450,7 +450,7 @@ public partial class UlidTests
         string str = ulid;
         str.Should().Be(ulid.ToString());
 
-        Ulid ulid2 = str;
+        Ulid ulid2 = (Ulid)str;
         ulid2.Should().Be(ulid);
     }
 }
