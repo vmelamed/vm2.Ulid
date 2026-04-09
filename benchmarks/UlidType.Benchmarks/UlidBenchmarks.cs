@@ -78,6 +78,9 @@ public class NewUlid
 #else
 [SimpleJob(RuntimeMoniker.HostProcess)]
 #endif
+[JsonExporterAttribute.BriefCompressed]
+[MarkdownExporterAttribute.GitHub]
+[MemoryDiagnoser]
 public class UlidToString
 {
     const int MaxDataItems = 1000;
@@ -112,6 +115,9 @@ public class UlidToString
 #else
 [SimpleJob(RuntimeMoniker.HostProcess)]
 #endif
+[JsonExporterAttribute.BriefCompressed]
+[MarkdownExporterAttribute.GitHub]
+[MemoryDiagnoser]
 public class ParseUlid
 {
     const int MaxDataItems = 1000;
