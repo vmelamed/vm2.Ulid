@@ -210,7 +210,7 @@ public readonly partial struct Ulid :
     public static implicit operator string(Ulid ulid) => ulid.ToString();
 
     /// <summary>
-    /// Defines an implicit conversion from a string to a <see cref="Ulid"/> instance.
+    /// Defines an explicit conversion from a string to a <see cref="Ulid"/> instance.
     /// </summary>
     /// <param name="s"></param>
     public static explicit operator Ulid(string s) => new(s);
