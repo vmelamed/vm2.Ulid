@@ -38,6 +38,9 @@ class PreGeneratedData<T>
 #else
 [SimpleJob(RuntimeMoniker.HostProcess)]
 #endif
+[JsonExporterAttribute.BriefCompressed]
+[MarkdownExporterAttribute.GitHub]
+[MemoryDiagnoser]
 public class NewUlid
 {
     [Params(nameof(CryptoRandom), nameof(PseudoRandom))]
