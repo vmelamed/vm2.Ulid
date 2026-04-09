@@ -213,7 +213,7 @@ public readonly partial struct Ulid :
     /// Defines an implicit conversion from a string to a <see cref="Ulid"/> instance.
     /// </summary>
     /// <param name="s"></param>
-    public static implicit operator Ulid(string s) => new(s);
+    public static explicit operator Ulid(string s) => new(s);
 
     /// <summary>
     /// Defines an implicit conversion from a <see cref="Ulid"/> to a <see cref="Guid"/> and vice versa.
