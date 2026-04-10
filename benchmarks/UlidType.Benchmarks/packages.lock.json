@@ -208,6 +208,12 @@
           "System.Security.Cryptography.ProtectedData": "10.0.5"
         }
       },
+      "System.Security.Cryptography.Pkcs": {
+        "type": "Direct",
+        "requested": "[10.0.5, )",
+        "resolved": "10.0.5",
+        "contentHash": "BJEYUZfXpkPIHo2+oFoUemD5CPMFHPJOkRzXrbj/iZrWsjga3ypj8Rqd9bFlSLupEH4IIdD/aBWm/V1gCiBL9w=="
+      },
       "CommandLineParser": {
         "type": "Transitive",
         "resolved": "2.9.1",
@@ -496,7 +502,8 @@
           "Microsoft.Extensions.Logging.Console": "[10.0.5, )",
           "Microsoft.Extensions.Options.ConfigurationExtensions": "[10.0.5, )",
           "Newtonsoft.Json": "[13.0.4, )",
-          "System.Configuration.ConfigurationManager": "[10.0.5, )"
+          "System.Configuration.ConfigurationManager": "[10.0.5, )",
+          "System.Security.Cryptography.Pkcs": "[10.0.5, )"
         }
       }
     }
