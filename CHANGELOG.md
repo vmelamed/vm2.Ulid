@@ -1,67 +1,43 @@
 # Changelog
 
-
-
 ## v3.0.0 - 2026-04-10
+
 See prereleases below.
 
 ## v3.0.0-preview.1 - 2026-04-10
-See prereleases below.
 
-## v2.1.1-preview.1 - 2026-03-25
-See prereleases below.
-## v3.0.0-preview.1 - 2026-04-10
+### Changed
+- **BREAKING:** Renamed namespace `vm2.Serialization` to `vm2.UlidSerialization`
+- **BREAKING:** Changed implicit `string` conversion to explicit for `Ulid`
+
+### Removed
+- **BREAKING:** Removed `IEqualityComparer<Ulid>` implementation from `Ulid`
 
 ### Internal
-
-DevOps changes only.
-
-## v3.0.0-preview.1 - 2026-04-10
-
-### Internal
-
-DevOps changes only.
+- Update copyright year to 2025-2026
+- Add JSON and Markdown exporters and `MemoryDiagnoser` to benchmark classes
+- Update CI workflows, package dependencies, and vm2.TestUtilities to 1.3.1
 
 ## v2.1.1-preview.1 - 2026-03-25
 
 ### Internal
+- Clean up formatting in CHANGELOG.md
 
-DevOps changes only.
-
-## v2.1.0 - 2026-03-24
-
-### Internal
-
-DevOps changes only.
 ## v2.1.0 - 2026-03-24
 
 See prereleases below.
 
 ## v2.1.0-preview.2 - 2026-03-24
 
-See prereleases below.
-
-## v2.1.0-preview.1 - 2026-03-24
-
-See prereleases below.
-
-## v2.1.0-preview.2 - 2026-03-24
-
 ### Internal
-
-DevOps changes only.
+- Update workflow files to remove default values for environment variables
 
 ## v2.1.0-preview.1 - 2026-03-24
 
 ### Internal
-
-DevOps changes only.
-
-## v2.0.1 - 2026-03-08
-
-### Internal
-
-DevOps changes only.
+- Update CI, Prerelease, and Release workflows for consistency
+- Update vm2.TestUtilities to 1.3.0 and package dependencies to 10.0.5
+- Add auto-merge workflow and Dependabot improvements
 
 ## v2.0.1 - 2026-03-08
 
@@ -69,23 +45,9 @@ See prereleases below.
 
 ## v2.0.1-preview.1 - 2026-03-08
 
-See prereleases below.## v2.0.1-preview.1 - 2026-03-08
-
 ### Internal
-
-DevOps changes only.
-
-## v2.0.0 - 2026-03-08
-
-### Internal
-
-DevOps changes only.
-
-## v2.0.1-preview.2 - 2026-03-08
-
-### Changed
-
-Updated CHANGELOG.md.
+- Add security category to changelog configuration
+- Streamline CHANGELOG.md updates
 
 ## v2.0.0 - 2026-03-08
 
