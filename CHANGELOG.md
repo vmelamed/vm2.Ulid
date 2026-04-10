@@ -115,8 +115,7 @@ DevOps changes only.
 
 ### Removed
 
-- **BREAKING:** removed the static methods `GetTimestampFromUlid(in ReadOnlySpan<byte>
-  ulidBytes)` and
+- **BREAKING:** removed the static methods `GetTimestampFromUlid(in ReadOnlySpan<byte> ulidBytes)` and
   `PutTimestampToUlid(in DateTime timestamp, Span<byte> ulidBytes)` from the `Ulid` struct, as they were not consistent with
   the rest of the API and had confusing semantics.
 
