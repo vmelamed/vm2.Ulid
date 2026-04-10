@@ -1,6 +1,12 @@
 # Changelog
 
 
+## v3.0.0-preview.1 - 2026-04-10
+
+### Internal
+
+DevOps changes only.
+
 ## v2.1.1-preview.1 - 2026-03-25
 
 ### Internal
