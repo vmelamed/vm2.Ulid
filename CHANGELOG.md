@@ -1,5 +1,18 @@
 # Changelog
 
+
+## v3.0.1-preview.1 - 2026-04-10
+
+### Fixed
+- curate CHANGELOG and fix git-cliff template for v2.x
+
+
+## v3.0.0 - 2026-04-10
+
+### Internal
+- promote to stable v3.0.0 [skip ci]
+- update changelog for v3.0.0 [skip ci]
+
 ## v3.0.0 - 2026-04-10
 
 See prereleases below.
