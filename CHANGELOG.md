@@ -93,8 +93,16 @@ See prereleases v2.0.0-preview.1 and v2.0.0-preview.2 below for full details.
 
 ### Summary
 
-- **Breaking:** Removed `GetTimestampFromUlid`, `PutTimestampToUlid`, and optional parameter from `NewUlid`.
-- **Breaking:** Removed `TryWrite(Span<byte>, bool)` in favor of `TryWriteUtf8(Span<byte>)`.
+- **BREAKING:** Removed `GetTimestampFromUlid`, `PutTimestampToUlid`, and optional parameter from `NewUlid`.
+
+  This is a breaking change because any code that called these methods or used the optional parameter will no longer compile.
+  Users will need to update their code to use the new API for working with timestamps and generating ULIDs.
+
+- **BREAKING:** Removed `TryWrite(Span<byte>, bool)` in favor of `TryWriteUtf8(Span<byte>)`.
+
+  This is a breaking change because any code that called the old `TryWrite` method with the `asUtf8` parameter will no longer
+  compile. Users will need to update their code to call the new `TryWriteUtf8` method instead.
+
 - Added UTF-8 parse/write overloads, performance improvements.
 
 ## v2.0.0-preview.2 - 2026-03-08
@@ -107,19 +115,31 @@ DevOps changes only.
 
 ### Removed
 
-> [!WARNING] Breaking change: removed the static methods `GetTimestampFromUlid(in ReadOnlySpan<byte> ulidBytes)` and `PutTimestampToUlid(in DateTime timestamp, Span<byte> ulidBytes)` from the `Ulid` struct, as they were not consistent with the rest of the API and had confusing semantics.
+- **BREAKING:** removed the static methods `GetTimestampFromUlid(in ReadOnlySpan<byte>
+  ulidBytes)` and
+  `PutTimestampToUlid(in DateTime timestamp, Span<byte> ulidBytes)` from the `Ulid` struct, as they were not consistent with
+  the rest of the API and had confusing semantics.
 
-This is a breaking change because any code that called these methods will no longer compile. If users need to get or put timestamps in ULIDs, they can use the `UlidFactory` class with the appropriate providers instead.
+  This is a breaking change because any code that called these methods will no longer compile. If users need to get or put
+  timestamps in ULIDs, they can use the `UlidFactory` class with the appropriate providers instead.
 
-> [!WARNING] Breaking change: removed the parameter of the static method `Ulid.NewUlid(/*IUlidRandomProvider? ulidRandomProvider = null*/)`, as it had confusing side effects and was incomplete: it accepted a random provider but no timestamp provider. Now, the method simply generates a new ULID using the default random and timestamp providers.
+- **BREAKING:** removed the parameter of the static method `Ulid.NewUlid(/*IUlidRandomProvider?
+  ulidRandomProvider = null*/)`, as it had confusing side effects and was incomplete: it accepted a random provider but no
+  timestamp provider. Now, the method simply generates a new ULID using the default random and timestamp providers.
 
-This is a breaking change because any code that called `Ulid.NewUlid()` with a custom random provider will no longer compile. If users need to use a custom random provider, they can create an instance of `UlidFactory` with the desired providers and call `factory.NewUlid()` instead.
+  This is a breaking change because any code that called `Ulid.NewUlid()` with a custom random provider will no longer compile.
+  If users need to use a custom random provider, they can create an instance of `UlidFactory` with the desired providers and
+  call `factory.NewUlid()` instead.
 
-> [!WARNING] Breaking change: removed the method `public readonly bool TryWrite(Span<byte> destination, bool asUtf8)`. Use `public readonly bool TryWriteUtf8(in Span<byte> destination)` instead, to clarify the semantics of writing ULIDs as UTF-8 encoded byte spans.
+- **BREAKING:** removed the method `public readonly bool TryWrite(Span<byte> destination, bool asUtf8)`. Use
+  `public readonly bool TryWriteUtf8(in Span<byte> destination)` instead, to clarify the semantics of writing ULIDs as UTF-8
+  encoded byte spans.
 
 ### Added
 
-Added new overloads `Ulid.Parse(ReadOnlySpan<byte> utf8Bytes)` and `Ulid.TryParse(ReadOnlySpan<byte> utf8Bytes, out Ulid result)` to parse ULIDs from UTF-8 encoded byte spans. The existing `Parse` and `TryParse` methods that take `ReadOnlySpan<char>` are still available and unchanged.
+Added new overloads `Ulid.Parse(ReadOnlySpan<byte> utf8Bytes)` and `Ulid.TryParse(ReadOnlySpan<byte> utf8Bytes, out Ulid result)
+` to parse ULIDs from UTF-8 encoded byte spans. The existing `Parse` and `TryParse` methods that take `ReadOnlySpan<char>` are
+still available and unchanged.
 
 ### Performance
 
@@ -135,7 +155,8 @@ DevOps build pipeline changes.
 
 ### Added
 
-UlidTool project to provide a command-line interface for generating and parsing ULIDs. The tool is built on top of the `vm2.Ulid` library and can be used for quick ULID generation or parsing without writing code.
+UlidTool project to provide a command-line interface for generating and parsing ULIDs. The tool is built on top of the `vm2.
+Ulid` library and can be used for quick ULID generation or parsing without writing code.
 
 ### Internal
 
@@ -173,14 +194,19 @@ DevOps build pipeline changes
 
 Small API changes that clarify the semantic of some input parameters:
 
-- Change the constructor `public Ulid(in ReadOnlySpan<byte> bytes)` to `public Ulid(in ReadOnlySpan<byte> bytes, bool isUtf8)`. The constructor used to guess whether the input is raw bytes or UTF-8 sequence of characters by the length of the parameter `bytes`. Now, let the caller state their intention explicitly.
-- Similar change for `public readonly bool TryWrite(Span<byte> destination, bool asUtf8)` - added the explicit parameter `asUtf8`.
-- Keeping the semantics of the `Parse` and `TryParse` methods: always parsing either UTF-16 characters (`ReadOnlySpan<char>`) or UTF-8 characters (`ReadOnlySpan<byte>`).
+- Change the constructor `public Ulid(in ReadOnlySpan<byte> bytes)` to `public Ulid(in ReadOnlySpan<byte> bytes, bool isUtf8)`.
+  The constructor used to guess whether the input is raw bytes or UTF-8 sequence of characters by the length of the parameter
+  `bytes`. Now, let the caller state their intention explicitly.
+- Similar change for `public readonly bool TryWrite(Span<byte> destination, bool asUtf8)` - added the explicit parameter
+  `asUtf8`.
+- Keeping the semantics of the `Parse` and `TryParse` methods: always parsing either UTF-16 characters (`ReadOnlySpan<char>`)
+  or UTF-8 characters (`ReadOnlySpan<byte>`).
 - Minor stylistic code changes.
 
 ### Fixed
 
-- Fixed bug where the UlidFactory could produce non-monotonic ULIDs when called within the same millisecond and the last byte of the previous ULID was `0xFF`.
+- Fixed bug where the UlidFactory could produce non-monotonic ULIDs when called within the same millisecond and the last byte
+  of the previous ULID was `0xFF`.
 
 ### Performance
 
