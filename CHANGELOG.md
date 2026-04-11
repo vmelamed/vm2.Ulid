@@ -147,9 +147,9 @@ DevOps changes only.
 
 ### Added
 
-Add new overloads `Ulid.Parse(ReadOnlySpan<byte> utf8Bytes)` and `Ulid.TryParse(ReadOnlySpan<byte> utf8Bytes, out Ulid result)`
-to parse ULIDs from UTF-8 encoded byte spans. The existing `Parse` and `TryParse` methods that take `ReadOnlySpan<char>` are
-still available and unchanged.
+Added new overloads `Ulid.Parse(ReadOnlySpan<byte> utf8Bytes)` and
+`Ulid.TryParse(ReadOnlySpan<byte> utf8Bytes, out Ulid result)` to parse ULIDs from UTF-8 encoded byte spans. The existing
+`Parse` and `TryParse` methods that take `ReadOnlySpan<char>` are still available and unchanged.
 
 ### Performance
 
