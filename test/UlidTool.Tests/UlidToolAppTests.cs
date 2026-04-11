@@ -1,11 +1,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025-2026 Val Melamed
 
-using System.Text.RegularExpressions;
-
 namespace vm2.UlidTool.Tests;
 
-public sealed class UlidToolAppTests
+public sealed class UlidToolAppTests(ITestOutputHelper output) : TestBase(output)
 {
     private static readonly Regex UlidRegex = new("^[0-9A-HJKMNP-TV-Z]{26}$", RegexOptions.Compiled);
 
