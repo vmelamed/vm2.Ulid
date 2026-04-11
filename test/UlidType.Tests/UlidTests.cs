@@ -4,7 +4,7 @@
 namespace vm2.UlidType.Tests;
 
 [ExcludeFromCodeCoverage]
-public partial class UlidTests
+public partial class UlidTests(ITestOutputHelper output) : TestBase(output)
 {
     [Fact]
     public void Ulid_NewUlid_Uses_InternalFactory()
