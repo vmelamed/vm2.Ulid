@@ -11,18 +11,19 @@
 - UlidTests inherit from TestBase, update CHANGELOG for breaking changes in Ulid struct and improve formatting
 
 
-
 ## v3.0.2 - 2026-04-10
+
 See prereleases below.
 
 ## v3.0.1-preview.2 - 2026-04-10
+
 See prereleases below.
+
 ## v3.0.1-preview.2 - 2026-04-10
 
 ### Internal
 
 - clean up CHANGELOG formatting and update cliff.prerelease.toml template
-
 
 ## v3.0.1 - 2026-04-10
 
@@ -270,12 +271,12 @@ DevOps build pipeline changes
 >
 > **Removed**
 >
-> - add removed/obsolete items here
-> - commit prefix for git-cliff: `revert:`
+> - add removed/obsolete items
+> - commit prefix for git-cliff: `revert:` or `remove:`
 >
 > **Security**
 >
-> - add security-related changes here
+> - add security-related changes
 > - commit prefix for git-cliff: `security:`
 >
 > **Internal**
