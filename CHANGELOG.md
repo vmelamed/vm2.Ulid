@@ -1,6 +1,16 @@
 # Changelog
 
 
+## v3.0.3-preview.1 - 2026-04-11
+
+### Internal
+
+- update CHANGELOG to stick to common formatting for breaking changes
+- update CHANGELOG to reflect removal of inconsistent static methods from Ulid struct
+- update vm2.TestUtilities to version 1.4.0 and inherit test classes from TestBase
+- UlidTests inherit from TestBase, update CHANGELOG for breaking changes in Ulid struct and improve formatting
+
+
 
 ## v3.0.2 - 2026-04-10
 See prereleases below.
