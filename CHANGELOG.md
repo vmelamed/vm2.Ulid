@@ -115,14 +115,14 @@ DevOps changes only.
 
 ### Removed
 
-- **BREAKING:** removed the static methods `GetTimestampFromUlid(in ReadOnlySpan<byte> ulidBytes)` and
+- **BREAKING:** Removed the static methods `GetTimestampFromUlid(in ReadOnlySpan<byte> ulidBytes)` and
   `PutTimestampToUlid(in DateTime timestamp, Span<byte> ulidBytes)` from the `Ulid` struct, as they were not consistent with
   the rest of the API and had confusing semantics.
 
   This is a breaking change because any code that called these methods will no longer compile. If users need to get or put
   timestamps in ULIDs, they can use the `UlidFactory` class with the appropriate providers instead.
 
-- **BREAKING:** removed the parameter of the static method `Ulid.NewUlid(/*IUlidRandomProvider?
+- **BREAKING:** Removed the parameter of the static method `Ulid.NewUlid(/*IUlidRandomProvider?
   ulidRandomProvider = null*/)`, as it had confusing side effects and was incomplete: it accepted a random provider but no
   timestamp provider. Now, the method simply generates a new ULID using the default random and timestamp providers.
 
@@ -130,14 +130,14 @@ DevOps changes only.
   If users need to use a custom random provider, they can create an instance of `UlidFactory` with the desired providers and
   call `factory.NewUlid()` instead.
 
-- **BREAKING:** removed the method `public readonly bool TryWrite(Span<byte> destination, bool asUtf8)`. Use
+- **BREAKING:** Removed the method `public readonly bool TryWrite(Span<byte> destination, bool asUtf8)`. Use
   `public readonly bool TryWriteUtf8(in Span<byte> destination)` instead, to clarify the semantics of writing ULIDs as UTF-8
   encoded byte spans.
 
 ### Added
 
-Added new overloads `Ulid.Parse(ReadOnlySpan<byte> utf8Bytes)` and `Ulid.TryParse(ReadOnlySpan<byte> utf8Bytes, out Ulid result)
-` to parse ULIDs from UTF-8 encoded byte spans. The existing `Parse` and `TryParse` methods that take `ReadOnlySpan<char>` are
+Add new overloads `Ulid.Parse(ReadOnlySpan<byte> utf8Bytes)` and `Ulid.TryParse(ReadOnlySpan<byte> utf8Bytes, out Ulid result)`
+to parse ULIDs from UTF-8 encoded byte spans. The existing `Parse` and `TryParse` methods that take `ReadOnlySpan<char>` are
 still available and unchanged.
 
 ### Performance
@@ -154,8 +154,8 @@ DevOps build pipeline changes.
 
 ### Added
 
-UlidTool project to provide a command-line interface for generating and parsing ULIDs. The tool is built on top of the `vm2.
-Ulid` library and can be used for quick ULID generation or parsing without writing code.
+UlidTool project to provide a command-line interface for generating and parsing ULIDs. The tool is built on top of the
+`vm2.Ulid` library and can be used for quick ULID generation or parsing without writing code.
 
 ### Internal
 
