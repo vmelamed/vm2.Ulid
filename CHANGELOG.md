@@ -1,5 +1,22 @@
 # Changelog
 
+
+## v3.0.3-preview.2 - 2026-04-11
+
+### Fixed
+
+- remove duplicate v3.0.1-preview.2 section in CHANGELOG
+- remove duplicate v3.0.1 section in CHANGELOG
+
+
+### Internal
+
+- update CHANGELOG to stick to common formatting for breaking changes
+- update CHANGELOG to reflect removal of inconsistent static methods from Ulid struct
+- UlidTests inherit from TestBase, update CHANGELOG for breaking changes in Ulid struct and improve formatting
+- update CHANGELOG formatting and improve clarity in Codecov configuration
+- clean up CHANGELOG formatting and add new overloads for Ulid parsing
+
 ## v3.0.3-preview.1 - 2026-04-11
 
 ### Internal
