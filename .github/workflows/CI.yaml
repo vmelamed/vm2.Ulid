@@ -20,8 +20,7 @@ on:
         default: ubuntu-latest
 
       preprocessor-symbols:
-        description: >-
-          Preprocessor symbols separated by semicolon, space, or comma. E.g. "ABC XYZ" or "ABC;XYZ" or "ABC,XYZ".
+        description: Preprocessor symbols separated by semicolon, space, or comma. E.g. "ABC XYZ" or "ABC;XYZ" or "ABC,XYZ".
         type: string
         default: "SHORT_RUN"
 
