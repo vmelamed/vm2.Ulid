@@ -140,3 +140,23 @@ jobs:
       reason: ${{ needs.get-params.outputs.reason }}
       nuget-server: ${{ needs.get-params.outputs.nuget-server }}
       save-package-artifacts: ${{ fromJson(needs.get-params.outputs.save-package-artifacts) }}
+
+  remind-changelog:
+    name: Reminder - review CHANGELOG.md
+    runs-on: ubuntu-latest
+    needs:
+      - prerelease
+    steps:
+      - name: Post reminder
+        shell: bash
+        run: |
+          echo "::notice::Pre-release completed. Now is a good time to review/edit CHANGELOG.md before stable release. CHANGELOG.md only - do not mix-in other files."
+          {
+            echo "## CHANGELOG Reminder"
+            echo
+            echo "> [!IMPORTANT]"
+            echo "> Pre-release completed. Now is a good time to review/edit CHANGELOG.md before stable release."
+            echo "> CHANGELOG.md only - do not mix-in other files."
+            echo
+            echo "Recommended: keep changelog updates in a dedicated commit or PR before the release workflow."
+          } >> "$GITHUB_STEP_SUMMARY"
