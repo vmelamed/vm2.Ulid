@@ -1,6 +1,28 @@
 # Changelog
 
 
+## v3.1.0-preview.1 - 2026-04-14
+
+### Fixed
+
+- update tag_pattern regex to enforce semantic versioning format
+- tighten tag_pattern in cliff.prerelease.toml to strict SemVer with prerelease suffix
+
+
+### Internal
+
+- cosmetic
+- bump vm2.TestUtilities to 1.4.2 and align changelog parser
+- update documentation regex for commit messages and add pull request template
+- update changelog release-header template
+- update gitmessage template
+
+
+### deps
+
+- Bump the minor-and-patch group with 1 update
+
+
 ## v3.0.3-preview.2 - 2026-04-11
 
 ### Fixed
