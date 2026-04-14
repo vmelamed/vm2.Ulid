@@ -1,10 +1,22 @@
 [changelog]
 header = """# Changelog\n\n"""
-body = """{% if tag is defined %}{% set current_tag = tag %}{% elif version is defined %}{% set current_tag = version %}{% else %}{% set current_tag = "Unreleased" %}{% endif -%}
-{% if timestamp is defined %}{% set current_date = timestamp | date(format="%Y-%m-%d") %}{% else %}{% set current_date = now() | date(format="%Y-%m-%d") %}{% endif %}
+body = """
+{% if tag is defined %}
+{% set current_tag = tag %}
+{% elif version is defined %}
+{% set current_tag = version %}
+{% else %}
+{% set current_tag = "Unreleased" %}
+{% endif -%}
+{% if timestamp is defined %}
+{% set current_date = timestamp | date(format="%Y-%m-%d") %}
+{% else %}
+{% set current_date = now() | date(format="%Y-%m-%d") %}
+{% endif %}
 {%- set grouped = commits | group_by(attribute="group") -%}
 {%- if grouped | length > 0 %}
 ## {{ current_tag }} - {{ current_date }}
+
 {% for group, commits in grouped %}
 ### {{ group }}
 
@@ -18,6 +30,7 @@ body = """{% if tag is defined %}{% set current_tag = tag %}{% elif version is d
 ### Internal
 
 DevOps changes only.
+
 {% endif %}
 """
 trim = true
@@ -26,7 +39,7 @@ footer = ""
 [git]
 conventional_commits = true
 filter_unconventional = true
-tag_pattern = "^v[0-9]+\\.[0-9]+\\.[0-9]+-.*"
+tag_pattern = "^v(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)-(?:0|[1-9][0-9]*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*)(?:\\.(?:0|[1-9][0-9]*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*))*(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$"
 protect_breaking_commits = true
 commit_parsers = [
     { message = "^style", group = "Internal" },
