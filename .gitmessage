@@ -34,5 +34,5 @@
 # Examples:
 #   feat(glob): add character class negation [^abc]
 #   fix: prevent stack overflow on deeply nested patterns
-#   chore: update BenchmarkDotNet to 0.14.0
+#   chore: update BenchmarkDotNet to x.y.z
 #   docs: add DEVELOPER_WORKFLOW.md
