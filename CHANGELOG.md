@@ -1,6 +1,19 @@
 # Changelog
 
 
+## v3.1.0-preview.2 - 2026-04-14
+
+### Fixed
+
+- tighten tag_pattern in cliff.prerelease.toml to strict SemVer prerelease format
+
+
+### Internal
+
+- update vm2.TestUtilities version to 1.4.3 and adjust tag_pattern for semantic versioning
+- update vm2.TestUtilities version to 1.4.3 in package locks
+
+
 ## v3.1.0-preview.1 - 2026-04-14
 
 ### Fixed
