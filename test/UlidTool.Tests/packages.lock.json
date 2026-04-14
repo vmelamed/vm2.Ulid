@@ -219,9 +219,9 @@
       },
       "vm2.TestUtilities": {
         "type": "Direct",
-        "requested": "[1.4.2, )",
-        "resolved": "1.4.2",
-        "contentHash": "/EedoknMVrBdTjxDIvdYhLqeLHzLuFc+MCmof5vDR9uMYJIwvheoU92uIo4G7osDJCf+BEAOoc7Zsh/Ds3cMQg==",
+        "requested": "[1.4.3, )",
+        "resolved": "1.4.3",
+        "contentHash": "/6CC/8q+Tqc6X88IFeWjkT5BobQvrY8sjf3IfCXJAOS9+BvPGMJijJyiWaR+mybkRUs8oCBeHEUudSras32EJQ==",
         "dependencies": {
           "FluentAssertions": "8.9.0",
           "Microsoft.Extensions.Configuration.Binder": "10.0.5",
