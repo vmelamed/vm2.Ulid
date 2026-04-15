@@ -1,0 +1,16 @@
+name: "Refresh NuGet Lock Files"
+
+on:
+  schedule:
+    # Every Monday at 05:00 ET — runs before Dependabot (06:00 ET)
+    - cron: "0 9 * * 1" # 09:00 UTC = 05:00 ET
+
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  refresh:
+    uses: vmelamed/vm2.DevOps/.github/workflows/_refresh_lockfiles.yaml@main
+    with:
+      dotnet-version: ${{ vars.DOTNET_VERSION || '10.0.x' }}
+    secrets:
+      GH_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
