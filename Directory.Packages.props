@@ -5,19 +5,19 @@
     </PropertyGroup>
     <ItemGroup>
         <PackageVersion Include="System.CommandLine" Version="2.0.5" />
-        <PackageVersion Include="System.Configuration.ConfigurationManager" Version="10.0.5" />
-        <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.5" />
-        <PackageVersion Include="Microsoft.Extensions.Configuration.CommandLine" Version="10.0.5" />
-        <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.5" />
-        <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.5" />
-        <PackageVersion Include="Microsoft.Extensions.Logging.Configuration" Version="10.0.5" />
-        <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
-        <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.5" />
-        <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.5" />
-        <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.5" />
-        <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.5" />
-        <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.5" />
-        <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.201" />
+        <PackageVersion Include="System.Configuration.ConfigurationManager" Version="10.0.6" />
+        <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.6" />
+        <PackageVersion Include="Microsoft.Extensions.Configuration.CommandLine" Version="10.0.6" />
+        <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.6" />
+        <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.6" />
+        <PackageVersion Include="Microsoft.Extensions.Logging.Configuration" Version="10.0.6" />
+        <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.6" />
+        <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.6" />
+        <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.6" />
+        <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.6" />
+        <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.6" />
+        <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.6" />
+        <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.202" />
         <PackageVersion Include="MinVer" Version="7.0.0" />
         <!-- The test stack: -->
         <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.6.2" />
