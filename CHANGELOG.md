@@ -5,6 +5,22 @@
 
 
 
+## v3.1.0-preview.4 - 2026-04-17
+
+
+### Internal
+
+- promote to stable v3.1.0 [skip ci]
+- update changelog for v3.1.0 [skip ci]
+- add workflow to refresh NuGet lock files
+- update dependencies
+- add pull request template to GitHub folder
+
+
+
+
+
+
 
 ## v3.1.0 - 2026-04-14
 
