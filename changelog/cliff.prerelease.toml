@@ -1,7 +1,6 @@
 [changelog]
 header = """# Changelog\n\n"""
-body = """
-{% if tag is defined %}
+body = """{% if tag is defined %}
 {% set current_tag = tag %}
 {% elif version is defined %}
 {% set current_tag = version %}
