@@ -5,6 +5,32 @@
 
 
 
+## v3.1.1-preview.3 - 2026-04-22
+
+
+### Fixed
+
+- correct invalid prerelease version headers in CHANGELOG
+
+
+
+
+
+
+## v3.1.1-preview.1 - 2026-04-22
+
+
+### Internal
+
+- add shared conventions document for vm2 packages and claude [skip ci]
+- diff-shared
+- update changelog for v3.1.1-preview.1 [skip ci]
+
+
+
+
+
+
 ## v3.1.1-preview.1 - 2026-04-22
 
 
