@@ -1,12 +1,6 @@
 # Changelog
 
-
-
-
-
-
 ## v3.1.0-preview.5 - 2026-04-22
-
 
 ### Internal
 
@@ -14,18 +8,11 @@
 - update dependencies and rebuild the packages.lock.json files
 - update dependencies and rebuild the packages.lock.json files
 
-
 ### deps
 
 - Bump the minor-and-patch group with 2 updates
 
-
-
-
-
-
 ## v3.1.0-preview.4 - 2026-04-17
-
 
 ### Internal
 
@@ -35,27 +22,15 @@
 - update dependencies
 - add pull request template to GitHub folder
 
-
-
-
-
-
-
 ## v3.1.0 - 2026-04-14
 
 See prereleases below.
 
-
-
-
-
 ## v3.1.0-preview.3 - 2026-04-14
-
 
 ### Internal
 
 - sync round-3 changelog templates and bump TestUtilities to 1.4.4
-
 
 ## v3.1.0-preview.2 - 2026-04-14
 
@@ -63,12 +38,10 @@ See prereleases below.
 
 - tighten tag_pattern in cliff.prerelease.toml to strict SemVer prerelease format
 
-
 ### Internal
 
 - update vm2.TestUtilities version to 1.4.3 and adjust tag_pattern for semantic versioning
 - update vm2.TestUtilities version to 1.4.3 in package locks
-
 
 ## v3.1.0-preview.1 - 2026-04-14
 
@@ -76,7 +49,6 @@ See prereleases below.
 
 - update tag_pattern regex to enforce semantic versioning format
 - tighten tag_pattern in cliff.prerelease.toml to strict SemVer with prerelease suffix
-
 
 ### Internal
 
@@ -86,11 +58,9 @@ See prereleases below.
 - update changelog release-header template
 - update gitmessage template
 
-
 ### deps
 
 - Bump the minor-and-patch group with 1 update
-
 
 ## v3.0.3-preview.2 - 2026-04-11
 
@@ -98,7 +68,6 @@ See prereleases below.
 
 - remove duplicate v3.0.1-preview.2 section in CHANGELOG
 - remove duplicate v3.0.1 section in CHANGELOG
-
 
 ### Internal
 
