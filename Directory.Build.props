@@ -33,6 +33,7 @@
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
         <RestoreLockedMode Condition="'$(CI)' == 'true'">true</RestoreLockedMode>
+        <NuGetAuditLevel>moderate</NuGetAuditLevel>
         <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
         <MinVerTagPrefix>v</MinVerTagPrefix>
         <MinVerDefaultPreReleaseIdentifiers>preview</MinVerDefaultPreReleaseIdentifiers>
@@ -273,7 +274,6 @@
 
     <!-- Add project-specific properties and packages here -->
     <ItemGroup>
-        <PackageReference Include="System.Security.Cryptography.Pkcs" />
         <PackageReference Include="Newtonsoft.Json" />
     </ItemGroup>
 

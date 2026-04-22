@@ -4,20 +4,20 @@
         <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
     </PropertyGroup>
     <ItemGroup>
-        <PackageVersion Include="System.CommandLine" Version="2.0.6" />
-        <PackageVersion Include="System.Configuration.ConfigurationManager" Version="10.0.6" />
-        <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.6" />
-        <PackageVersion Include="Microsoft.Extensions.Configuration.CommandLine" Version="10.0.6" />
-        <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.6" />
-        <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.6" />
-        <PackageVersion Include="Microsoft.Extensions.Logging.Configuration" Version="10.0.6" />
-        <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.6" />
-        <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.6" />
-        <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.6" />
-        <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.6" />
-        <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.6" />
-        <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.6" />
-        <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.202" />
+        <PackageVersion Include="System.CommandLine" Version="2.0.7" />
+        <PackageVersion Include="System.Configuration.ConfigurationManager" Version="10.0.7" />
+        <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.7" />
+        <PackageVersion Include="Microsoft.Extensions.Configuration.CommandLine" Version="10.0.7" />
+        <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.7" />
+        <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.7" />
+        <PackageVersion Include="Microsoft.Extensions.Logging.Configuration" Version="10.0.7" />
+        <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.7" />
+        <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.7" />
+        <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.7" />
+        <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.7" />
+        <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.7" />
+        <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.7" />
+        <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.203" />
         <PackageVersion Include="MinVer" Version="7.0.0" />
         <!-- The test stack: -->
         <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.6.2" />
@@ -36,7 +36,6 @@
         <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
         <PackageVersion Include="BenchmarkDotNet.Annotations" Version="0.15.8" />
         <!-- Add project-specific packages below this line: -->
-        <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="10.0.6" />
         <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     </ItemGroup>
 </Project>
