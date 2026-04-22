@@ -13,7 +13,7 @@
 - add shared conventions document for vm2 packages and claude [skip ci]
 - diff-shared
 
-## v3.1.0-preview.5 - 2026-04-22
+## v3.1.1-preview.2 - 2026-04-22
 
 ### Internal
 
@@ -24,16 +24,6 @@
 ### deps
 
 - Bump the minor-and-patch group with 2 updates
-
-## v3.1.0-preview.4 - 2026-04-17
-
-### Internal
-
-- promote to stable v3.1.0 [skip ci]
-- update changelog for v3.1.0 [skip ci]
-- add workflow to refresh NuGet lock files
-- update dependencies
-- add pull request template to GitHub folder
 
 ## v3.1.0 - 2026-04-14
 
@@ -103,7 +93,7 @@ See prereleases below.
 
 See prereleases below.
 
-## v3.0.1-preview.2 - 2026-04-10
+## v3.0.2-preview.1 - 2026-04-10
 
 ### Internal
 
