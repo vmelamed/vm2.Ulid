@@ -140,6 +140,7 @@ jobs:
       reason: ${{ needs.get-params.outputs.reason }}
       nuget-server: ${{ needs.get-params.outputs.nuget-server }}
       save-package-artifacts: ${{ fromJson(needs.get-params.outputs.save-package-artifacts) }}
+      sha: ${{ github.event.workflow_run.head_sha || github.sha }}
 
   remind-changelog:
     name: Reminder - review CHANGELOG.md

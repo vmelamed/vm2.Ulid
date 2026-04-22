@@ -232,16 +232,24 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     steps:
+      - name: Setup DevOps environment variables
+        uses: vmelamed/vm2.DevOps/.github/actions/setup-env@main
+
       - name: Evaluate CI result
+        shell: bash
         run: |
           {
               if [[ "${{ needs.prerun-ci.result }}" == "failure" || "${{ needs.prerun-ci.result }}" == "cancelled" ]]; then
-                echo "❌  ERROR: Arguments gathering and preparation failed"
-                exit 1
+                  echo "❌  ERROR: Arguments gathering and preparation failed"
+                  exit 1
               fi
-              if [[ "${{ needs.run-ci.result }}" == "failure" || "${{ needs.run-ci.result }}" == "cancelled" ]]; then
-                echo "❌  ERROR: CI pipeline ${{ needs.run-ci.result }}"
-                exit 1
+              if [[ "${{ needs.run-ci.result }}" == "skipped" ]]; then
+                  echo "⚠️  WARNING: CI was skipped (push to non-main branch with open PR). Prerelease will not be triggered."
+                  echo "              CI skipped (prerun-ci: ${{ needs.prerun-ci.result }}, run-ci: skipped)"
+              elif [[ "${{ needs.run-ci.result }}" == "failure" || "${{ needs.run-ci.result }}" == "cancelled" ]]; then
+                  echo "❌  ERROR: CI pipeline ${{ needs.run-ci.result }}"
+                  exit 1
+              else
+                  echo "✅  INFO: CI completed (prerun-ci: ${{ needs.prerun-ci.result }}, run-ci: ${{ needs.run-ci.result }})"
               fi
-              echo "✅  INFO: CI completed (prerun-ci: ${{ needs.prerun-ci.result }}, run-ci: ${{ needs.run-ci.result }})"
           } >> "$GITHUB_STEP_SUMMARY"
