@@ -17,7 +17,7 @@ body = """{% if tag is defined %}
 See prereleases below.
 
 """
-trim = true
+trim = false
 footer = ""
 
 [git]
