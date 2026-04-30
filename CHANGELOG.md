@@ -1,5 +1,16 @@
 # Changelog
 
+## v3.1.1-preview.6 - 2026-04-30
+
+### Fixed
+
+- correct typos and improve clarity in CONVENTIONS.md
+
+### Internal
+
+- move thge niddle
+- Bump the minor-and-patch group with 1 update
+
 ## v3.1.1-preview.5 - 2026-04-30
 
 ### Internal
