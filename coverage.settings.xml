@@ -13,8 +13,8 @@
         <Sources>
             <Exclude>
                 <!-- Generated code -->
-                <Source>.*\\obj\\.*</Source>
-                <Source>.*\\bin\\.*</Source>
+                <Source>.*[/\\]obj[/\\].*</Source>
+                <Source>.*[/\\]bin[/\\].*</Source>
                 <Source>.*\.g\.cs$</Source>
                 <Source>.*\.g\.i\.cs$</Source>
                 <Source>.*\.Designer\.cs$</Source>
@@ -24,16 +24,16 @@
                 <Source>.*RegexGenerator.*\.cs$</Source>
                 <Source>.*GeneratedRegex.*\.cs$</Source>
                 <Source>.*System\.Text\.RegularExpressions\.Generated.*</Source>
-                <Source>.*\\&lt;RegexGenerator_g&gt;.*</Source>
+                <Source>.*[/\\]&lt;RegexGenerator_g&gt;.*</Source>
 
                 <!-- Compiler-generated -->
-                <Source>.*\\&lt;&gt;c.*\.cs$</Source>
+                <Source>.*[/\\]&lt;&gt;c.*\.cs$</Source>
                 <Source>.*MoveNext.*</Source>
-                <Source>.*\\d__.*\.cs$</Source>
+                <Source>.*[/\\]d__.*\.cs$</Source>
 
                 <!-- Test files -->
-                <Source>.*\\TestUtilities\\.*</Source>
-                <Source>.*\.Tests\\.*</Source>
+                <Source>.*[/\\]TestUtilities[/\\].*</Source>
+                <Source>.*\.Tests[/\\].*</Source>
             </Exclude>
         </Sources>
 
