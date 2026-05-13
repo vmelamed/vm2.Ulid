@@ -1,21 +1,20 @@
 [changelog]
-header = """# Changelog\n\n"""
-body = """{% if tag is defined %}
-{% set current_tag = tag %}
-{% elif version is defined %}
-{% set current_tag = version %}
-{% else %}
-{% set current_tag = "Unreleased" %}
-{% endif %}
-{% if timestamp is defined %}
-{% set current_date = timestamp | date(format="%Y-%m-%d") %}
-{% else %}
-{% set current_date = now() | date(format="%Y-%m-%d") %}
-{% endif %}
+header = """# Changelog\n"""
+body = """{%- if tag is defined -%}
+{%- set current_tag = tag -%}
+{%- elif version is defined -%}
+{%- set current_tag = version -%}
+{%- else -%}
+{%- set current_tag = "Unreleased" -%}
+{%- endif -%}
+{%- if timestamp is defined -%}
+{%- set current_date = timestamp | date(format="%Y-%m-%d") -%}
+{%- else -%}
+{%- set current_date = now() | date(format="%Y-%m-%d") -%}
+{%- endif -%}
 ## {{ current_tag }} - {{ current_date }}
 
 See prereleases below.
-
 """
 trim = false
 footer = ""
