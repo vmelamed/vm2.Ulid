@@ -144,6 +144,7 @@
         <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" />
         <PackageReference Include="xunit.v3.mtp-v2" />
         <PackageReference Include="FluentAssertions" />
+        <PackageReference Include="NSubstitute" />
         <PackageReference Include="vm2.TestUtilities" />
     </ItemGroup>
 
@@ -151,6 +152,7 @@
     <ItemGroup Condition="$(IsTestProject) == 'true'">
         <Using Include="Xunit" />
         <Using Include="FluentAssertions" />
+        <Using Include="NSubstitute" />
     </ItemGroup>
 
     <!-- Copy repo-level test configuration to test output directory -->
@@ -189,8 +191,9 @@
     </PropertyGroup>
 
     <ItemGroup Condition="$(IsTestLibraryProject) == 'true'">
-        <PackageReference Include="FluentAssertions" />
         <PackageReference Include="xunit.v3.extensibility.core" />
+        <PackageReference Include="FluentAssertions" />
+        <PackageReference Include="NSubstitute" />
     </ItemGroup>
 
     <!-- Common usings for test library projects in the ./test folder: -->
@@ -199,6 +202,7 @@
         <Using Include="FluentAssertions" />
         <Using Include="FluentAssertions.Formatting" />
         <Using Include="FluentAssertions.Extensibility" />
+        <Using Include="NSubstitute" />
     </ItemGroup>
 
     <!-- ================ Benchmark Projects Settings ================ -->

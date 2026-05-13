@@ -26,10 +26,11 @@
         <PackageVersion Include="Microsoft.Testing.Extensions.Telemetry" Version="2.2.1" />
         <PackageVersion Include="Microsoft.Testing.Extensions.TrxReport" Version="2.2.1" />
         <PackageVersion Include="Microsoft.Testing.Extensions.TrxReport.Abstractions" Version="2.2.1" />
-        <PackageVersion Include="FluentAssertions" Version="8.9.0" />
         <PackageVersion Include="xunit.v3.mtp-v2" Version="3.2.2" />
         <PackageVersion Include="xunit.v3.extensibility.core" Version="3.2.2" />
         <PackageVersion Include="xunit.v3.runner.inproc" Version="3.2.2" />
+        <PackageVersion Include="FluentAssertions" Version="8.9.0" />
+        <PackageVersion Include="NSubstitute" Version="5.3.0" />
         <PackageVersion Include="vm2.TestUtilities" Version="1.4.6" />
         <!-- Benchmarking packages: -->
         <!-- for running with Visual Studio profiler:<PackageVersion Include="Microsoft.VisualStudio.DiagnosticsHub.BenchmarkDotNetDiagnosers" Version="18.0.36421.1" />-->
