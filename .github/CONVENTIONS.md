@@ -166,6 +166,7 @@ The project owner is a non-native English speaker.
 - **Nullable reference types always enabled**; treat warnings as design feedback.
 - **No static mutable state** unless guarded with **proper encapsulation and synchronization** (prefer `ReaderWriterLockSlim` over `Lock`, `Mutex`, `Event`)
 - **Dependency injection** over service locator
+- Use `System.TimeProvider` (.NET 8 BCL) for time abstraction and `FakeTimeProvider` (from `Microsoft.Extensions.TimeProvider.Testing`) for tests — **never** introduce a homegrown `IClock`-style interface (Val!)
 - Guard clauses at method entry (throw early, no nested pyramids)
 - Pattern matching (`is`, `switch` expressions) over `if`/`else` chains when semantically clearer
 - No curly braces for single-line blocks unless they improve readability
