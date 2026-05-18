@@ -14,3 +14,6 @@ jobs:
       dotnet-version: ${{ vars.DOTNET_VERSION || '10.0.x' }}
     secrets:
       GH_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
+    permissions:
+      contents: write
+      pull-requests: write
