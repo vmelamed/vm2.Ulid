@@ -1,12 +1,5 @@
 # Changelog
 
-
-
-
-
-
-
-
 ## v3.1.1 - 2026-04-30
 
 See prereleases below.
@@ -19,7 +12,7 @@ See prereleases below.
 
 ### Internal
 
-- move thge niddle
+- move the needle
 - Bump the minor-and-patch group with 1 update
 
 ## v3.1.1-preview.5 - 2026-04-30
