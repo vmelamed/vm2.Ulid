@@ -1,5 +1,24 @@
 # Changelog
 
+## v3.2.0-preview.1 - 2026-05-18
+
+### Added
+
+- add telemetry opt-out and first-time experience skip for .NET CLI [skip ci]
+- add NSubstitute package references for testing
+
+### Internal
+
+- promote to stable v3.1.1 [skip ci]
+- update changelog for v3.1.1 [skip ci]
+- sync with diff-shared [skip ci]
+- update dependencies
+- update package versions to 10.0.8 and improve auto-merge workflow documentation
+- update permissions for refresh lockfiles workflow
+- Bump the minor-and-patch group with 15 updates
+- refresh NuGet lock files
+- update dependencies .net sdk 10.0.8
+
 ## v3.1.1 - 2026-04-30
 
 See prereleases below.
