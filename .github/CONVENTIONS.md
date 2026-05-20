@@ -66,6 +66,7 @@ The project owner is a non-native English speaker.
 - Recommend better wording for unclear, passive, or awkward sentences
 - Prefer active voice
 - Explain why a suggested change improves the text
+- When suggesting a correction, add one short sentence that states exactly what changed and why, especially for small edits such as punctuation, articles, or word order.
 - Examples:
   - ❌ "The pattern is being matched by the enumerator"
   - ✅ "The enumerator matches the pattern"
