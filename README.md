@@ -302,8 +302,6 @@ complexity when designing a distributed ULID strategy.
 
 ## Performance
 
-Benchmark results vs similar Guid-generating functions, run on GitHub Actions:
-
 ```text
 BenchmarkDotNet v0.15.8, Linux Ubuntu 24.04.3 LTS (Noble Numbat)
 AMD EPYC 7763 2.61GHz, 1 CPU, 4 logical and 2 physical cores
@@ -330,11 +328,9 @@ Legend:
 - Mean      : Arithmetic mean of all measurements
 - Error     : Half of 99.9% confidence interval
 - StdDev    : Standard deviation of all measurements
-- Ratio     : Mean of the ratio distribution ([Current]/[Baseline])
-- RatioSD   : Standard deviation of the ratio distribution ([Current]/[Baseline])
 - Gen0      : GC Generation 0 collects per 1000 operations
 - Allocated : Allocated memory per single operation (managed only, inclusive, 1KB = 1024B)
-- 1 ns      : 1 Nanosecond (0.000000001 sec)
+- 1 ns      : 1 Nanosecond (0.000000001 or 10^-9 sec)
 
 random number generator on every call, whereas `Ulid.NewUlid` only uses it when the millisecond timestamp changes and if it
 doesn't, it simply increments the random part of the previous call.
