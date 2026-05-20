@@ -1,5 +1,12 @@
 # Changelog
 
+## v4.0.0-preview.2 - 2026-05-20
+
+### Internal
+
+- update performance benchmarks in README.md
+- refine performance section in README.md by removing outdated benchmark details
+
 ## v4.0.0-preview.1 - 2026-05-20
 
 ### Internal
