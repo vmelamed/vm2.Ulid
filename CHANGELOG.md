@@ -1,5 +1,14 @@
 # Changelog
 
+## v3.2.0-preview.2 - 2026-05-20
+
+### Internal
+
+- Bump the minor-and-patch group with 1 update
+- Update package dependencies and add Copilot instructions
+- Update Copilot instructions header to reflect package name change
+- rebuild *.lock.json
+
 ## v3.2.0-preview.1 - 2026-05-18
 
 ### Added
