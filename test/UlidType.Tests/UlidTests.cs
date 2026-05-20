@@ -208,7 +208,7 @@ public partial class UlidTests(ITestOutputHelper output) : TestBase(output)
         (TimeAndRandom last, TimeAndRandom next) data)
     {
         var ulidFactory = new UlidFactory(new Test_IUlidRandomProvider(data.last.Random),
-                                          new Test_IClock(data.last.UnixTime));
+                                          new Test_TimeProvider(data.last.UnixTime));
         var throws = data.next.Throws;
 
         var _ = ulidFactory.NewUlid();

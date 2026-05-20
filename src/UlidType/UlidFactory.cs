@@ -16,10 +16,10 @@ using vm2.Providers;
 /// <b>Hint:</b> you may have more than one factory in your program representing separate sequences of ULID-s. E.g. a factory<br/>
 /// per DB table.
 /// </remarks>
-public sealed class UlidFactory(IUlidRandomProvider? randomProvider = null, IClock? clock = null)
+public sealed class UlidFactory(IUlidRandomProvider? randomProvider = null, TimeProvider? timeProvider = null)
 {
     IUlidRandomProvider _rng = randomProvider ?? new CryptoRandom();
-    IClock _clock = clock ?? new SystemClock();
+    TimeProvider _clock = timeProvider ?? TimeProvider.System;
     byte[] _lastRandom = new byte[RandomLength];
     long _lastTimestamp;
     Lock _lock = new();
@@ -35,7 +35,7 @@ public sealed class UlidFactory(IUlidRandomProvider? randomProvider = null, IClo
     public Ulid NewUlid()
     {
         var randomSpan  = _lastRandom.AsSpan();
-        var timestampNow = _clock.UnixTimeMilliseconds();
+        var timestampNow = _clock.GetUtcNow().ToUnixTimeMilliseconds();
 
         lock (_lock)
         {
