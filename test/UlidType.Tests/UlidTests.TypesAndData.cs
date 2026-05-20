@@ -57,13 +57,14 @@ public partial class UlidTests
         public void Fill(Span<byte> buffer) => _bytes.AsSpan(0, buffer.Length).CopyTo(buffer);
     }
 
-    class Test_IClock : IClock
+    class Test_TimeProvider : TimeProvider
     {
-        private readonly long _unixTimeMilliseconds;
+        private readonly DateTimeOffset _now;
 
-        public Test_IClock(long param) => _unixTimeMilliseconds = param;
+        public Test_TimeProvider(long param)
+            => _now = DateTimeOffset.FromUnixTimeMilliseconds(param);
 
-        public long UnixTimeMilliseconds() => _unixTimeMilliseconds;
+        public override DateTimeOffset GetUtcNow() => _now;
     }
 
 }
