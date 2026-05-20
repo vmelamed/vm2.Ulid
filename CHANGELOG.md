@@ -1,5 +1,13 @@
 # Changelog
 
+## v4.0.0-preview.1 - 2026-05-20
+
+### Internal
+
+- **BREAKING:** replace IClock and SystemClock with TimeProvider
+- update package dependencies to version 10.0.8
+- add Microsoft.Extensions.TimeProvider.Testing package and use FakeTimeProvider
+
 ## v3.2.0-preview.2 - 2026-05-20
 
 ### Internal
