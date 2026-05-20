@@ -315,21 +315,15 @@ Job=ShortRun  IterationCount=3  LaunchCount=1
 WarmupCount=3
 ```
 
-| Type         | Method                  | RandomProviderType | Mean      | Error     | StdDev   | Ratio | RatioSD | Gen0   | Allocated | Alloc Ratio |
-|------------- |------------------------ |------------------- |----------:|----------:|---------:|------:|--------:|-------:|----------:|------------:|
-| UlidToString | Guid.ToString           | ?                  |  17.24 ns |  6.198 ns | 0.340 ns |  1.00 |    0.02 | 0.0057 |      96 B |        1.00 |
-| ParseUlid    | Guid.Parse(string)      | ?                  |  30.29 ns |  3.002 ns | 0.165 ns |  1.76 |    0.03 |      - |         - |        0.00 |
-| UlidToString | Ulid.ToString           | ?                  |  60.26 ns | 18.434 ns | 1.010 ns |  3.50 |    0.08 | 0.0114 |     192 B |        2.00 |
-| ParseUlid    | Ulid.Parse(StringUtf16) | ?                  |  72.48 ns |  8.615 ns | 0.472 ns |  4.20 |    0.07 | 0.0024 |      40 B |        0.42 |
-| ParseUlid    | Ulid.Parse(StringUtf8)  | ?                  |  73.60 ns |  3.424 ns | 0.188 ns |  4.27 |    0.07 | 0.0024 |      40 B |        0.42 |
-|              |                         |                    |           |           |          |       |         |        |           |             |
-| NewUlid      | Factory.NewUlid         | CryptoRandom       |  62.74 ns |  1.768 ns | 0.097 ns |  0.11 |    0.00 | 0.0024 |      40 B |          NA |
-| NewUlid      | Ulid.NewUlid            | CryptoRandom       |  63.09 ns |  7.026 ns | 0.385 ns |  0.11 |    0.00 | 0.0024 |      40 B |          NA |
-| NewUlid      | Guid.NewGuid            | CryptoRandom       | 590.64 ns | 53.067 ns | 2.909 ns |  1.00 |    0.01 |      - |         - |          NA |
-|              |                         |                    |           |           |          |       |         |        |           |             |
-| NewUlid      | Factory.NewUlid         | PseudoRandom       |  63.25 ns |  2.600 ns | 0.142 ns |  0.11 |    0.00 | 0.0024 |      40 B |          NA |
-| NewUlid      | Ulid.NewUlid            | PseudoRandom       |  63.75 ns |  2.418 ns | 0.133 ns |  0.11 |    0.00 | 0.0024 |      40 B |          NA |
-| NewUlid      | Guid.NewGuid            | PseudoRandom       | 592.70 ns | 12.714 ns | 0.697 ns |  1.00 |    0.00 |      - |         - |          NA |
+| Type         | Method                  | RandomProviderType | Mean     | Error    | StdDev   | Gen0   | Allocated |
+|------------- |------------------------ |------------------- |---------:|---------:|---------:|-------:|----------:|
+| ParseUlid    | Ulid.Parse(StringUtf16) | ?                  | 65.91 ns | 0.558 ns | 0.522 ns | 0.0024 |      40 B |
+| UlidToString | Ulid.ToString           | ?                  | 48.28 ns | 0.251 ns | 0.222 ns | 0.0048 |      80 B |
+| ParseUlid    | Ulid.Parse(StringUtf8)  | ?                  | 58.05 ns | 0.315 ns | 0.294 ns | 0.0024 |      40 B |
+| NewUlid      | Ulid.NewUlid            | CryptoRandom       | 66.03 ns | 0.074 ns | 0.066 ns | 0.0024 |      40 B |
+| NewUlid      | Factory.NewUlid         | CryptoRandom       | 65.51 ns | 0.030 ns | 0.025 ns | 0.0024 |      40 B |
+| NewUlid      | Ulid.NewUlid            | PseudoRandom       | 65.26 ns | 0.094 ns | 0.078 ns | 0.0024 |      40 B |
+| NewUlid      | Factory.NewUlid         | PseudoRandom       | 65.55 ns | 0.151 ns | 0.141 ns | 0.0024 |      40 B |
 
 Legend:
 
