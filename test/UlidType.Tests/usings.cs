@@ -2,9 +2,8 @@
 // Copyright (c) 2025-2026 Val Melamed
 
 global using System.Diagnostics.CodeAnalysis;
-global using System.Runtime.Serialization;
 global using System.Text;
-global using System.Text.RegularExpressions;
+global using Microsoft.Extensions.Time.Testing;
 
 global using vm2.TestUtilities;
 

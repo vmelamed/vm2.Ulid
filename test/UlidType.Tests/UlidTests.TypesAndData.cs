@@ -57,7 +57,7 @@ public partial class UlidTests
         public void Fill(Span<byte> buffer) => _bytes.AsSpan(0, buffer.Length).CopyTo(buffer);
     }
 
-    class Test_TimeProvider : TimeProvider
+    class Test_TimeProvider : FakeTimeProvider
     {
         private readonly DateTimeOffset _now;
 

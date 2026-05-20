@@ -279,6 +279,7 @@
 
     <!-- Add repo-specific properties and packages here -->
     <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
         <PackageReference Include="Newtonsoft.Json" />
     </ItemGroup>
 
