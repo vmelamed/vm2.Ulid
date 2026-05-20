@@ -12,7 +12,6 @@
         <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.8" />
         <PackageVersion Include="Microsoft.Extensions.Logging.Configuration" Version="10.0.8" />
         <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.8" />
-        <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.8" />
         <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.8" />
         <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.8" />
         <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.8" />
@@ -36,7 +35,7 @@
         <!-- for running with Visual Studio profiler:<PackageVersion Include="Microsoft.VisualStudio.DiagnosticsHub.BenchmarkDotNetDiagnosers" Version="18.0.36421.1" />-->
         <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
         <PackageVersion Include="BenchmarkDotNet.Annotations" Version="0.15.8" />
-        <!-- Add project-specific packages below this line: -->
+        <!-- Add repo-specific packages below this line: -->
         <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     </ItemGroup>
 </Project>
