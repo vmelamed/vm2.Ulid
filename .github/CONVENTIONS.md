@@ -93,7 +93,7 @@ The project owner is a non-native English speaker.
 - Files that are not shared and should be maintained separately in each repo are not marked
 - These conventions are implemented by the `diff-shared.sh` script, which is used to propagate changes from the source-of-truth files in the template content folder to the target repos. The script can be configured to specify which files are shared and how to handle changes to them. For even more nuanced and flexible control, it defines 6 different actions for handling changes to shared files:
   - **`ignore`**: do not update the target file, keep it as is
-  - **`merge or copy`**: ask the user to choose between ignoring, merging or copying the new content over the existing the new content.
+  - **`merge or copy`**: ask the user to choose between ignoring, merging or copying the new content over the existing new content.
   - **`ask to merge`**: ask the user if they want to merge the new content with the existing file; if they choose not to merge, do not update the target file
   - **`merge`**: open the merge utility without asking the user to merge the new content with the existing file, preserving both the shared content and the repo-specific content
   - **`ask to copy`**: ask the user if they want to copy the new content over the existing file; if they choose not to copy, do not update the target file
