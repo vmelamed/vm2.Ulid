@@ -209,7 +209,7 @@ jobs:
                   exit_code=1
               fi
               if [[ "${{ needs.prerun-ci.outputs.skip-packages }}" == "true" ]]; then
-                  echo "⚠️  WARNING: Building packages were skipped. The CI workflow is marked as failed, but it was intentional to save time. Use this option only for testing non-package CI jobs faster."
+                  echo "⚠️  WARNING: Building packages was skipped. The CI workflow is marked as failed, but it was intentional to save time. Use this option only for testing non-package CI jobs faster."
                   exit_code=1
               fi
 
