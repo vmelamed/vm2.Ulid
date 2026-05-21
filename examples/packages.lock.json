@@ -121,6 +121,12 @@
           "Microsoft.Extensions.Primitives": "10.0.8"
         }
       },
+      "Microsoft.Extensions.TimeProvider.Testing": {
+        "type": "Direct",
+        "requested": "[10.6.0, )",
+        "resolved": "10.6.0",
+        "contentHash": "qQDiaYWpvIymGbu+kXaMDS8YdqfeQkv6DOxPF2GSwC+eSzIKqOOnSP34TYt7gKqvB7p8/aSptexnW6nF0CUdnw=="
+      },
       "Microsoft.NET.ILLink.Tasks": {
         "type": "Direct",
         "requested": "[10.0.8, )",
@@ -272,6 +278,7 @@
           "Microsoft.Extensions.Logging.Configuration": "[10.0.8, )",
           "Microsoft.Extensions.Logging.Console": "[10.0.8, )",
           "Microsoft.Extensions.Options.ConfigurationExtensions": "[10.0.8, )",
+          "Microsoft.Extensions.TimeProvider.Testing": "[10.6.0, )",
           "Newtonsoft.Json": "[13.0.4, )",
           "System.Configuration.ConfigurationManager": "[10.0.8, )"
         }
