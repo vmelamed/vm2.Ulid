@@ -25,7 +25,22 @@ on:
         default: "SHORT_RUN"
 
       reset-benchmark-thresholds:
-        description: Reset Bencher thresholds if degradation is expected.
+        description: Reset Bencher thresholds if performance degradation is expected.
+        type: boolean
+        default: false
+
+      skip-benchmarks:
+        description: If selected, the workflow will skip running benchmark tests and THE CI WORKFLOW WILL BE MARKED AS FAILED. Use only for faster testing of building and other non-benchmark test CI jobs.
+        type: boolean
+        default: false
+
+      skip-tests:
+        description: If selected, the workflow will skip running tests and THE CI WORKFLOW WILL BE MARKED AS FAILED. Use only for faster testing of building and other non-test CI jobs.
+        type: boolean
+        default: false
+
+      skip-packages:
+        description: If selected, the workflow will skip building packages and THE CI WORKFLOW WILL BE MARKED AS FAILED. Use only for faster testing of building and other non-package CI jobs.
         type: boolean
         default: false
 
@@ -88,6 +103,9 @@ jobs:
       minver-tag-prefix: ${{ steps.gather-params.outputs.minver-tag-prefix }}
       minver-prerelease-id: ${{ steps.gather-params.outputs.minver-prerelease-id }}
       reset-benchmark-thresholds: ${{ steps.gather-params.outputs.reset-benchmark-thresholds }}
+      skip-benchmarks: ${{ steps.gather-params.outputs.skip-benchmarks }}
+      skip-tests: ${{ steps.gather-params.outputs.skip-tests }}
+      skip-packages: ${{ steps.gather-params.outputs.skip-packages }}
       skip-push: ${{ steps.gather-params.outputs.skip-push }}
     steps:
       - name: Gather CI inputs
@@ -100,9 +118,6 @@ jobs:
           package-projects: ${{ env.PACKAGE_PROJECTS }}
           runners-os: ${{ env.RUNNERS_OS }}
           preprocessor-symbols: ${{ env.PREPROCESSOR_SYMBOLS }}
-          dispatch-runners-os: ${{ inputs.runners-os }}
-          dispatch-preprocessor-symbols: ${{ inputs.preprocessor-symbols }}
-          dispatch-reset-benchmark-thresholds: ${{ inputs.reset-benchmark-thresholds }}
           dotnet-version: ${{ env.DOTNET_VERSION }}
           configuration: ${{ env.CONFIGURATION }}
           min-coverage-pct: ${{ env.MIN_COVERAGE_PCT }}
@@ -111,6 +126,12 @@ jobs:
           minver-prerelease-id: ${{ env.MINVERDEFAULTPRERELEASEIDENTIFIERS }}
           reset-benchmark-thresholds: ${{ env.RESET_BENCHMARK_THRESHOLDS }}
           verbose: ${{ env.VERBOSE }}
+          dispatch-runners-os: ${{ inputs.runners-os }}
+          dispatch-preprocessor-symbols: ${{ inputs.preprocessor-symbols }}
+          dispatch-reset-benchmark-thresholds: ${{ inputs.reset-benchmark-thresholds }}
+          dispatch-skip-benchmarks: ${{ inputs.skip-benchmarks }}
+          dispatch-skip-tests: ${{ inputs.skip-tests }}
+          dispatch-skip-packages: ${{ inputs.skip-packages }}
 
   run-ci:
     name: "Run CI"
@@ -141,6 +162,9 @@ jobs:
       minver-tag-prefix: ${{ needs.prerun-ci.outputs.minver-tag-prefix }}
       minver-prerelease-id: ${{ needs.prerun-ci.outputs.minver-prerelease-id }}
       reset-benchmark-thresholds: ${{ needs.prerun-ci.outputs.reset-benchmark-thresholds == 'true' }}
+      skip-benchmarks: ${{ needs.prerun-ci.outputs.skip-benchmarks == 'true' }}
+      skip-tests: ${{ needs.prerun-ci.outputs.skip-tests == 'true' }}
+      skip-packages: ${{ needs.prerun-ci.outputs.skip-packages == 'true' }}
 
   # Gate job: single required status check for branch protection.
   # Replaces per-job required checks that break with reusable workflows + matrix (check names include
@@ -173,4 +197,21 @@ jobs:
               else
                   echo "✅  INFO: CI completed (prerun-ci: ${{ needs.prerun-ci.result }}, run-ci: ${{ needs.run-ci.result }})"
               fi
+
+              exit_code=0
+
+              if [[ "${{ needs.prerun-ci.outputs.skip-benchmarks }}" == "true" ]]; then
+                  echo "⚠️  WARNING: Benchmarks were skipped. The CI workflow is marked as failed, but it was intentional to save time. Use this option only for testing non-benchmark CI jobs faster."
+                  exit_code=1
+              fi
+              if [[ "${{ needs.prerun-ci.outputs.skip-tests }}" == "true" ]]; then
+                  echo "⚠️  WARNING: Tests were skipped. The CI workflow is marked as failed, but it was intentional to save time. Use this option only for testing non-test CI jobs faster."
+                  exit_code=1
+              fi
+              if [[ "${{ needs.prerun-ci.outputs.skip-packages }}" == "true" ]]; then
+                  echo "⚠️  WARNING: Building packages were skipped. The CI workflow is marked as failed, but it was intentional to save time. Use this option only for testing non-package CI jobs faster."
+                  exit_code=1
+              fi
+
+              exit $exit_code
           } >> "$GITHUB_STEP_SUMMARY"
