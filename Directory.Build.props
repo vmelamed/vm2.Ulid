@@ -278,7 +278,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <!-- Add repo-specific properties and packages here -->
+        <!-- Add repo-specific package references here -->
         <PackageReference Include="Newtonsoft.Json" />
         <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
     </ItemGroup>
