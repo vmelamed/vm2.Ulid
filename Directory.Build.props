@@ -1,4 +1,35 @@
 <Project>
+    <!-- ====== The following properties detect a project's role based on its directory path and naming conventions. ======= -->
+    <PropertyGroup>
+        <!-- Property to be used in conditions for detecting the solution's main product projects -->
+        <IsProductProject Condition="
+            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]src[/\\]', RegexOptions.IgnoreCase)) AND
+            !$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectName), '.*\.Tests$', RegexOptions.IgnoreCase))
+            ">true</IsProductProject>
+
+        <!-- Property to be used in conditions for detecting test projects -->
+        <IsTestProject Condition="
+            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]tests?[/\\]', RegexOptions.IgnoreCase)) AND
+            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectName), '.*\.Tests$', RegexOptions.IgnoreCase))
+            ">true</IsTestProject>
+
+        <!-- Property to be used in conditions for detecting test library projects (test utilities, test extensions, etc.) -->
+        <IsTestLibraryProject Condition="
+            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]tests?[/\\]', RegexOptions.IgnoreCase)) AND
+            !$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectName), '.*\.Tests$', RegexOptions.IgnoreCase))
+            ">true</IsTestLibraryProject>
+
+        <!-- Property to be used in conditions for detecting benchmark tests -->
+        <IsInBenchmarksFolder Condition="
+            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]benchmarks?[/\\]', RegexOptions.IgnoreCase))
+            ">true</IsInBenchmarksFolder>
+
+        <!-- Property to be used in conditions for detecting example usage projects -->
+        <IsInExamplesFolder Condition="
+            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]examples?[/\\]', RegexOptions.IgnoreCase))
+            ">true</IsInExamplesFolder>
+    </PropertyGroup>
+
     <PropertyGroup>
         <GITHUB_RUN_NUMBER Condition="'$(GITHUB_RUN_NUMBER)' == ''">0</GITHUB_RUN_NUMBER>
 
@@ -8,7 +39,8 @@
 
         <!-- Use to define custom preprocessor symbols as a semicolon-separated list, e.g. dotnet build -p:preprocessor_symbols="SHORT_RUN;FEATURE_A;FEATURE_B"
              without overriding the rest of the symbols like DEBUG, TRACE, etc. -->
-        <DefineConstants Condition="'$([System.String]::IsNullOrWhiteSpace($(preprocessor_symbols)))' != 'true'">$(preprocessor_symbols);$(DefineConstants)</DefineConstants>
+        <DefineConstants Condition="'$([System.String]::IsNullOrWhiteSpace($(preprocessor_symbols)))' != 'true'
+            ">$(preprocessor_symbols);$(DefineConstants)</DefineConstants>
 
         <RepoRoot>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'Directory.Build.props'))</RepoRoot>
     </PropertyGroup>
@@ -27,9 +59,6 @@
         <NoWarn>$(NoWarn);IDE0058;IDE0290;IDE0130;</NoWarn>
         <Deterministic>true</Deterministic>
         <DebugType>portable</DebugType>
-        <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
-        <IsTrimmable>true</IsTrimmable>
-        <TieredPGO>true</TieredPGO>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
         <RestoreLockedMode Condition="'$(CI)' == 'true'">true</RestoreLockedMode>
@@ -47,8 +76,17 @@
         <DOTNET_SKIP_FIRST_TIME_EXPERIENCE>true</DOTNET_SKIP_FIRST_TIME_EXPERIENCE>
     </PropertyGroup>
 
+    <!-- The following group builds the product project(s) as AOT compatible and enforces verification of the dependencies AOT compatibility
+         unless the user or the project explicitly defines it as incompatible, e.g. with <IsAotCompatible>false</IsAotCompatible> -->
+    <PropertyGroup Label="AoT" Condition="
+        '$(IsProductProject)' == 'true' AND
+        '$(IsAotCompatible)' != 'false'">
+        <IsAotCompatible>true</IsAotCompatible>
+        <VerifyReferenceAotCompatibility>true</VerifyReferenceAotCompatibility>
+    </PropertyGroup>
+
     <!-- ================ Package properties for all vm2 packages ================ -->
-    <PropertyGroup Label="NuGetCommon">
+    <PropertyGroup Label="NuGetCommon" Condition="'$(IsProductProject)' == 'true'">
         <IsPackable>true</IsPackable>
         <Company>vm</Company>
         <Product>vm2</Product>
@@ -103,20 +141,9 @@
           FluentAssertions
       For *.Tests projects in the ./test folder:
     -->
-    <!-- ================ Property to be used in condition attributes for detecting test projects ================ -->
-    <PropertyGroup>
-        <IsTestProject Condition="
-            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]tests?[/\\]', RegexOptions.IgnoreCase))
-            AND
-            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectName), '.*\.Tests$', RegexOptions.IgnoreCase))
-            ">true</IsTestProject>
-    </PropertyGroup>
-
     <PropertyGroup Condition="$(IsTestProject) == 'true'">
         <!-- Test projects settings -->
         <OutputType>Exe</OutputType>
-        <IsPackable>false</IsPackable>
-        <IncludeSymbols>False</IncludeSymbols>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <NoWarn>
             $(NoWarn);
@@ -131,10 +158,12 @@
              TestingPlatformServer/TestContainer capabilities, causing an infinite project
              reload loop (Solution Explorer flickering).  Disabling the server capability
              stops the loop.  Tests still run from CLI and VS Build+Run (Ctrl+R,A). -->
-        <DisableTestingPlatformServerCapability Condition="'$(BuildingInsideVisualStudio)' == 'true'">true</DisableTestingPlatformServerCapability>
+        <DisableTestingPlatformServerCapability Condition="'$(BuildingInsideVisualStudio)' == 'true'
+            ">true</DisableTestingPlatformServerCapability>
 
         <!-- MTP v2: Configure coverage with coverage.settings.xml (only outside VS — VS has its own coverage tools) -->
-        <TestingPlatformCommandLineArguments Condition="'$(BuildingInsideVisualStudio)' != 'true'">$(TestingPlatformCommandLineArguments) --coverage --coverage-output-format cobertura --coverage-settings "$(RepoRoot)coverage.settings.xml"</TestingPlatformCommandLineArguments>
+        <TestingPlatformCommandLineArguments Condition="'$(BuildingInsideVisualStudio)' != 'true'
+            ">$(TestingPlatformCommandLineArguments) --coverage --coverage-output-format cobertura --coverage-settings "$(RepoRoot)coverage.settings.xml"</TestingPlatformCommandLineArguments>
     </PropertyGroup>
 
     <ItemGroup Condition="$(IsTestProject) == 'true'">
@@ -168,15 +197,6 @@
           FluentAssertions
       For non-test projects in the ./test folder (utilities, extensions, etc.):
     -->
-    <!-- ================ Property to be used in condition attributes for detecting test library projects (utilities, extensions, etc.) ================ -->
-    <PropertyGroup>
-        <IsTestLibraryProject Condition="
-            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]tests?[/\\]', RegexOptions.IgnoreCase))
-            AND
-            !$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectName), '.*\.Tests$', RegexOptions.IgnoreCase))
-            ">true</IsTestLibraryProject>
-    </PropertyGroup>
-
     <PropertyGroup Condition="$(IsTestLibraryProject) == 'true'">
         <!-- Test libraries projects settings -->
         <IsPackable>false</IsPackable>
@@ -208,18 +228,9 @@
     <!-- Stack:
           BenchmarkDotNet
     -->
-    <!-- ================ Property to be used in conditions about benchmarks ================ -->
-    <PropertyGroup>
-        <IsInBenchmarksFolder Condition="
-            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]benchmarks?[/\\]', RegexOptions.IgnoreCase))
-            ">true</IsInBenchmarksFolder>
-    </PropertyGroup>
-
     <PropertyGroup Condition="$(IsInBenchmarksFolder) == 'true'">
         <!-- Benchmark projects settings -->
         <OutputType>Exe</OutputType>
-        <IsPackable>false</IsPackable>
-        <IncludeSymbols>False</IncludeSymbols>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <NoWarn>
             $(NoWarn);
@@ -247,9 +258,7 @@
 
     <PropertyGroup>
         <DefineConstants Condition="
-            $(IsInBenchmarksFolder) == 'true'
-            AND
-            '$(CI)' != 'true'
+            $(IsInBenchmarksFolder) == 'true' AND '$(CI)' != 'true'
             ">$(DefineConstants);SHORT_RUN</DefineConstants>
     </PropertyGroup>
 
@@ -264,23 +273,14 @@
     </ItemGroup>
 
     <!-- settings for example projects in the ./examples folder: -->
-    <!-- ================ Property to be used in conditions about examples projects ================ -->
-    <PropertyGroup>
-        <IsInExamplesFolder Condition="
-            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]examples?[/\\]', RegexOptions.IgnoreCase))
-            ">true</IsInExamplesFolder>
-    </PropertyGroup>
-
     <PropertyGroup Condition="$(IsInExamplesFolder) == 'true'">
         <!-- Example projects settings -->
-        <IsPackable>false</IsPackable>
-        <GenerateDocumentationFile>false</GenerateDocumentationFile>
     </PropertyGroup>
 
-    <!-- Add repo-specific properties and packages here -->
     <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+        <!-- Add repo-specific properties and packages here -->
         <PackageReference Include="Newtonsoft.Json" />
+        <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
     </ItemGroup>
 
 </Project>
