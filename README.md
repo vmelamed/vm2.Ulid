@@ -278,8 +278,7 @@ You can also provide your own, thread-safe implementation of `vm2.IRandomNumberG
 
 #### Timestamp Provider (`System.TimeProvider`)
 
-By default, the timestamp provider uses `System.TimeProvider.System.GetUtcNow().ToUnixTimeMilliseconds()` converted to Unix epoch time in milliseconds. If you need a different source of time, e.g. for testing purposes, you can override the .NET BCL class `System.TimeProvider` or for testing purposes `System.FakeTimeProvider` to provide your own implementation.
-factory.
+By default, the timestamp provider uses `System.TimeProvider.System.GetUtcNow().ToUnixTimeMilliseconds()` converted to Unix epoch time in milliseconds. If you need a different source of time, e.g. for testing purposes, you can use `Microsoft.Extensions.Time.Testing.FakeTimeProvider` (package `Microsoft.Extensions.TimeProvider.Testing`) or provide your own implementation that overrides the .NET BCL class `System.TimeProvider` and pass that to the factory.
 
 #### Serialization
 
