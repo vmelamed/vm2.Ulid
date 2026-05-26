@@ -1,7 +1,12 @@
 ﻿// SPDX-License-Identifier: MIT
 // Copyright (c) 2025-2026 Val Melamed
 
-namespace vm2.UlidType.Tests.NsJson;
+namespace vm2.Tests.Ulid.NsJson;
+
+using Newtonsoft.Json;
+
+using vm2;
+using vm2.Serialization.NsJson;
 
 [ExcludeFromCodeCoverage]
 public class UlidNsConverterTests : TestBase
@@ -11,7 +16,7 @@ public class UlidNsConverterTests : TestBase
     public UlidNsConverterTests(ITestOutputHelper output) : base(output)
     {
         _settings = new JsonSerializerSettings();
-        _settings.Converters.Add(new UlidNsConverter());
+        _settings.Converters.Add(new UlidConverter());
     }
 
     class Subject
@@ -39,7 +44,7 @@ public class UlidNsConverterTests : TestBase
     [Fact]
     public void Test_CanConvert_Returns_True_For_Ulid_And_Nullable_Ulid()
     {
-        var sut = new UlidNsConverter();
+        var sut = new UlidConverter();
 
         sut.CanConvert(typeof(Ulid)).Should().BeTrue();
         sut.CanConvert(typeof(Ulid?)).Should().BeTrue();

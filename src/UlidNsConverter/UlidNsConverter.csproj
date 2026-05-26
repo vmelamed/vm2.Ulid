@@ -1,13 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <RootNamespace>vm2.UlidSerialization.NsJson</RootNamespace>
+        <RootNamespace>vm2.Serialization.NsJson</RootNamespace>
+        <AssemblyName>vm2.Ulid.Serialization.NsJson</AssemblyName>
         <IsAotCompatible>false</IsAotCompatible>
         <VerifyReferenceAotCompatibility>false</VerifyReferenceAotCompatibility>
     </PropertyGroup>
 
     <PropertyGroup Label="NuGet">
-        <PackageId>vm2.UlidSerialization.NsJson</PackageId>
+        <PackageId>vm2.Ulid.Serialization.NsJson</PackageId>
         <Title>Companion package: Newtonsoft.Json converter for vm2.Ulid</Title>
         <Description>Provides a Newtonsoft.Json converter for the ULID-s from vm2.Ulid.</Description>
         <PackageTags>ULID Universally Unique Lexicographically Sortable Identifier .net core vm2 Newtonsoft JSON converter</PackageTags>

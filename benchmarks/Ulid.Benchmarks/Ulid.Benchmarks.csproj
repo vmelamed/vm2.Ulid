@@ -1,6 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
     <PropertyGroup>
-        <RootNamespace>vm2.UlidType.Benchmark</RootNamespace>
+        <RootNamespace>vm2.Benchmarks.Ulid</RootNamespace>
+        <AssemblyName>vm2.Ulid.Benchmarks</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>

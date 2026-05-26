@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025-2026 Val Melamed
 
-namespace vm2.UlidTool.Tests;
+namespace vm2.Tests.UlidTool;
 
 public sealed class UlidToolAppTests(ITestOutputHelper output) : TestBase(output)
 {
@@ -12,7 +12,7 @@ public sealed class UlidToolAppTests(ITestOutputHelper output) : TestBase(output
     {
         using var writer = new StringWriter();
 
-        var exitCode = UlidToolApp.Run(Array.Empty<string>(), writer);
+        var exitCode = global::UlidToolApp.Run(Array.Empty<string>(), writer);
 
         exitCode.Should().Be(0);
         var lines = GetNonEmptyLines(writer.ToString());

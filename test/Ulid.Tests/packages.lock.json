@@ -207,7 +207,7 @@
           "Microsoft.Extensions.TimeProvider.Testing": "[10.6.0, )"
         }
       },
-      "vm2.UlidSerialization.NsJson": {
+      "vm2.Ulid.Serialization.NsJson": {
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.TimeProvider.Testing": "[10.6.0, )",

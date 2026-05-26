@@ -1,7 +1,7 @@
 ﻿// SPDX-License-Identifier: MIT
 // Copyright (c) 2025-2026 Val Melamed
 
-namespace vm2.UlidType.Tests;
+namespace vm2.Tests.Ulid;
 
 public partial class UlidTests
 {

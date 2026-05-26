@@ -6,13 +6,10 @@ global using System.Text;
 
 global using Microsoft.Extensions.Time.Testing;
 
-global using Newtonsoft.Json;
-
 global using Xunit.Sdk;
 
 global using vm2.TestUtilities;
 global using vm2.Providers;
-global using vm2.UlidSerialization.NsJson;
 
 global using static vm2.TestUtilities.TestUtilities;
 global using static vm2.Ulid;

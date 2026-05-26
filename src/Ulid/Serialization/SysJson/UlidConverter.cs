@@ -1,9 +1,7 @@
 ﻿// SPDX-License-Identifier: MIT
 // Copyright (c) 2025-2026 Val Melamed
 
-namespace vm2.UlidSerialization.SysJson;
-
-using System.Text.Json.Serialization;
+namespace vm2.Serialization.SysJson;
 
 /// <summary>
 /// Provides functionality to convert <see cref="Ulid"/> values to and from JSON format.
@@ -14,7 +12,7 @@ using System.Text.Json.Serialization;
 /// <see cref="Ulid"/> instances are correctly represented as strings in JSON and parsed back into <see cref="Ulid"/> objects
 /// during deserialization.
 /// </remarks>
-public class UlidSysConverter : JsonConverter<Ulid>
+public class UlidConverter : JsonConverter<Ulid>
 {
     /// <summary>
     /// Writes the specified <see cref="Ulid"/> value as a raw JSON string using the provided <see cref="Utf8JsonWriter"/>.
