@@ -6,11 +6,12 @@ namespace vm2.UlidType.Tests.NsJson;
 [ExcludeFromCodeCoverage]
 public class UlidNsConverterTests : TestBase
 {
+    JsonSerializerSettings _settings;
+
     public UlidNsConverterTests(ITestOutputHelper output) : base(output)
     {
-        var settings = new JsonSerializerSettings();
+        _settings = new JsonSerializerSettings();
         settings.Converters.Add(new UlidNsConverter());
-        JsonConvert.DefaultSettings = () => settings;
     }
 
 
@@ -54,7 +55,7 @@ public class UlidNsConverterTests : TestBase
     {
         var sut = new Subject("01K5N2TW3MA38KG6D7WNFDPAKS");
 
-        var json = JsonConvert.SerializeObject(sut);
+        var json = JsonConvert.SerializeObject(sut, _settings);
 
         json.Should().Contain(sut?.Id?.ToString());
     }
@@ -65,7 +66,7 @@ public class UlidNsConverterTests : TestBase
         var ulid = new Ulid("01K5N3A2GJYH10NGHHTWQR4VBP");
         var json = $@"{{ ""Id"": ""{ulid}"" }}";
 
-        var deserialize = () => JsonConvert.DeserializeObject<Subject>(json);
+        var deserialize = () => JsonConvert.DeserializeObject<Subject>(json, _settings);
 
         var sut = deserialize.Should().NotThrow().Which;
         sut.Id.Should().Be(ulid);
@@ -76,7 +77,7 @@ public class UlidNsConverterTests : TestBase
     {
         var sut = new Subject();
 
-        var json = JsonConvert.SerializeObject(sut);
+        var json = JsonConvert.SerializeObject(sut, _settings);
 
         json.Should().Be(@"{""Id"":null}");
     }
@@ -86,7 +87,7 @@ public class UlidNsConverterTests : TestBase
     {
         var json = $@"{{ ""Id"":null}}";
 
-        var deserialize = () => JsonConvert.DeserializeObject<Subject>(json);
+        var deserialize = () => JsonConvert.DeserializeObject<Subject>(json, _settings);
 
         var sut = deserialize.Should().NotThrow().Which;
         sut.Id.Should().BeNull();
@@ -97,7 +98,7 @@ public class UlidNsConverterTests : TestBase
     {
         var sut = new Subject1("01K5N2TW3MA38KG6D7WNFDPAKS");
 
-        var json = JsonConvert.SerializeObject(sut);
+        var json = JsonConvert.SerializeObject(sut, _settings);
 
         json.Should().Contain(sut?.Id.ToString());
     }
@@ -108,7 +109,7 @@ public class UlidNsConverterTests : TestBase
         var ulid = new Ulid("01K5N3A2GJYH10NGHHTWQR4VBP");
         var json = $@"{{ ""Id"": ""{ulid}"" }}";
 
-        var deserialize = () => JsonConvert.DeserializeObject<Subject1>(json);
+        var deserialize = () => JsonConvert.DeserializeObject<Subject1>(json, _settings);
 
         var sut = deserialize.Should().NotThrow().Which;
         sut.Id.Should().Be(ulid);
@@ -119,7 +120,7 @@ public class UlidNsConverterTests : TestBase
     {
         var json = @"{ ""Id"": ""U1K5N3A2GJYH10NGHHTWQR4VBP"" }";
 
-        var deserialize = () => JsonConvert.DeserializeObject<Subject1>(json);
+        var deserialize = () => JsonConvert.DeserializeObject<Subject1>(json, _settings);
 
         deserialize.Should().Throw<JsonReaderException>();
     }
@@ -130,7 +131,7 @@ public class UlidNsConverterTests : TestBase
         var ulid = new Ulid("01K5N3A2GJYH10NGHHTWQR4VBP");
         var json = $@"{{ ""Id"": ""$%^&{ulid}"" }}";
 
-        var deserialize = () => JsonConvert.DeserializeObject<Subject>(json);
+        var deserialize = () => JsonConvert.DeserializeObject<Subject>(json, _settings);
 
         deserialize.Should().Throw<JsonReaderException>();
     }
