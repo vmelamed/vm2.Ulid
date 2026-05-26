@@ -11,7 +11,7 @@ namespace vm2;
 /// order. This struct provides methods for creating, parsing, and manipulating ULIDs, as well as converting them to other formats<br/>
 /// such as strings or GUIDs. ULIDs are commonly used in distributed systems where unique, sortable identifiers are required.
 /// </remarks>
-[System.Text.Json.Serialization.JsonConverter(typeof(UlidSysConverter))]
+[JsonConverter(typeof(UlidConverter))]
 public readonly partial struct Ulid :
     IEquatable<Ulid>,
     IComparable<Ulid>,

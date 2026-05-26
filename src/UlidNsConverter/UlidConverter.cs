@@ -1,7 +1,7 @@
 ﻿// SPDX-License-Identifier: MIT
 // Copyright (c) 2025-2026 Val Melamed
 
-namespace vm2.UlidSerialization.NsJson;
+namespace vm2.Serialization.NsJson;
 
 using Newtonsoft.Json;
 
@@ -12,7 +12,7 @@ using Newtonsoft.Json;
 /// <remarks>This converter is used to serialize and deserialize <see cref="Ulid"/> values in JSON format. It
 /// ensures that <see cref="Ulid"/> instances are correctly represented as strings in JSON and parsed back into <see
 /// cref="Ulid"/> objects during deserialization.</remarks>
-public class UlidNsConverter : JsonConverter
+public class UlidConverter : JsonConverter
 {
     /// <summary>
     /// Determines whether the specified type can be converted to or from a <see cref="Ulid"/>.

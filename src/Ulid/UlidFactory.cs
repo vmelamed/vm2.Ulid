@@ -3,8 +3,6 @@
 
 namespace vm2;
 
-using vm2.Providers;
-
 /// <summary>
 /// Provides functionality to generate unique lexicographically sortable identifiers (ULIDs).
 /// </summary>

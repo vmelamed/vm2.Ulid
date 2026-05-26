@@ -37,6 +37,7 @@
     </Folder>
     <Folder Name="/src/">
         <Project Path="src/Ulid/Ulid.csproj" />
+        <Project Path="src/UlidNsConverter/UlidNsConverter.csproj" />
         <Project Path="src/UlidTool/UlidTool.csproj" />
     </Folder>
     <Folder Name="/test/">

@@ -3,6 +3,7 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <RootNamespace>vm2.UlidTool</RootNamespace>
+        <AssemblyName>vm2.UlidTool</AssemblyName>
         <IsAotCompatible>false</IsAotCompatible>
         <VerifyReferenceAotCompatibility>false</VerifyReferenceAotCompatibility>
         <PackAsTool>true</PackAsTool>
@@ -29,7 +30,7 @@
 
     <ItemGroup>
         <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-            <_Parameter1>UlidTool.Tests</_Parameter1>
+            <_Parameter1>vm2.UlidTool.Tests</_Parameter1>
         </AssemblyAttribute>
     </ItemGroup>
 

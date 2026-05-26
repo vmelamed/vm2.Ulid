@@ -4,6 +4,7 @@
 // Copyright (c) 2025-2026 Val Melamed
 
 #:property TargetFramework=net10.0
+#:property CopyLocalLockFileAssemblies=true
 #:project ../src/Ulid/Ulid.csproj
 
 using static System.Console;
