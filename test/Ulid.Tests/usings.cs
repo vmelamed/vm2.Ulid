@@ -3,8 +3,12 @@
 
 global using System.Diagnostics.CodeAnalysis;
 global using System.Text;
+
 global using Microsoft.Extensions.Time.Testing;
+
 global using Newtonsoft.Json;
+
+global using Xunit.Sdk;
 
 global using vm2.TestUtilities;
 global using vm2.Providers;

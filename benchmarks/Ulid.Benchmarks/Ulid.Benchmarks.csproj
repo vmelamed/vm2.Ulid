@@ -4,7 +4,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\UlidType\UlidType.csproj" />
+        <ProjectReference Include="..\..\src\Ulid\Ulid.csproj" />
     </ItemGroup>
 
     <ItemGroup>

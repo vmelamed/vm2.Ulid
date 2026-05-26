@@ -3,8 +3,6 @@
 
 namespace vm2.UlidType.Tests;
 
-using Xunit.Sdk;
-
 public partial class UlidTests
 {
     public partial record TimeAndRandom(string testFileLine, long unixTime, byte[] random, bool throws = false) : IXunitSerializable

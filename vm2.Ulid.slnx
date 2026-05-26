@@ -11,7 +11,7 @@
         <File Path=".github/workflows/Release.yaml" />
     </Folder>
     <Folder Name="/benchmarks/">
-        <Project Path="benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj" />
+        <Project Path="benchmarks/Ulid.Benchmarks/Ulid.Benchmarks.csproj" />
     </Folder>
     <Folder Name="/changelog/">
         <File Path="changelog/cliff.prerelease.toml" />
@@ -36,11 +36,11 @@
         <File Path="testconfig.json" />
     </Folder>
     <Folder Name="/src/">
-        <Project Path="src/UlidType/UlidType.csproj" />
+        <Project Path="src/Ulid/Ulid.csproj" />
         <Project Path="src/UlidTool/UlidTool.csproj" />
     </Folder>
     <Folder Name="/test/">
-        <Project Path="test/UlidType.Tests/UlidType.Tests.csproj" />
+        <Project Path="test/Ulid.Tests/Ulid.Tests.csproj" />
         <Project Path="test/UlidTool.Tests/UlidTool.Tests.csproj" />
     </Folder>
 </Solution>

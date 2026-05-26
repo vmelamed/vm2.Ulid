@@ -5,7 +5,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="../../src/UlidType/UlidType.csproj" />
+        <ProjectReference Include="../../src/Ulid/Ulid.csproj" />
         <ProjectReference Include="../../src/UlidNsConverter/UlidNsConverter.csproj" />
     </ItemGroup>
 

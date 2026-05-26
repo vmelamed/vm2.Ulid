@@ -56,16 +56,16 @@ env:
     ]
   TEST_PROJECTS: >-
     [
-    "test/UlidType.Tests/UlidType.Tests.csproj",
+    "test/Ulid.Tests/Ulid.Tests.csproj",
     "test/UlidTool.Tests/UlidTool.Tests.csproj"
     ]
   BENCHMARK_PROJECTS: >-
     [
-    "benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj"
+    "benchmarks/Ulid.Benchmarks/Ulid.Benchmarks.csproj"
     ]
   PACKAGE_PROJECTS: >-
     [
-    "src/UlidType/UlidType.csproj",
+    "src/Ulid/Ulid.csproj",
     "src/UlidNsConverter/UlidNsConverter.csproj",
     "src/UlidTool/UlidTool.csproj"
     ]
