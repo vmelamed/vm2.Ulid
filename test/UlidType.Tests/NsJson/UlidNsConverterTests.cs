@@ -11,9 +11,8 @@ public class UlidNsConverterTests : TestBase
     public UlidNsConverterTests(ITestOutputHelper output) : base(output)
     {
         _settings = new JsonSerializerSettings();
-        settings.Converters.Add(new UlidNsConverter());
+        _settings.Converters.Add(new UlidNsConverter());
     }
-
 
     class Subject
     {
