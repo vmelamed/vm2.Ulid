@@ -3,13 +3,16 @@
 
 namespace vm2.UlidType.Tests.NsJson;
 
-using Newtonsoft.Json;
-
-using vm2.UlidSerialization.NsJson;
-
 [ExcludeFromCodeCoverage]
-public class UlidNsConverterTests
+public class UlidNsConverterTests : TestBase
 {
+    public UlidNsConverterTests(ITestOutputHelper output) : base(output)
+    {
+        var settings = new JsonSerializerSettings();
+        settings.Converters.Add(new UlidNsConverter());
+        JsonConvert.DefaultSettings = () => settings;
+    }
+
 
     class Subject
     {
@@ -47,7 +50,6 @@ public class UlidNsConverterTests
     // This disables type name handling, which is the main source of reflection in Newtonsoft.Json.
 
     [Fact]
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "<Pending>")]
     public void Test_NotNull_Ulid_Serializes_To_Json_With_Newtonsoft_Json()
     {
         var sut = new Subject("01K5N2TW3MA38KG6D7WNFDPAKS");
@@ -58,7 +60,6 @@ public class UlidNsConverterTests
     }
 
     [Fact]
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "<Pending>")]
     public void Test_NotNull_Ulid_Deserializes_From_Json_With_Newtonsoft_Json()
     {
         var ulid = new Ulid("01K5N3A2GJYH10NGHHTWQR4VBP");
@@ -71,7 +72,6 @@ public class UlidNsConverterTests
     }
 
     [Fact]
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "<Pending>")]
     public void Test_Null_Ulid_Serializes_To_Json_With_Newtonsoft_Json()
     {
         var sut = new Subject();
@@ -82,7 +82,6 @@ public class UlidNsConverterTests
     }
 
     [Fact]
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "<Pending>")]
     public void Test_Null_Ulid_Deserializes_From_Json_With_Newtonsoft_Json()
     {
         var json = $@"{{ ""Id"":null}}";
@@ -94,7 +93,6 @@ public class UlidNsConverterTests
     }
 
     [Fact]
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "<Pending>")]
     public void Test_Ulid_Serializes_To_Json_With_Newtonsoft_Json()
     {
         var sut = new Subject1("01K5N2TW3MA38KG6D7WNFDPAKS");
@@ -105,7 +103,6 @@ public class UlidNsConverterTests
     }
 
     [Fact]
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "<Pending>")]
     public void Test_Ulid_Deserializes_From_Json_With_Newtonsoft_Json()
     {
         var ulid = new Ulid("01K5N3A2GJYH10NGHHTWQR4VBP");
@@ -118,7 +115,6 @@ public class UlidNsConverterTests
     }
 
     [Fact]
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "<Pending>")]
     public void Test_Ulid_Deserializes_InvalidUlid_Throws()
     {
         var json = @"{ ""Id"": ""U1K5N3A2GJYH10NGHHTWQR4VBP"" }";
@@ -129,7 +125,6 @@ public class UlidNsConverterTests
     }
 
     [Fact]
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "<Pending>")]
     public void Test_NotNull_BadString_Ulid_Deserializes_From_Json_With_Newtonsoft_Json()
     {
         var ulid = new Ulid("01K5N3A2GJYH10NGHHTWQR4VBP");
@@ -139,5 +134,4 @@ public class UlidNsConverterTests
 
         deserialize.Should().Throw<JsonReaderException>();
     }
-
 }

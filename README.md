@@ -25,16 +25,17 @@
   - [Why Do I Need `UlidFactory`?](#why-do-i-need-ulidfactory)
     - [The `vm2.UlidFactory` Class](#the-vm2ulidfactory-class)
       - [Randomness Provider (`vm2.IRandomNumberGenerator`)](#randomness-provider-vm2irandomnumbergenerator)
-      - [Timestamp Provider (`vm2.ITimestampProvider`)](#timestamp-provider-vm2itimestampprovider)
+      - [Timestamp Provider (`System.TimeProvider`)](#timestamp-provider-systemtimeprovider)
+      - [Serialization](#serialization)
     - [The `UlidFactory` in a Distributed System](#the-ulidfactory-in-a-distributed-system)
   - [Performance](#performance)
-  - [Related Packages](#related-packages)
+  - [Related Documents and Packages](#related-documents-and-packages)
   - [License](#license)
 
 <!-- /TOC -->
 ## Overview
 
-A small, fast, and spec-compliant .NET package that implements
+A small, fast, AoT ready, and **spec-compliant** .NET package that implements
 [Universally Unique Lexicographically Sortable Identifier (ULID)](https://github.com/ulid/spec).
 
 ULIDs combine a 48-bit timestamp (milliseconds since Unix epoch) with 80 bits of randomness, producing compact 128-bit
@@ -257,16 +258,15 @@ generating a new random value.
 ### The `vm2.UlidFactory` Class
 
 The `vm2.UlidFactory` class encapsulates the requirements and exposes a simple interface for generating ULIDs. Use multiple
-`vm2.UlidFactory` instances when needed, e.g. one per database table or entity type.
+`vm2.UlidFactory` instances when needed, e.g. one per aggregate root or database table.
 
-ULID factories are thread-safe and ensure monotonicity of generated ULIDs across application contexts.
-The factory uses two providers: one for the random bytes and one for the timestamp.
+ULID factories are thread-safe and ensure monotonicity of generated ULIDs across application contexts. The factory uses two providers: one for the random bytes and one for the timestamp.
 
 Use dependency injection to construct the factory and manage the providers. DI keeps the provider lifetimes explicit, makes
 testing simple, and enforces a single, consistent configuration across the app or service.
 
 In simple scenarios, use the static method `vm2.Ulid.NewUlid()` instead of `vm2.UlidFactory`. It uses an internal single static
-factory instance with a cryptographic random number generator and `DateTimeOffset.UtcNow` based clock.
+factory instance with a cryptographic random number generator and a clock based on `System.TimeProvider.System.GetUtcNow().ToUnixTimeMilliseconds()`.
 
 #### Randomness Provider (`vm2.IRandomNumberGenerator`)
 
@@ -276,11 +276,17 @@ e.g. for testing purposes, for performance reasons, or if you are concerned abou
 can explicitly specify that the factory should use the pseudo-random number generator `vm2.UlidRandomProviders.PseudoRandom`.
 You can also provide your own, thread-safe implementation of `vm2.IRandomNumberGenerator` to the factory.
 
-#### Timestamp Provider (`vm2.ITimestampProvider`)
+#### Timestamp Provider (`System.TimeProvider`)
 
-By default, the timestamp provider uses `DateTimeOffset.UtcNow` converted to Unix epoch time in milliseconds. If you need a
-different source of time, e.g. for testing purposes, you can provide your own implementation of `vm2.ITimestampProvider` to the
+By default, the timestamp provider uses `System.TimeProvider.System.GetUtcNow().ToUnixTimeMilliseconds()` converted to Unix epoch time in milliseconds. If you need a different source of time, e.g. for testing purposes, you can override the .NET BCL class `System.TimeProvider` or for testing purposes `System.FakeTimeProvider` to provide your own implementation.
 factory.
+
+#### Serialization
+
+The `vm2.Ulid` type is marked with the `System.Text.Json.Serialization.JsonConverterAttribute` attribute, so it can be serialized and deserialized by `System.Text.Json` without any additional configuration. For Newtonsoft.Json, use the companion package `vm2.UlidSerialization.NsJson` ([source code](https://github.com/vmelamed/vm2.Ulid/blob/main/src/UlidNsConverter)).
+
+> [!WARNING]
+> The `vm2.UlidSerialization.NsJson` package depends on Newtonsoft.Json, which is not AoT compatible.
 
 ### The `UlidFactory` in a Distributed System
 
@@ -335,10 +341,12 @@ Legend:
 random number generator on every call, whereas `Ulid.NewUlid` only uses it when the millisecond timestamp changes and if it
 doesn't, it simply increments the random part of the previous call.
 
-## Related Packages
+## Related Documents and Packages
 
 - **[ULID Specification](https://github.com/ulid/spec)** - Official ULID spec
+- **[vm2.UlidSerialization.NsJson](https://github.com/vmelamed/vm2.Ulid/blob/main/src/UlidNsConverter)** - Companion package: Newtonsoft.Json converter for vm2.Ulid
 - **[vm2.UlidTool](https://github.com/vmelamed/vm2.Ulid/blob/main/src/UlidTool)** - ULID Generator Command Line Tool
+- **[Example](https://github.com/vmelamed/vm2.Ulid/blob/main/examples/GenerateUlids.cs)** - Basic usage example
 
 ## License
 

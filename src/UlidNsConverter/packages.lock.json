@@ -8,12 +8,6 @@
         "resolved": "10.6.0",
         "contentHash": "qQDiaYWpvIymGbu+kXaMDS8YdqfeQkv6DOxPF2GSwC+eSzIKqOOnSP34TYt7gKqvB7p8/aSptexnW6nF0CUdnw=="
       },
-      "Microsoft.NET.ILLink.Tasks": {
-        "type": "Direct",
-        "requested": "[10.0.8, )",
-        "resolved": "10.0.8",
-        "contentHash": "dVbSXGIFNR5nZcv2tOLoWI+a9T4jtFd77IYjuND+QVe360qWgAF7H0WtoopYhRw/+SgpGUTyrkrh+65+ClNnfw=="
-      },
       "Microsoft.SourceLink.GitHub": {
         "type": "Direct",
         "requested": "[10.0.300, )",
@@ -30,6 +24,12 @@
         "requested": "[7.0.0, )",
         "resolved": "7.0.0",
         "contentHash": "2lMTCQl5bGP4iv0JNkockPnyllC6eHLz+CoK2ICvalvHod+exXSxueu9hq+zNkU7bZBJf8wMfeRC/Edn8AGmEg=="
+      },
+      "Newtonsoft.Json": {
+        "type": "Direct",
+        "requested": "[13.0.4, )",
+        "resolved": "13.0.4",
+        "contentHash": "pdgNNMai3zv51W5aq268sujXUyx7SNdE2bj1wZcWjAQrKMFZV260lbqYop1d2GM67JI1huLRwxo9ZqnfF/lC6A=="
       },
       "Microsoft.Build.Tasks.Git": {
         "type": "Transitive",
@@ -48,6 +48,12 @@
         "type": "Transitive",
         "resolved": "10.0.8",
         "contentHash": "+dJsbPJ3FyUbTZNplFj0RCKePFizmv6ewDV46JE9q/IVH4c3xTCftHfHelLsAKf0jryIPqgMb5GpS0x7TAY3mg=="
+      },
+      "vm2.Ulid": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.Extensions.TimeProvider.Testing": "[10.6.0, )"
+        }
       }
     }
   }

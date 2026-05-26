@@ -66,7 +66,7 @@ public class UlidNsConverter : JsonConverter
             if (reader.TokenType is not JsonToken.String)
                 throw new JsonReaderException($"Expected token type to be {JsonToken.String} or {JsonToken.Null}, but got {reader.TokenType}.");
 
-            return Parse(reader.Value.ToString()!);
+            return vm2.Ulid.Parse(reader.Value.ToString()!);
         }
         catch (Exception ex) when (ex is not JsonReaderException)
         {
