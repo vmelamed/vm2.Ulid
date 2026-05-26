@@ -66,6 +66,7 @@ env:
   PACKAGE_PROJECTS: >-
     [
     "src/UlidType/UlidType.csproj",
+    "src/UlidNsConverter/UlidNsConverter.csproj",
     "src/UlidTool/UlidTool.csproj"
     ]
   RUNNERS_OS: >-

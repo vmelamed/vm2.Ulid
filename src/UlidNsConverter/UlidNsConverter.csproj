@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <RootNamespace>vm2.UlidSerialization.NsJson</RootNamespace>
+        <IsAotCompatible>false</IsAotCompatible>
+        <VerifyReferenceAotCompatibility>false</VerifyReferenceAotCompatibility>
+    </PropertyGroup>
+
+    <PropertyGroup Label="NuGet">
+        <PackageId>vm2.UlidSerialization.NsJson</PackageId>
+        <Title>Companion package: Newtonsoft.Json converter for vm2.Ulid</Title>
+        <Description>Provides a Newtonsoft.Json converter for the ULID-s from vm2.Ulid.</Description>
+        <PackageTags>ULID Universally Unique Lexicographically Sortable Identifier .net core vm2 Newtonsoft JSON converter</PackageTags>
+        <PackageProjectUrl>https://github.com/vmelamed/vm2.Ulid/blob/main/src/UlidNsConverter/UlidNsConverter.csproj</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/vmelamed/vm2.Ulid</RepositoryUrl>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageReleaseNotes>Initial release: split from vm2.Ulid. This package is not AoT compatible because it depends on Newtonsoft.Json.</PackageReleaseNotes>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="../../README.md" Pack="true" PackagePath="\" />
+        <None Include="../../LICENSE" Pack="true" PackagePath="\" />
+        <None Include="../../CHANGELOG.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Newtonsoft.Json" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../UlidType/UlidType.csproj" />
+    </ItemGroup>
+
+</Project>

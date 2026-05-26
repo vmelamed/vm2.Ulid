@@ -3,6 +3,8 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <RootNamespace>vm2.UlidTool</RootNamespace>
+        <IsAotCompatible>false</IsAotCompatible>
+        <VerifyReferenceAotCompatibility>false</VerifyReferenceAotCompatibility>
         <PackAsTool>true</PackAsTool>
         <ToolCommandName>ulid</ToolCommandName>
     </PropertyGroup>

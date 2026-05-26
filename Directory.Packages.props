@@ -4,20 +4,9 @@
         <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
     </PropertyGroup>
     <ItemGroup>
-        <PackageVersion Include="System.CommandLine" Version="2.0.8" />
-        <PackageVersion Include="System.Configuration.ConfigurationManager" Version="10.0.8" />
-        <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.8" />
-        <PackageVersion Include="Microsoft.Extensions.Configuration.CommandLine" Version="10.0.8" />
-        <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.8" />
-        <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.8" />
-        <PackageVersion Include="Microsoft.Extensions.Logging.Configuration" Version="10.0.8" />
-        <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.8" />
-        <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.8" />
-        <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.8" />
-        <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.8" />
-        <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.8" />
         <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.300" />
         <PackageVersion Include="MinVer" Version="7.0.0" />
+
         <!-- The test stack: -->
         <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.7.0" />
         <PackageVersion Include="Microsoft.Testing.Platform" Version="2.2.3" />
@@ -30,12 +19,15 @@
         <PackageVersion Include="xunit.v3.runner.inproc" Version="3.2.2" />
         <PackageVersion Include="FluentAssertions" Version="8.10.0" />
         <PackageVersion Include="NSubstitute" Version="5.3.0" />
-        <PackageVersion Include="vm2.TestUtilities" Version="1.5.2" />
+        <PackageVersion Include="vm2.TestUtilities" Version="2.0.1" />
+
         <!-- Benchmarking packages: -->
         <!-- for running with Visual Studio profiler:<PackageVersion Include="Microsoft.VisualStudio.DiagnosticsHub.BenchmarkDotNetDiagnosers" Version="18.0.36421.1" />-->
         <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
         <PackageVersion Include="BenchmarkDotNet.Annotations" Version="0.15.8" />
-        <!-- Add repo-specific packages below this line: -->
+
+        <!-- Add repo-specific package versions here: -->
+        <PackageVersion Include="System.CommandLine" Version="2.0.8" />
         <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.6.0" />
         <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     </ItemGroup>
