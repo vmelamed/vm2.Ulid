@@ -4,7 +4,7 @@
 // Copyright (c) 2025-2026 Val Melamed
 
 #:property TargetFramework=net10.0
-#:project ../src/UlidType/UlidType.csproj
+#:project ../src/Ulid/Ulid.csproj
 
 using static System.Console;
 using static System.Text.Encoding;

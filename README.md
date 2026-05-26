@@ -94,14 +94,14 @@ For testing, database seeding, and other automation, use the [vm2.UlidTool](http
 
 ## Get the Code
 
-You can clone the [GitHub repository](https://github.com/vm2/vm2.Ulid). The project is in the `src/UlidType` directory.
+You can clone the [GitHub repository](https://github.com/vm2/vm2.Ulid). The project is in the `src/Ulid` directory.
 
 ## Build from the Source Code
 
 - Command line:
 
   ```bash
-  dotnet build src/UlidType/UlidType.csproj
+  dotnet build src/Ulid/Ulid.csproj
   ```
 
 - Visual Studio:
@@ -115,7 +115,7 @@ Tests are buildable and runnable from the command line using the `dotnet` CLI an
 - Command line:
 
   ```bash
-  dotnet test --project test/UlidType.Tests/UlidType.Tests.csproj
+  dotnet test --project test/Ulid.Tests/Ulid.Tests.csproj
   ```
 
 - The tests can also be run standalone after building the solution or the test project:
@@ -124,13 +124,13 @@ Tests are buildable and runnable from the command line using the `dotnet` CLI an
 
     ```bash
     dotnet build # build the full solution or
-    dotnet build test/UlidType.Tests/UlidType.Tests.csproj # the test project only
+    dotnet build test/Ulid.Tests/Ulid.Tests.csproj # the test project only
     ```
 
   - Run the tests standalone:
 
     ```bash
-    test/UlidType.Tests/bin/Debug/net10.0/UlidType.Tests
+    test/Ulid.Tests/bin/Debug/net10.0/Ulid.Tests
     ```
 
 ## Benchmark Tests
@@ -141,7 +141,7 @@ runnable from the command line using the `dotnet` CLI.
 - Command line:
 
   ```bash
-  dotnet run --project benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj -c Release
+  dotnet run --project benchmarks/Ulid.Benchmarks/Ulid.Benchmarks.csproj -c Release
   ```
 
 - The benchmarks can also be run standalone after building the benchmark project:
@@ -149,19 +149,19 @@ runnable from the command line using the `dotnet` CLI.
   - build the benchmark project only:
 
     ```bash
-    dotnet build -c Release benchmarks/UlidType.Benchmarks/UlidType.Benchmarks.csproj
+    dotnet build -c Release benchmarks/Ulid.Benchmarks/Ulid.Benchmarks.csproj
     ```
 
   - Run the benchmarks standalone (Linux/macOS):
 
     ```bash
-    benchmarks/UlidType.Benchmarks/bin/Release/net10.0/UlidType.Benchmarks
+    benchmarks/Ulid.Benchmarks/bin/Release/net10.0/Ulid.Benchmarks
     ```
 
   - Run the benchmarks standalone (Windows):
 
     ```bash
-    benchmarks/UlidType.Benchmarks/bin/Release/net10.0/UlidType.Benchmarks.exe
+    benchmarks/Ulid.Benchmarks/bin/Release/net10.0/Ulid.Benchmarks.exe
     ```
 
 ## Build and Run the Example

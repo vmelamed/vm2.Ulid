@@ -23,7 +23,7 @@
 <!-- /TOC -->
 
 A CLI tool for generating ULIDs (Universally Unique Lexicographically Sortable Identifiers). The tool is based on the
-[`vm2.Ulid`](https://github.com/vmelamed/vm2.Ulid/tree/main/src/UlidType) library and provides various output formats and
+[`vm2.Ulid`](https://github.com/vmelamed/vm2.Ulid/tree/main/src/Ulid) library and provides various output formats and
 options for generating ULIDs from the command line.
 
 ## Installation

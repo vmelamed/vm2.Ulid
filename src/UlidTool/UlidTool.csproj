@@ -20,7 +20,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="../UlidType/UlidType.csproj" />
+        <ProjectReference Include="../Ulid/Ulid.csproj" />
     </ItemGroup>
 
     <ItemGroup>

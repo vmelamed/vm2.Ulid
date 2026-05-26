@@ -33,12 +33,12 @@ Key design decisions:
 ```text
 vm2.Ulid/
 ├── src/
-│   ├── UlidType/         # Core library: Ulid struct, UlidFactory, providers
+│   ├── Ulid/         # Core library: Ulid struct, UlidFactory, providers
 │   └── UlidTool/         # CLI tool: generate ULIDs from command line
 ├── test/
-│   └── UlidType.Tests/   # xUnit v3 tests
+│   └── Ulid.Tests/   # xUnit v3 tests
 ├── benchmarks/
-│   └── UlidType.Benchmarks/
+│   └── Ulid.Benchmarks/
 ├── examples/
 │   └── GenerateUlids.cs  # Runnable script example
 └── vm2.Ulid.slnx
