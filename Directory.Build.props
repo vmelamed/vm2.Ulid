@@ -3,8 +3,7 @@
     <PropertyGroup>
         <!-- Property to be used in conditions for detecting the solution's main product projects -->
         <IsProductProject Condition="
-            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]src[/\\]', System.Text.RegularExpressions.RegexOptions.IgnoreCase)) AND
-            !$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectName), '.*\.Tests$', System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]src[/\\]', System.Text.RegularExpressions.RegexOptions.IgnoreCase))
             ">true</IsProductProject>
 
         <!-- Property to be used in conditions for detecting test projects -->
