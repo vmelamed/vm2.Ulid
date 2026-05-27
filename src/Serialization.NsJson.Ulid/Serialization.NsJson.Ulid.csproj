@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <OutputType>Library</OutputType>
         <RootNamespace>vm2.Serialization.NsJson.Ulid</RootNamespace>
         <AssemblyName>vm2.Serialization.NsJson.Ulid</AssemblyName>
         <IsAotCompatible>false</IsAotCompatible>
