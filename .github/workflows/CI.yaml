@@ -56,8 +56,8 @@ env:
     ]
   TEST_PROJECTS: >-
     [
-    "test/Ulid.Tests/Ulid.Tests.csproj",
-    "test/UlidTool.Tests/UlidTool.Tests.csproj"
+    "tests/Ulid.Tests/Ulid.Tests.csproj",
+    "tests/UlidTool.Tests/UlidTool.Tests.csproj"
     ]
   BENCHMARK_PROJECTS: >-
     [

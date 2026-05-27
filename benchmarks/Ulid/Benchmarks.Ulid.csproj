@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <RootNamespace>vm2.Benchmarks.Ulid</RootNamespace>
-        <AssemblyName>vm2.Ulid.Benchmarks</AssemblyName>
+        <AssemblyName>vm2.Benchmarks.Ulid</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>

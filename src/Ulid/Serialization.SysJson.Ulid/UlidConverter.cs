@@ -1,7 +1,7 @@
 ﻿// SPDX-License-Identifier: MIT
 // Copyright (c) 2025-2026 Val Melamed
 
-namespace vm2.Serialization.SysJson;
+namespace vm2.Serialization.SysJson.Ulid;
 
 /// <summary>
 /// Provides functionality to convert <see cref="Ulid"/> values to and from JSON format.
@@ -12,7 +12,7 @@ namespace vm2.Serialization.SysJson;
 /// <see cref="Ulid"/> instances are correctly represented as strings in JSON and parsed back into <see cref="Ulid"/> objects
 /// during deserialization.
 /// </remarks>
-public class UlidConverter : JsonConverter<Ulid>
+public class UlidConverter : JsonConverter<vm2.Ulid>
 {
     /// <summary>
     /// Writes the specified <see cref="Ulid"/> value as a raw JSON string using the provided <see cref="Utf8JsonWriter"/>.
@@ -25,7 +25,7 @@ public class UlidConverter : JsonConverter<Ulid>
     /// implementation but is required by the method signature.</param>
     public override void Write(
         Utf8JsonWriter writer,
-        Ulid value,
+        vm2.Ulid value,
         JsonSerializerOptions _)
     {
         Span<byte> utf8Chars = stackalloc byte[UlidStringLength];
@@ -47,7 +47,7 @@ public class UlidConverter : JsonConverter<Ulid>
     /// <param name="__">The serializer __ to use during deserialization. This parameter is not used in this implementation.</param>
     /// <returns>The <see cref="Ulid"/> value parsed from the JSON data.</returns>
     /// <exception cref="JsonException">Thrown if the JSON data does not represent a valid ULID.</exception>
-    public override Ulid Read(ref Utf8JsonReader reader, Type _, JsonSerializerOptions __)
+    public override vm2.Ulid Read(ref Utf8JsonReader reader, Type _, JsonSerializerOptions __)
     {
         try
         {

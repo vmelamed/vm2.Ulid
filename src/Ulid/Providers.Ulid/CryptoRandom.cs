@@ -1,7 +1,7 @@
 ﻿// SPDX-License-Identifier: MIT
 // Copyright (c) 2025-2026 Val Melamed
 
-namespace vm2.Providers;
+namespace vm2.Providers.Ulid;
 
 /// <summary>
 /// A random provider that uses cryptographic random number generation.

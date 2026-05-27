@@ -1,7 +1,7 @@
 ﻿// SPDX-License-Identifier: MIT
 // Copyright (c) 2025-2026 Val Melamed
 
-namespace vm2.Serialization.NsJson;
+namespace vm2.Serialization.NsJson.Ulid;
 
 using Newtonsoft.Json;
 
@@ -22,7 +22,7 @@ public class UlidConverter : JsonConverter
     /// <see langword="true"/> if the specified type is <see cref="Ulid"/> or <see cref="Nullable{Ulid}"/>; otherwise, <see langword="false"/>.
     /// </returns>
     public override bool CanConvert(Type objectType)
-        => objectType == typeof(Ulid) || objectType == typeof(Ulid?);
+        => objectType == typeof(vm2.Ulid) || objectType == typeof(vm2.Ulid?);
 
     /// <summary>
     /// Writes the JSON representation of the specified object using the provided <see cref="JsonWriter"/>.
@@ -38,13 +38,13 @@ public class UlidConverter : JsonConverter
             return;
         }
 
-        if (value is Ulid ulid)
+        if (value is vm2.Ulid ulid)
         {
             writer.WriteValue(ulid.ToString());
             return;
         }
 
-        throw new JsonWriterException($"Expected value to be of type {typeof(Ulid)} or null, but got {value?.GetType()}.");
+        throw new JsonWriterException($"Expected value to be of type {typeof(vm2.Ulid)} or null, but got {value?.GetType()}.");
     }
 
     /// <summary>

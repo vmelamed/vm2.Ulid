@@ -3,30 +3,30 @@
     <PropertyGroup>
         <!-- Property to be used in conditions for detecting the solution's main product projects -->
         <IsProductProject Condition="
-            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]src[/\\]', RegexOptions.IgnoreCase)) AND
-            !$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectName), '.*\.Tests$', RegexOptions.IgnoreCase))
+            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]src[/\\]', System.Text.RegularExpressions.RegexOptions.IgnoreCase)) AND
+            !$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectName), '.*\.Tests$', System.Text.RegularExpressions.RegexOptions.IgnoreCase))
             ">true</IsProductProject>
 
         <!-- Property to be used in conditions for detecting test projects -->
         <IsTestProject Condition="
-            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]tests?[/\\]', RegexOptions.IgnoreCase)) AND
-            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectName), '.*\.Tests$', RegexOptions.IgnoreCase))
+            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]tests?[/\\]', System.Text.RegularExpressions.RegexOptions.IgnoreCase)) AND
+            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectName), '.*\.Tests$', System.Text.RegularExpressions.RegexOptions.IgnoreCase))
             ">true</IsTestProject>
 
         <!-- Property to be used in conditions for detecting test library projects (test utilities, test extensions, etc.) -->
         <IsTestLibraryProject Condition="
-            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]tests?[/\\]', RegexOptions.IgnoreCase)) AND
-            !$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectName), '.*\.Tests$', RegexOptions.IgnoreCase))
+            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]tests?[/\\]', System.Text.RegularExpressions.RegexOptions.IgnoreCase)) AND
+            !$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectName), '.*\.Tests$', System.Text.RegularExpressions.RegexOptions.IgnoreCase))
             ">true</IsTestLibraryProject>
 
         <!-- Property to be used in conditions for detecting benchmark tests -->
         <IsInBenchmarksFolder Condition="
-            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]benchmarks?[/\\]', RegexOptions.IgnoreCase))
+            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]benchmarks?[/\\]', System.Text.RegularExpressions.RegexOptions.IgnoreCase))
             ">true</IsInBenchmarksFolder>
 
         <!-- Property to be used in conditions for detecting example usage projects -->
         <IsInExamplesFolder Condition="
-            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]examples?[/\\]', RegexOptions.IgnoreCase))
+            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]examples?[/\\]', System.Text.RegularExpressions.RegexOptions.IgnoreCase))
             ">true</IsInExamplesFolder>
     </PropertyGroup>
 

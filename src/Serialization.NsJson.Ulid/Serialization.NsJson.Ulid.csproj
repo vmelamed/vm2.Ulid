@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <RootNamespace>vm2.Serialization.NsJson</RootNamespace>
-        <AssemblyName>vm2.Ulid.Serialization.NsJson</AssemblyName>
+        <RootNamespace>vm2.Serialization.NsJson.Ulid</RootNamespace>
+        <AssemblyName>vm2.Serialization.NsJson.Ulid</AssemblyName>
         <IsAotCompatible>false</IsAotCompatible>
         <VerifyReferenceAotCompatibility>false</VerifyReferenceAotCompatibility>
     </PropertyGroup>
