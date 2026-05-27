@@ -8,7 +8,7 @@ using System.Text.Json;
 using vm2;
 
 [ExcludeFromCodeCoverage]
-public class UlidSysConverterTests
+public class UlidSysConverterTests(ITestOutputHelper output) : TestBase(output)
 {
 
     class Subject

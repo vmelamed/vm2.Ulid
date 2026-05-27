@@ -1,19 +1,19 @@
 ﻿// SPDX-License-Identifier: MIT
 // Copyright (c) 2025-2026 Val Melamed
 
-namespace vm2.Tests.Ulid.NsJson;
+namespace vm2.Tests.Serialization.NsJson.Ulid;
 
 using Newtonsoft.Json;
 
 using vm2;
-using vm2.Serialization.NsJson;
+using vm2.Serialization.NsJson.Ulid;
 
 [ExcludeFromCodeCoverage]
-public class UlidNsConverterTests : TestBase
+public class UlidConverterTests : TestBase
 {
     JsonSerializerSettings _settings;
 
-    public UlidNsConverterTests(ITestOutputHelper output) : base(output)
+    public UlidConverterTests(ITestOutputHelper output) : base(output)
     {
         _settings = new JsonSerializerSettings();
         _settings.Converters.Add(new UlidConverter());

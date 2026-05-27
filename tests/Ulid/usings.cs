@@ -9,7 +9,7 @@ global using Microsoft.Extensions.Time.Testing;
 global using Xunit.Sdk;
 
 global using vm2.TestUtilities;
-global using vm2.Providers;
+global using vm2.Providers.Ulid;
 
 global using static vm2.TestUtilities.TestUtilities;
 global using static vm2.Ulid;

@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <RootNamespace>vm2.Tests.UlidTool</RootNamespace>
-        <AssemblyName>vm2.UlidTool.Tests</AssemblyName>
+        <AssemblyName>vm2.Tests.UlidTool</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>

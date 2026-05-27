@@ -2,12 +2,12 @@
 
     <PropertyGroup>
         <RootNamespace>vm2.Tests.Ulid</RootNamespace>
-        <AssemblyName>vm2.Ulid.Tests</AssemblyName>
+        <AssemblyName>vm2.Tests.Ulid</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>
         <ProjectReference Include="../../src/Ulid/Ulid.csproj" />
-        <ProjectReference Include="../../src/UlidNsConverter/UlidNsConverter.csproj" />
+        <ProjectReference Include="../../src/Serialization.NsJson.Ulid/Serialization.NsJson.Ulid.csproj" />
     </ItemGroup>
 
 </Project>
