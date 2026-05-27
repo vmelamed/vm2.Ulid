@@ -56,17 +56,17 @@ env:
     ]
   TEST_PROJECTS: >-
     [
-    "tests/Ulid.Tests/Ulid.Tests.csproj",
-    "tests/UlidTool.Tests/UlidTool.Tests.csproj"
+    "tests/Ulid/Ulid.Tests.csproj",
+    "tests/UlidTool/UlidTool.Tests.csproj"
     ]
   BENCHMARK_PROJECTS: >-
     [
-    "benchmarks/Ulid.Benchmarks/Ulid.Benchmarks.csproj"
+    "benchmarks/Ulid/Benchmarks.Ulid.csproj"
     ]
   PACKAGE_PROJECTS: >-
     [
     "src/Ulid/Ulid.csproj",
-    "src/UlidNsConverter/UlidNsConverter.csproj",
+    "src/Serialization.NsJson.Ulid/Serialization.NsJson.Ulid.csproj",
     "src/UlidTool/UlidTool.csproj"
     ]
   RUNNERS_OS: >-
