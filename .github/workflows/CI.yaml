@@ -61,7 +61,7 @@ env:
     ]
   BENCHMARK_PROJECTS: >-
     [
-    "benchmarks/Ulid/Benchmarks.Ulid.csproj"
+    "benchmarks/Ulid/Ulid.Benchmarks.csproj"
     ]
   PACKAGE_PROJECTS: >-
     [
