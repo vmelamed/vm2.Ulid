@@ -6,20 +6,20 @@ namespace vm2.Serialization.NsJson.Ulid;
 using Newtonsoft.Json;
 
 /// <summary>
-/// Provides functionality to convert <see cref="Ulid"/> values to and from JSON format.
+/// Provides functionality to convert <see cref="vm2.Ulid"/> values to and from JSON format.
 /// Implements the Newtonsoft.Json.<see cref="JsonConverter{T}"/>".
 /// </summary>
-/// <remarks>This converter is used to serialize and deserialize <see cref="Ulid"/> values in JSON format. It
-/// ensures that <see cref="Ulid"/> instances are correctly represented as strings in JSON and parsed back into <see
-/// cref="Ulid"/> objects during deserialization.</remarks>
+/// <remarks>This converter is used to serialize and deserialize <see cref="vm2.Ulid"/> values in JSON format. It
+/// ensures that <see cref="vm2.Ulid"/> instances are correctly represented as strings in JSON and parsed back into <see
+/// cref="vm2.Ulid"/> objects during deserialization.</remarks>
 public class UlidConverter : JsonConverter
 {
     /// <summary>
-    /// Determines whether the specified type can be converted to or from a <see cref="Ulid"/>.
+    /// Determines whether the specified type can be converted to or from a <see cref="vm2.Ulid"/>.
     /// </summary>
     /// <param name="objectType">The type to evaluate for conversion compatibility.</param>
     /// <returns>
-    /// <see langword="true"/> if the specified type is <see cref="Ulid"/> or <see cref="Nullable{Ulid}"/>; otherwise, <see langword="false"/>.
+    /// <see langword="true"/> if the specified type is <see cref="vm2.Ulid"/> or <see cref="Nullable{vm2.Ulid}"/>; otherwise, <see langword="false"/>.
     /// </returns>
     public override bool CanConvert(Type objectType)
         => objectType == typeof(vm2.Ulid) || objectType == typeof(vm2.Ulid?);
