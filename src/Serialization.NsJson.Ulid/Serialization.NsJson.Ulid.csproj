@@ -3,7 +3,9 @@
     <PropertyGroup>
         <OutputType>Library</OutputType>
         <RootNamespace>vm2.Serialization.NsJson.Ulid</RootNamespace>
-        <AssemblyName>vm2.Serialization.NsJson.Ulid</AssemblyName>
+
+        <!-- <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
+        <IsTrimmable>false</IsTrimmable> -->
         <IsAotCompatible>false</IsAotCompatible>
         <VerifyReferenceAotCompatibility>false</VerifyReferenceAotCompatibility>
     </PropertyGroup>
