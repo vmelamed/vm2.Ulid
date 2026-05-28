@@ -11,7 +11,7 @@
         <File Path=".github/workflows/Release.yaml" />
     </Folder>
     <Folder Name="/benchmarks/">
-        <Project Path="benchmarks/Ulid/Benchmarks.Ulid.csproj" />
+        <Project Path="benchmarks/Ulid/Ulid.Benchmarks.csproj" />
     </Folder>
     <Folder Name="/changelog/">
         <File Path="changelog/cliff.prerelease.toml" />

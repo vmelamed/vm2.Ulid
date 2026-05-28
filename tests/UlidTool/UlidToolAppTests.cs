@@ -12,7 +12,7 @@ public sealed class UlidToolAppTests(ITestOutputHelper output) : TestBase(output
     {
         using var writer = new StringWriter();
 
-        var exitCode = global::UlidToolApp.Run(Array.Empty<string>(), writer);
+        var exitCode = UlidToolApp.Run(Array.Empty<string>(), writer);
 
         exitCode.Should().Be(0);
         var lines = GetNonEmptyLines(writer.ToString());
