@@ -26,7 +26,8 @@ on:
 env:
   PACKAGE_PROJECTS: >-
     [
-    "src/UlidType/UlidType.csproj",
+    "src/Ulid/Ulid.csproj",
+    "src/Serialization.NsJson.Ulid/Serialization.NsJson.Ulid.csproj",
     "src/UlidTool/UlidTool.csproj"
     ]
   # Ensure the NUGET_API_KEY secret is issued by the server selected here.

@@ -132,7 +132,7 @@ The project owner is a non-native English speaker.
 - Global usings: defined in **`usings.cs` per project**
 - Standard folder layout:
   - `src/` — source code
-  - `test/` — test projects. The stack is: **xUnit, FluentAssertions, NSubstitute, MTP v2, coverage**
+  - `tests/` — test projects. The stack is: **xUnit, FluentAssertions, NSubstitute, MTP v2, coverage**
   - `benchmarks/` — **BenchmarkDotNet** projects (desirable)
   - `examples/` — usage examples (desirable). Prefer single-file programs for simplicity, but multi-file projects are acceptable if the example is complex enough to warrant it.
   - `docs/` — documentation (optional, in addition to README.md, e.g. blogs, design docs, etc.)
@@ -257,6 +257,24 @@ The project owner is a non-native English speaker.
 - Events: past tense — `OrderPlacedEvent`.
 - Commands: imperative — `PlaceOrderCommand`.
 - Handlers: `...Handler` suffix.
+- **Always set `<OutputType>` explicitly** in every `*.csproj` to make it clear to the CI scripts what type of file to run for tests and benchmarks, and to avoid drift when project file names change.
+- Prefer **domain-first public API type names** without suffixes unless required to avoid language-level symbol conflicts.
+- Prefer **package-first artifact identity** for NuGet packages and assemblies:
+  - Package ID: `vm2.<Package>` or `vm2.<Package>.<Feature>`
+  - Assembly name: `vm2.<Package>` or `vm2.<Package>.<Feature>`
+- Always set `<RootNamespace>` explicitly in every `*.csproj`.
+- Root namespace policy:
+  - For core libraries, prioritize API clarity and discoverability.
+  - For feature libraries, use a stable hierarchy that mirrors the feature domain.
+- Test naming policy (tests-first):
+  - Project and assembly: `<Package>.Tests` or `<Package>.<Feature>.Tests` to group tests by package and feature, e.g. `Ulid.Tests` for `vm2.Ulid` package, `UlidTool.Tests` for `vm2.UlidTool` package, etc. This also makes it clear that the assembly contains tests for the specific package or feature. **Prefer the default name for the assembly** - the name of the project file without the extension, e.g. `Ulid.Tests` for `Ulid.Tests.csproj`.
+  - Namespace: `vm2.Tests.<Package>[.<Feature>]` to avoid conflicts where `<Package>` is also a name of a type, e.g. `Ulid`. It also makes it clear that the namespace contains tests for the specific package, class, or feature, e.g. `vm2.Tests.Ulid` for `vm2.Ulid` package/type, `vm2.Tests.UlidTool` for `vm2.UlidTool` package/feature (tool), etc.
+  - **Always specify `<OutputType>Exe</OutputType>` explicitly** in test project files to make it clear to the CI scripts what type of file to run.
+- Benchmark naming policy (benchmarks-first):
+  - Project and assembly: `<Package>.Benchmarks` or `<Package>.<Feature>.Benchmarks` to group benchmarks by package and feature, e.g. `Ulid.Benchmarks` for `vm2.Ulid` package. This also makes it clear that the assembly contains benchmarks for the specific package or feature. **The assembly name MUST be the default** - the name of the project file without the extension, e.g. `Ulid.Benchmarks` for `Ulid.Benchmarks.csproj`. This is BenchmarkDotNet's required convention.
+  - Namespace: `vm2.Benchmarks.<Package>[.Feature]` to avoid conflicts where `<Package>` is also a name of a type, e.g. `Ulid`. It also makes it clear that the namespace contains tests for the specific package, class, or feature, e.g. `vm2.Tests.Ulid` for `vm2.Ulid` package/type.
+  - **Always specify `<OutputType>Exe</OutputType>`** in benchmark project files to make it clear to the CI scripts what type of file to run for benchmarks.
+- Inside a single repository, do not mix naming strategies. Choose one namespace strategy and apply it consistently to `src/`, `tests/`, and `benchmarks/`.
 
 ## Git and PR Hygiene
 
