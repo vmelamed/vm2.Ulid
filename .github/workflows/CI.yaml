@@ -52,7 +52,7 @@ concurrency:
 env:
   BUILD_PROJECTS: >-
     [
-    "./vm2.Ulid.slnx"
+    "vm2.Ulid.slnx"
     ]
   TEST_PROJECTS: >-
     [
