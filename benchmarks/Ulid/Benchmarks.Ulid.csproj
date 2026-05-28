@@ -3,7 +3,6 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <RootNamespace>vm2.Benchmarks.Ulid</RootNamespace>
-        <AssemblyName>vm2.Benchmarks.Ulid</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>
