@@ -94,11 +94,10 @@
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
     </PropertyGroup>
 
-    <!-- The following group builds the product project(s) as AOT compatible and enforces verification of the dependencies AOT compatibility
-         unless the user or the project explicitly defines it as incompatible, e.g. with <IsAotCompatible>false</IsAotCompatible> -->
-    <PropertyGroup Label="AoT" Condition="
-        '$(IsProductProject)' == 'true' AND
-        '$(IsAotCompatible)' != 'false'">
+    <!-- The following group builds the product project(s) as AOT compatible and enforces verification of the dependencies AOT compatibility -->
+    <PropertyGroup Label="AoT" Condition="'$(IsProductProject)' == 'true'">
+        <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+        <IsTrimmable>true</IsTrimmable>
         <IsAotCompatible>true</IsAotCompatible>
         <VerifyReferenceAotCompatibility>true</VerifyReferenceAotCompatibility>
     </PropertyGroup>

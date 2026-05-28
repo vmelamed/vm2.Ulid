@@ -3,7 +3,6 @@
     <PropertyGroup>
         <OutputType>Library</OutputType>
         <RootNamespace>vm2</RootNamespace>
-        <AssemblyName>vm2.Ulid</AssemblyName>
     </PropertyGroup>
 
     <PropertyGroup Label="NuGet">

@@ -3,9 +3,10 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <RootNamespace>vm2.UlidTool</RootNamespace>
-        <AssemblyName>vm2.UlidTool</AssemblyName>
+
         <IsAotCompatible>false</IsAotCompatible>
         <VerifyReferenceAotCompatibility>false</VerifyReferenceAotCompatibility>
+
         <PackAsTool>true</PackAsTool>
         <ToolCommandName>ulid</ToolCommandName>
     </PropertyGroup>
