@@ -115,7 +115,7 @@ Tests are buildable and runnable from the command line using the `dotnet` CLI an
 - Command line:
 
   ```bash
-  dotnet test --project test/Ulid.Tests/Ulid.Tests.csproj
+  dotnet test --project tests/Ulid.Tests/Ulid.Tests.csproj
   ```
 
 - The tests can also be run standalone after building the solution or the test project:
@@ -124,13 +124,13 @@ Tests are buildable and runnable from the command line using the `dotnet` CLI an
 
     ```bash
     dotnet build # build the full solution or
-    dotnet build test/Ulid.Tests/Ulid.Tests.csproj # the test project only
+    dotnet build tests/Ulid.Tests/Ulid.Tests.csproj # the test project only
     ```
 
   - Run the tests standalone:
 
     ```bash
-    test/Ulid.Tests/bin/Debug/net10.0/Ulid.Tests
+    tests/Ulid.Tests/bin/Debug/net10.0/Ulid.Tests
     ```
 
 ## Benchmark Tests
