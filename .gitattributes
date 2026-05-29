@@ -9,8 +9,7 @@
 *.cmd text eol=crlf
 *.ps1 text eol=crlf
 
-# Explicitly declare text files you want to always be normalized and converted to native line endings on checkout
-*.cs text eol=lf diff=csharp
+# Explicitly declare text files you want to always be normalized and end the lines with a line-feed (works for both Linux and Windows)
 *.csproj text eol=lf
 *.sln text eol=lf
 *.slnx text eol=lf
