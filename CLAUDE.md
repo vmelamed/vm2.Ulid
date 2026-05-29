@@ -35,7 +35,7 @@ vm2.Ulid/
 ├── src/
 │   ├── Ulid/         # Core library: Ulid struct, UlidFactory, providers
 │   └── UlidTool/         # CLI tool: generate ULIDs from command line
-├── test/
+├── tests/
 │   └── Ulid.Tests/   # xUnit v3 tests
 ├── benchmarks/
 │   └── Ulid.Benchmarks/
