@@ -135,8 +135,7 @@ Tests are buildable and runnable from the command line using the `dotnet` CLI an
 
 ## Benchmark Tests
 
-The benchmark tests project is in the `benchmarks` directory. It uses BenchmarkDotNet v0.13.8. Benchmarks are buildable and
-runnable from the command line using the `dotnet` CLI.
+The benchmark tests project is in the `benchmarks` directory. It uses BenchmarkDotNet Benchmarks are buildable and runnable from the command line using the `dotnet` in **Release** configuration.
 
 - Command line:
 
@@ -155,14 +154,20 @@ runnable from the command line using the `dotnet` CLI.
   - Run the benchmarks standalone (Linux/macOS):
 
     ```bash
-    benchmarks/Ulid.Benchmarks/bin/Release/net10.0/Ulid.Benchmarks
+    benchmarks/Ulid.Benchmarks/bin/Release/net10.0/Ulid.Benchmarks --filter '*' --join --exporters json markdown --memory
     ```
 
   - Run the benchmarks standalone (Windows):
 
     ```bash
-    benchmarks/Ulid.Benchmarks/bin/Release/net10.0/Ulid.Benchmarks.exe
+    benchmarks/Ulid.Benchmarks/bin/Release/net10.0/Ulid.Benchmarks.exe --filter '*' --join --exporters json markdown --memory
     ```
+
+- You can also use the Bash script `run-benchmarks.sh` from the `vm2.DevOps` repository to run the benchmarks, e.g.:
+
+  ```bash
+  bash vm2.DevOps/.github/scripts/run-benchmarks.sh $VM2_REPOS/vm2.Ulid/benchmarks/Ulid/Ulid.Benchmarks.csproj
+  ```
 
 ## Build and Run the Example
 
