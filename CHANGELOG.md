@@ -1,5 +1,34 @@
 # Changelog
 
+## v5.0.0-preview.1 - 2026-05-29
+
+### Fixed
+
+- disable AoT, refactor Directory.Build.props
+- correct variable name for JsonSerializerSettings in UlidNsConverterTests
+- update project paths in CI configuration and Directory.Build.props for consistency
+- add OutputType property to project files for consistency
+- remove AssemblyName property for consistency in project file
+- remove AssemblyName property for consistency in benchmark and test project files
+- rename benchmark project file and update references for consistency
+- update PackageProjectUrl for accuracy in project file
+- update UlidConverter comments for consistency in type references
+- update .gitattributes for consistent line endings and add AOT guidelines to conventions
+- update test utilities package version to 2.0.2 and improve regex conditions in build props
+- update vm2.TestUtilities package version to 2.0.2
+- update benchmark tests instructions for clarity and add missing command line options
+
+### Internal
+
+- update vm2.TestUtilities package version to 1.5.2 and clarify package reference comments
+- use per test JsonSerializerSettings
+- renamed folders and projects from UlidType to Ulid
+- **BREAKING:** established and followed the names of namespace, projects, assemblies, folders. BREAKING CHANGE
+- **BREAKING:** follow the new conventions
+- diff-shared.sh
+- cosmetic change for consistency
+- change "test/" to "tests/"
+
 ## v4.0.1 - 2026-05-21
 
 See prereleases below.
