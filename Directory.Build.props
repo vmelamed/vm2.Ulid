@@ -3,19 +3,20 @@
     <PropertyGroup>
         <!-- Property to be used in conditions for detecting the solution's main product projects -->
         <IsProductProject Condition="
-            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]src[/\\]', System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]src[/\\]', System.Text.RegularExpressions.RegexOptions.IgnoreCase)) OR
+            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '\.Templates$', System.Text.RegularExpressions.RegexOptions.IgnoreCase))
             ">true</IsProductProject>
 
         <!-- Property to be used in conditions for detecting test projects -->
         <IsTestProject Condition="
             $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]tests?[/\\]', System.Text.RegularExpressions.RegexOptions.IgnoreCase)) AND
-            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectName), '.*\.Tests$', System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectName), '\.Tests$', System.Text.RegularExpressions.RegexOptions.IgnoreCase))
             ">true</IsTestProject>
 
         <!-- Property to be used in conditions for detecting test library projects (test utilities, test extensions, etc.) -->
         <IsTestLibraryProject Condition="
             $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]tests?[/\\]', System.Text.RegularExpressions.RegexOptions.IgnoreCase)) AND
-            !$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectName), '.*\.Tests$', System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+            !$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectName), '\.Tests$', System.Text.RegularExpressions.RegexOptions.IgnoreCase))
             ">true</IsTestLibraryProject>
 
         <!-- Property to be used in conditions for detecting benchmark tests -->
@@ -104,12 +105,8 @@
 
     <!-- ================ Common Package References for All projects ================ -->
     <ItemGroup>
-        <PackageReference Include="Microsoft.SourceLink.GitHub">
-            <PrivateAssets>all</PrivateAssets>
-        </PackageReference>
-        <PackageReference Include="MinVer">
-            <PrivateAssets>all</PrivateAssets>
-        </PackageReference>
+        <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="all" />
+        <PackageReference Include="MinVer" PrivateAssets="all" />
         <!-- Add more, repo-specific package references below in the designated placeholder -->
     </ItemGroup>
 
