@@ -1,5 +1,17 @@
 # Changelog
 
+## v5.0.1-preview.1 - 2026-06-04
+
+### Fixed
+
+- update .gitattributes to clarify line ending normalization for .cs files [skip ci]
+- streamline the dev. environment for multi-OS/multi-IDE and for consistent configuration of AI [skip ci]
+
+### Internal
+
+- promote to stable v5.0.0 [skip ci]
+- update changelog for v5.0.0 [skip ci]
+
 ## v5.0.0 - 2026-05-29
 
 See prereleases below.
