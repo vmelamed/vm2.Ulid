@@ -1,0 +1,7 @@
+{
+    // project-scoped settings only — personal preferences go in User settings.
+    // AI instruction files (CLAUDE.md, .github/copilot-instructions.md) are
+    // auto-discovered by VS Code; .github/CONVENTIONS.md is chained from
+    // copilot-instructions.md, so no explicit instructions setting is needed.
+    "dotnet.defaultSolution": "vm2.Ulid.slnx",
+}

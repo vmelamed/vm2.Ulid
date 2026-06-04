@@ -138,17 +138,14 @@
         </NoWarn>
         <!-- Enable MTP v2 For more information on Microsoft Testing Platform support in xUnit.net, visit: https://xunit.net/docs/getting-started/v3/microsoft-testing-platform -->
         <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
-
-        <!-- Workaround: VS 2026 Test Explorer continuously re-evaluates projects with
-             TestingPlatformServer/TestContainer capabilities, causing an infinite project
-             reload loop (Solution Explorer flickering).  Disabling the server capability
-             stops the loop.  Tests still run from CLI and VS Build+Run (Ctrl+R,A). -->
-        <DisableTestingPlatformServerCapability Condition="'$(BuildingInsideVisualStudio)' == 'true'
-            ">true</DisableTestingPlatformServerCapability>
-
-        <!-- MTP v2: Configure coverage with coverage.settings.xml (only outside VS — VS has its own coverage tools) -->
-        <TestingPlatformCommandLineArguments Condition="'$(BuildingInsideVisualStudio)' != 'true'
-            ">$(TestingPlatformCommandLineArguments) --coverage --coverage-output-format cobertura --coverage-settings "$(RepoRoot)coverage.settings.xml"</TestingPlatformCommandLineArguments>
+    </PropertyGroup>
+    <PropertyGroup Condition="$(IsTestProject) == 'true' AND '$(BuildingInsideVisualStudio)' == 'true'">
+        <!-- MTP v2: Configure coverage with coverage.settings.xml only outside VS — VS has its own coverage tools: -->
+        <TestingPlatformCommandLineArguments>$(TestingPlatformCommandLineArguments) --coverage --coverage-output-format cobertura --coverage-settings "$(RepoRoot)coverage.settings.xml"</TestingPlatformCommandLineArguments>
+        <!-- Workaround: VS 2026 Test Explorer continuously re-evaluates projects with TestingPlatformServer/TestContainer
+             capabilities, causing an infinite project reload loop (Solution Explorer flickering).  Disabling the server
+             capability stops the loop.  Tests still run from CLI and VS Build+Run (Ctrl+R,A): -->
+        <DisableTestingPlatformServerCapability>true</DisableTestingPlatformServerCapability>
     </PropertyGroup>
 
     <ItemGroup Condition="$(IsTestProject) == 'true'">
@@ -159,6 +156,11 @@
         <PackageReference Include="FluentAssertions" />
         <PackageReference Include="NSubstitute" />
         <PackageReference Include="vm2.TestUtilities" />
+    </ItemGroup>
+    <ItemGroup Condition="$(IsTestProject) == 'true' AND '$(BuildingInsideVisualStudio)' == 'true'">
+        <PackageReference Include="Microsoft.Testing.Platform.MSBuild" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
+        <PackageReference Include="xunit.runner.visualstudio" />
     </ItemGroup>
 
     <!-- Common usings for the test projects: -->
