@@ -28,7 +28,7 @@ commit_parsers = [
     { message = "^style", group = "Internal" },
     { message = "^build", skip = true },
     { message = "^feat", group = "Added" },
-    { message = "^test", group = "Internal" },
+    { message = "^tests?", group = "Internal" },
     { message = "^fix", group = "Fixed" },
     { message = "^refactor", group = "Internal" },
     { message = "^perf", group = "Performance" },

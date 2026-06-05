@@ -10,10 +10,9 @@
 # │   perf      Performance improvement                      │
 # │   security  Security fix or hardening                    │
 # │   refactor  Code restructuring (no behavior change)      │
-# │   doc       Documentation only                           │
-# │   docs      Documentation only                           │
+# │   doc(s)    Documentation only                           │
 # │   style     Formatting, whitespace (no code change)      │
-# │   test      Adding or updating tests                     │
+# │   test(s)   Adding or updating tests                     │
 # │   chore     Build, CI, tooling, dependencies             │
 # │   revert    Revert a previous commit                     │
 # │   remove    Remove feature or code                       │
