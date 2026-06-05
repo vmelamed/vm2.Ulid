@@ -1,5 +1,12 @@
 # Changelog
 
+## v5.0.1-preview.2 - 2026-06-05
+
+### Fixed
+
+- update commit prefix for git-cliff to include 'tests' and adjust documentation
+- remove trailing newline from file header template
+
 ## v5.0.1-preview.1 - 2026-06-04
 
 ### Fixed
