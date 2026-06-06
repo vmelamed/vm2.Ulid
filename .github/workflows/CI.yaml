@@ -20,7 +20,7 @@ on:
         default: ubuntu-latest
 
       preprocessor-symbols:
-        description: Preprocessor symbols separated by semicolon, space, or comma. E.g. "ABC XYZ" or "ABC;XYZ" or "ABC,XYZ".
+        description: Preprocessor symbols separated by semicolon, space, or comma.
         type: string
         default: "SHORT_RUN"
 
@@ -30,17 +30,17 @@ on:
         default: false
 
       skip-benchmarks:
-        description: If selected, the workflow will skip running benchmark tests and THE CI WORKFLOW WILL BE MARKED AS FAILED. Use only for faster testing of building and other non-benchmark test CI jobs.
+        description: Skip benchmarks. THE CI WORKFLOW WILL FAIL. Use only for faster CI run.
         type: boolean
         default: false
 
       skip-tests:
-        description: If selected, the workflow will skip running tests and THE CI WORKFLOW WILL BE MARKED AS FAILED. Use only for faster testing of building and other non-test CI jobs.
+        description: Skip unit tests. THE CI WORKFLOW WILL FAIL. Use only for faster CI run.
         type: boolean
         default: false
 
       skip-packages:
-        description: If selected, the workflow will skip building packages and THE CI WORKFLOW WILL BE MARKED AS FAILED. Use only for faster testing of building and other non-package CI jobs.
+        description: Skip packaging. THE CI WORKFLOW WILL FAIL.  Use only for faster CI run.
         type: boolean
         default: false
 
