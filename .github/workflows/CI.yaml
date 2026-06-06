@@ -25,22 +25,22 @@ on:
         default: "SHORT_RUN"
 
       reset-benchmark-thresholds:
-        description: Reset Bencher thresholds if performance degradation is expected.
+        description: Reset Bencher thresholds, if performance degradation is expected.
         type: boolean
         default: false
 
       skip-benchmarks:
-        description: Skip benchmarks. THE CI WORKFLOW WILL FAIL. Use only for faster CI run.
+        description: Skip benchmark tests. THE CI WORKFLOW WILL FAIL -- use only for faster CI run.
         type: boolean
         default: false
 
       skip-tests:
-        description: Skip unit tests. THE CI WORKFLOW WILL FAIL. Use only for faster CI run.
+        description: Skip unit/integration tests. THE CI WORKFLOW WILL FAIL -- use only for faster CI run.
         type: boolean
         default: false
 
       skip-packages:
-        description: Skip packaging. THE CI WORKFLOW WILL FAIL.  Use only for faster CI run.
+        description: Skip packaging the artifacts. THE CI WORKFLOW WILL FAIL -- use only for faster CI run.
         type: boolean
         default: false
 
