@@ -78,6 +78,8 @@ env:
   CONFIGURATION: ${{ vars.CONFIGURATION || 'Release' }}
   MIN_COVERAGE_PCT: ${{ vars.MIN_COVERAGE_PCT || 80 }}
   MAX_REGRESSION_PCT: ${{ vars.MAX_REGRESSION_PCT || 20 }}
+  MAX_GEN1_COLLECTS: ${{ vars.MAX_GEN1_COLLECTS || 2 }}
+  MAX_GEN2_COLLECTS: ${{ vars.MAX_GEN2_COLLECTS || 1 }}
   MINVERTAGPREFIX: ${{ vars.MINVERTAGPREFIX || 'v' }}
   MINVERDEFAULTPRERELEASEIDENTIFIERS: ${{ vars.MINVERDEFAULTPRERELEASEIDENTIFIERS || 'preview.0' }}
   RESET_BENCHMARK_THRESHOLDS: ${{ vars.RESET_BENCHMARK_THRESHOLDS || 'false' }}
@@ -101,6 +103,8 @@ jobs:
       preprocessor-symbols: ${{ steps.gather-params.outputs.preprocessor-symbols }}
       min-coverage-pct: ${{ steps.gather-params.outputs.min-coverage-pct }}
       max-regression-pct: ${{ steps.gather-params.outputs.max-regression-pct }}
+      max-gen1-collects: ${{ steps.gather-params.outputs.max-gen1-collects }}
+      max-gen2-collects: ${{ steps.gather-params.outputs.max-gen2-collects }}
       minver-tag-prefix: ${{ steps.gather-params.outputs.minver-tag-prefix }}
       minver-prerelease-id: ${{ steps.gather-params.outputs.minver-prerelease-id }}
       reset-benchmark-thresholds: ${{ steps.gather-params.outputs.reset-benchmark-thresholds }}
@@ -123,6 +127,8 @@ jobs:
           configuration: ${{ env.CONFIGURATION }}
           min-coverage-pct: ${{ env.MIN_COVERAGE_PCT }}
           max-regression-pct: ${{ env.MAX_REGRESSION_PCT }}
+          max-gen1-collects: ${{ env.MAX_GEN1_COLLECTS }}
+          max-gen2-collects: ${{ env.MAX_GEN2_COLLECTS }}
           minver-tag-prefix: ${{ env.MINVERTAGPREFIX }}
           minver-prerelease-id: ${{ env.MINVERDEFAULTPRERELEASEIDENTIFIERS }}
           reset-benchmark-thresholds: ${{ env.RESET_BENCHMARK_THRESHOLDS }}
@@ -160,6 +166,8 @@ jobs:
       preprocessor-symbols: ${{ needs.prerun-ci.outputs.preprocessor-symbols }}
       min-coverage-pct: ${{ fromJSON(needs.prerun-ci.outputs.min-coverage-pct) }}
       max-regression-pct: ${{ fromJSON(needs.prerun-ci.outputs.max-regression-pct) }}
+      max-gen1-collects: ${{ fromJSON(needs.prerun-ci.outputs.max-gen1-collects) }}
+      max-gen2-collects: ${{ fromJSON(needs.prerun-ci.outputs.max-gen2-collects) }}
       minver-tag-prefix: ${{ needs.prerun-ci.outputs.minver-tag-prefix }}
       minver-prerelease-id: ${{ needs.prerun-ci.outputs.minver-prerelease-id }}
       reset-benchmark-thresholds: ${{ needs.prerun-ci.outputs.reset-benchmark-thresholds == 'true' }}
