@@ -116,8 +116,12 @@ public readonly partial struct Ulid :
     /// Initializes a new instance of the <see cref="Ulid"/> struct using the specified string representation.
     /// </summary>
     /// <param name="source">The string representation of the ULID to parse. Must be a valid ULID string.</param>
-    public Ulid(string source)
-        => _ulidBytes = Parse(source)._ulidBytes;
+    public Ulid([NotNull] string source)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(source, nameof(source));
+
+        _ulidBytes = Parse(source)._ulidBytes;
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Ulid"/> struct from the bytes of the specified <see cref="Guid"/>.
@@ -212,7 +216,12 @@ public readonly partial struct Ulid :
     /// Defines an explicit conversion from a string to a <see cref="Ulid"/> instance.
     /// </summary>
     /// <param name="s"></param>
-    public static explicit operator Ulid(string s) => new(s);
+    public static explicit operator Ulid([NotNull] string s)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(s, nameof(s));
+
+        return new(s);
+    }
 
     /// <summary>
     /// Defines an implicit conversion from a <see cref="Ulid"/> to a <see cref="Guid"/> and vice versa.
@@ -455,9 +464,7 @@ public readonly partial struct Ulid :
     /// <returns>The <see cref="Ulid"/> instance that corresponds to the parsed string.</returns>
     /// <exception cref="ArgumentException">Thrown if the input string <paramref name="s"/> cannot be parsed as a valid ULID.</exception>
     public static Ulid Parse(ReadOnlySpan<byte> s)
-        => TryParse(s, out var u)
-                ? u
-                : throw new ArgumentException("The input source does not represent a valid ULID.", nameof(s));
+        => TryParse(s, out var ulid) ? ulid : throw new ArgumentException("The input source does not represent a valid ULID.", nameof(s));
 
     #region IParsable
     /// <summary>
@@ -468,9 +475,7 @@ public readonly partial struct Ulid :
     /// <returns>The <see cref="Ulid"/> instance that corresponds to the parsed string.</returns>
     /// <exception cref="ArgumentException">Thrown if the input string <paramref name="s"/> cannot be parsed as a valid ULID.</exception>
     public static Ulid Parse(string s, IFormatProvider? formatProvider = null)
-        => TryParse(s, formatProvider, out var u)
-                ? u
-                : throw new ArgumentException("The input source does not represent a valid ULID.", nameof(s));
+        => TryParse(s, formatProvider, out var ulid) ? ulid : throw new ArgumentException("The input source does not represent a valid ULID.", nameof(s));
 
     /// <summary>
     /// Attempts to parse the specified string representation of a ULID (Universally Unique Lexicographically Sortable Identifier)<br/>

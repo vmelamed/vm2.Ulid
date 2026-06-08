@@ -24,14 +24,15 @@ public class UlidConverter : JsonConverter<vm2.Ulid>
     /// <param name="_">The <see cref="JsonSerializerOptions"/> to use during serialization. This parameter is not used in this
     /// implementation but is required by the method signature.</param>
     public override void Write(
-        Utf8JsonWriter writer,
+        [NotNull] Utf8JsonWriter writer,
         vm2.Ulid value,
         JsonSerializerOptions _)
     {
-        Span<byte> utf8Chars = stackalloc byte[UlidStringLength];
-        var success = value.TryWriteUtf8(utf8Chars);
+        ArgumentNullException.ThrowIfNull(writer, nameof(writer));
 
-        if (!success)
+        Span<byte> utf8Chars = stackalloc byte[UlidStringLength];
+
+        if (!value.TryWriteUtf8(utf8Chars))
             // Debug.Assert(false, "This should never happen because Ulid.TryWrite should only return false if the buffer is too small, and we are providing a buffer of the correct size.");
             throw new JsonException("Could not serialize ULID value.");
 
@@ -47,18 +48,9 @@ public class UlidConverter : JsonConverter<vm2.Ulid>
     /// <param name="__">The serializer __ to use during deserialization. This parameter is not used in this implementation.</param>
     /// <returns>The <see cref="vm2.Ulid"/> value parsed from the JSON data.</returns>
     /// <exception cref="JsonException">Thrown if the JSON data does not represent a valid ULID.</exception>
-    public override vm2.Ulid Read(ref Utf8JsonReader reader, Type _, JsonSerializerOptions __)
-    {
-        try
-        {
-            return TryParse(reader.ValueSpan, out var ulid)
-                        ? ulid
-                        : throw new JsonException("Could not parse ULID value.");
-        }
-        catch (Exception ex) when (ex is not JsonException)
-        {
-            // Debug.Assert(false, "This should never happen because TryParse should only throw if the input is invalid, and we are catching that case and throwing a JsonException.");
-            throw new JsonException("Could not parse ULID value.", ex);
-        }
-    }
+    public override vm2.Ulid Read(
+        ref Utf8JsonReader reader,
+        Type _,
+        JsonSerializerOptions __)
+            => TryParse(reader.ValueSpan, out var ulid) ? ulid : throw new JsonException("Could not parse ULID value.");
 }
