@@ -1,6 +1,8 @@
 ﻿// SPDX-License-Identifier: MIT
 // Copyright (c) 2025-2026 Val Melamed
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace vm2;
 
 /// <summary>
@@ -116,12 +118,7 @@ public readonly partial struct Ulid :
     /// Initializes a new instance of the <see cref="Ulid"/> struct using the specified string representation.
     /// </summary>
     /// <param name="source">The string representation of the ULID to parse. Must be a valid ULID string.</param>
-    public Ulid([NotNull] string source)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(source, nameof(source));
-
-        _ulidBytes = Parse(source)._ulidBytes;
-    }
+    public Ulid([NotNull] string source) => _ulidBytes = Parse(source)._ulidBytes;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Ulid"/> struct from the bytes of the specified <see cref="Guid"/>.
@@ -216,12 +213,7 @@ public readonly partial struct Ulid :
     /// Defines an explicit conversion from a string to a <see cref="Ulid"/> instance.
     /// </summary>
     /// <param name="s"></param>
-    public static explicit operator Ulid([NotNull] string s)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(s, nameof(s));
-
-        return new(s);
-    }
+    public static explicit operator Ulid([NotNull] string s) => new(s);
 
     /// <summary>
     /// Defines an implicit conversion from a <see cref="Ulid"/> to a <see cref="Guid"/> and vice versa.
