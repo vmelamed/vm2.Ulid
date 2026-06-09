@@ -31,10 +31,10 @@ public class UlidToString
     }
 
 #if GUID_BASELINE
-    [Benchmark(Description = "Guid.ToString", Baseline = true)]
+    [Benchmark(Description = "Guid.ToString", OperationsPerInvoke = 1000, Baseline = true)]
     public string Guid_ToString() => _data1.GetNext().ToString();
 #endif
 
-    [Benchmark(Description = "Ulid.ToString")]
+    [Benchmark(Description = "Ulid.ToString", OperationsPerInvoke = 1000)]
     public string Ulid_ToString() => _data2.GetNext().ToString();
 }

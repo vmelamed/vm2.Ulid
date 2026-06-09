@@ -31,14 +31,14 @@ public class ParseUlid
 #endif
     }
 
-    [Benchmark(Description = "Ulid.Parse(StringUtf16)")]
+    [Benchmark(Description = "Ulid.Parse(StringUtf16)", OperationsPerInvoke = 1000)]
     public Ulid Ulid_Parse_Utf16() => Ulid.Parse(_data2.GetNext());
 
-    [Benchmark(Description = "Ulid.Parse(StringUtf8)")]
+    [Benchmark(Description = "Ulid.Parse(StringUtf8)", OperationsPerInvoke = 1000)]
     public Ulid Ulid_Parse_Utf8() => Ulid.Parse(_data3.GetNext());
 
 #if GUID_BASELINE
-    [Benchmark(Description = "Guid.Parse(string)", Baseline = true)]
+    [Benchmark(Description = "Guid.Parse(string)", OperationsPerInvoke = 1000, Baseline = true)]
     public Guid Guid_Parse() => Guid.Parse(_data1.GetNext());
 #endif
 }

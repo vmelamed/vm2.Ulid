@@ -31,13 +31,13 @@ public class NewUlid
     }
 
 #if GUID_BASELINE
-    [Benchmark(Description = "Guid.NewGuid", Baseline = true)]
+    [Benchmark(Description = "Guid.NewGuid", OperationsPerInvoke = 1000, Baseline = true)]
     public Guid Guid_NewGuid() => Guid.NewGuid();
 #endif
 
-    [Benchmark(Description = "Ulid.NewUlid")]
+    [Benchmark(Description = "Ulid.NewUlid", OperationsPerInvoke = 1000)]
     public Ulid Ulid_NewUlid() => Ulid.NewUlid();
 
-    [Benchmark(Description = "Factory.NewUlid")]
+    [Benchmark(Description = "Factory.NewUlid", OperationsPerInvoke = 1000)]
     public Ulid Factory_NewUlid() => Factory.NewUlid();
 }
