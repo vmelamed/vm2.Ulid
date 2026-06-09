@@ -1,5 +1,21 @@
 # Changelog
 
+## v5.1.0-preview.1 - 2026-06-09
+
+### Added
+
+- add max generation collection thresholds to CI environment variables [skip ci]
+
+### Internal
+
+- promote to stable v5.0.1 [skip ci]
+- update changelog for v5.0.1 [skip ci]
+- Bump the minor-and-patch group with 1 update
+- enhance parameter validation in UlidConverter and Ulid constructors
+- update vm2.TestUtilities to version 2.1.0
+- update package locks
+- simplify parameter validation in Ulid constructor and converter
+
 ## v5.0.1 - 2026-06-05
 
 See prereleases below.
