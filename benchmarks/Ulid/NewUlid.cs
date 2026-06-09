@@ -12,6 +12,8 @@ using vm2;
 #endif
 public class NewUlid
 {
+    const int operationsPerInvoke = 1000;
+
     [Params(nameof(CryptoRandom), nameof(PseudoRandom))]
     public string RandomProviderType { get; set; } = "";
 
@@ -31,13 +33,37 @@ public class NewUlid
     }
 
 #if GUID_BASELINE
-    [Benchmark(Description = "Guid.NewGuid", OperationsPerInvoke = 1000, Baseline = true)]
-    public Guid Guid_NewGuid() => Guid.NewGuid();
+    [Benchmark(Description = "Guid.NewGuid", OperationsPerInvoke = operationsPerInvoke, Baseline = true)]
+    public Guid Guid_NewGuid()
+    {
+        Guid id = default;
+
+        for (int i = 0; i < operationsPerInvoke; i++)
+            id = Guid.NewGuid();
+
+        return id;
+    }
 #endif
 
-    [Benchmark(Description = "Ulid.NewUlid", OperationsPerInvoke = 1000)]
-    public Ulid Ulid_NewUlid() => Ulid.NewUlid();
+    [Benchmark(Description = "Ulid.NewUlid", OperationsPerInvoke = operationsPerInvoke)]
+    public Ulid Ulid_NewUlid()
+    {
+        Ulid id = default;
 
-    [Benchmark(Description = "Factory.NewUlid", OperationsPerInvoke = 1000)]
-    public Ulid Factory_NewUlid() => Factory.NewUlid();
+        for (int i = 0; i < operationsPerInvoke; i++)
+            id = Ulid.NewUlid();
+
+        return id;
+    }
+
+    [Benchmark(Description = "Factory.NewUlid", OperationsPerInvoke = operationsPerInvoke)]
+    public Ulid Factory_NewUlid()
+    {
+        Ulid id = default;
+
+        for (int i = 0; i < operationsPerInvoke; i++)
+            id = Factory.NewUlid();
+
+        return id;
+    }
 }

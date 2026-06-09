@@ -397,6 +397,7 @@ launchSettings.json
 
 # benchmarkDotNet results folder(s)
 TestArtifacts/
+BenchmarkArtifacts/
 BmArtifacts/
 report.txt
 
