@@ -12,11 +12,12 @@ using vm2;
 #endif
 public class ParseUlid
 {
-    const int MaxDataItems = 1000;
-    PreGeneratedData<string> _data2 = null!;
-    PreGeneratedData<byte[]> _data3 = null!;
+    const int operationsPerInvoke = 1000;
+
+    PreGeneratedData<string> _stringData = null!;
+    PreGeneratedData<byte[]> _utf16Data = null!;
 #if GUID_BASELINE
-    PreGeneratedData<string> _data1 = null!;
+    PreGeneratedData<string> _guidStringData = null!;
 #endif
 
     [GlobalSetup]
@@ -24,21 +25,45 @@ public class ParseUlid
     {
         UlidFactory _factory = new();
 
-        _data2 = new(MaxDataItems, _ => _factory.NewUlid().ToString());
-        _data3 = new(MaxDataItems, _ => Encoding.UTF8.GetBytes(_factory.NewUlid().ToString()));
+        _stringData = new(operationsPerInvoke, _ => _factory.NewUlid().ToString());
+        _utf16Data = new(operationsPerInvoke, _ => Encoding.UTF8.GetBytes(_factory.NewUlid().ToString()));
 #if GUID_BASELINE
-        _data1 = new(MaxDataItems, _ => Guid.NewGuid().ToString());
+        _guidStringData = new(operationsPerInvoke, _ => Guid.NewGuid().ToString());
 #endif
     }
 
-    [Benchmark(Description = "Ulid.Parse(StringUtf16)", OperationsPerInvoke = 1000)]
-    public Ulid Ulid_Parse_Utf16() => Ulid.Parse(_data2.GetNext());
+    [Benchmark(Description = "Ulid.Parse(StringUtf16)", OperationsPerInvoke = operationsPerInvoke)]
+    public Ulid Ulid_Parse_Utf16()
+    {
+        Ulid id = default;
 
-    [Benchmark(Description = "Ulid.Parse(StringUtf8)", OperationsPerInvoke = 1000)]
-    public Ulid Ulid_Parse_Utf8() => Ulid.Parse(_data3.GetNext());
+        for (int i = 0; i < operationsPerInvoke; i++)
+            id = Ulid.Parse(_stringData.GetNext());
+
+        return id;
+    }
+
+    [Benchmark(Description = "Ulid.Parse(StringUtf8)", OperationsPerInvoke = operationsPerInvoke)]
+    public Ulid Ulid_Parse_Utf8()
+    {
+        Ulid id = default;
+
+        for (int i = 0; i < operationsPerInvoke; i++)
+            id = Ulid.Parse(_utf16Data.GetNext());
+
+        return id;
+    }
 
 #if GUID_BASELINE
-    [Benchmark(Description = "Guid.Parse(string)", OperationsPerInvoke = 1000, Baseline = true)]
-    public Guid Guid_Parse() => Guid.Parse(_data1.GetNext());
+    [Benchmark(Description = "Guid.Parse(string)", OperationsPerInvoke = operationsPerInvoke, Baseline = true)]
+    public Guid Guid_Parse()
+    {
+        Guid id = default;
+
+        for (int i = 0; i < operationsPerInvoke; i++)
+            id = Guid.Parse(_guidStringData.GetNext());
+
+        return id;
+    }
 #endif
 }

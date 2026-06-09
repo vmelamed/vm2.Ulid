@@ -12,7 +12,7 @@ using vm2;
 #endif
 public class UlidToString
 {
-    const int MaxDataItems = 1000;
+    const int operationsPerInvoke = 1000;
 
 #if GUID_BASELINE
     PreGeneratedData<Guid> _data1 = null!;
@@ -25,16 +25,32 @@ public class UlidToString
         UlidFactory _factory = new();
 
 #if GUID_BASELINE
-        _data1 = new(MaxDataItems, _ => Guid.NewGuid());
+        _data1 = new(operationsPerInvoke, _ => Guid.NewGuid());
 #endif
-        _data2 = new(MaxDataItems, _ => _factory.NewUlid());
+        _data2 = new(operationsPerInvoke, _ => _factory.NewUlid());
     }
 
 #if GUID_BASELINE
-    [Benchmark(Description = "Guid.ToString", OperationsPerInvoke = 1000, Baseline = true)]
-    public string Guid_ToString() => _data1.GetNext().ToString();
+    [Benchmark(Description = "Guid.ToString", OperationsPerInvoke = operationsPerInvoke, Baseline = true)]
+    public string Guid_ToString()
+    {
+        string id = "";
+
+        for (int i = 0; i < operationsPerInvoke; i++)
+            id = _data1.GetNext().ToString();
+
+        return id;
+    }
 #endif
 
-    [Benchmark(Description = "Ulid.ToString", OperationsPerInvoke = 1000)]
-    public string Ulid_ToString() => _data2.GetNext().ToString();
+    [Benchmark(Description = "Ulid.ToString", OperationsPerInvoke = operationsPerInvoke)]
+    public string Ulid_ToString()
+    {
+        string id = "";
+
+        for (int i = 0; i < operationsPerInvoke; i++)
+            id = _data2.GetNext().ToString();
+
+        return id;
+    }
 }
