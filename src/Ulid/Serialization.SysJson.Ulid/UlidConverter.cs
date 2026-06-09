@@ -24,12 +24,10 @@ public class UlidConverter : JsonConverter<vm2.Ulid>
     /// <param name="_">The <see cref="JsonSerializerOptions"/> to use during serialization. This parameter is not used in this
     /// implementation but is required by the method signature.</param>
     public override void Write(
-        [NotNull] Utf8JsonWriter writer,
+        Utf8JsonWriter writer,
         vm2.Ulid value,
         JsonSerializerOptions _)
     {
-        ArgumentNullException.ThrowIfNull(writer, nameof(writer));
-
         Span<byte> utf8Chars = stackalloc byte[UlidStringLength];
 
         if (!value.TryWriteUtf8(utf8Chars))
