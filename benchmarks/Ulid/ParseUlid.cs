@@ -35,35 +35,35 @@ public class ParseUlid
     [Benchmark(Description = "Ulid.Parse(StringUtf16)", OperationsPerInvoke = operationsPerInvoke)]
     public Ulid Ulid_Parse_Utf16()
     {
-        Ulid id = default;
+        Ulid suppressOptimizationDiscard = default;
 
         for (int i = 0; i < operationsPerInvoke; i++)
-            id = Ulid.Parse(_stringData.GetNext());
+            suppressOptimizationDiscard = Ulid.Parse(_stringData.GetNext());
 
-        return id;
+        return suppressOptimizationDiscard;
     }
 
     [Benchmark(Description = "Ulid.Parse(StringUtf8)", OperationsPerInvoke = operationsPerInvoke)]
     public Ulid Ulid_Parse_Utf8()
     {
-        Ulid id = default;
+        Ulid suppressOptimizationDiscard = default;
 
         for (int i = 0; i < operationsPerInvoke; i++)
-            id = Ulid.Parse(_utf8Data.GetNext());
+            suppressOptimizationDiscard = Ulid.Parse(_utf8Data.GetNext());
 
-        return id;
+        return suppressOptimizationDiscard;
     }
 
 #if GUID_BASELINE
     [Benchmark(Description = "Guid.Parse(string)", OperationsPerInvoke = operationsPerInvoke, Baseline = true)]
     public Guid Guid_Parse()
     {
-        Guid id = default;
+        Guid suppressOptimizationDiscard = default;
 
         for (int i = 0; i < operationsPerInvoke; i++)
-            id = Guid.Parse(_guidStringData.GetNext());
+            suppressOptimizationDiscard = Guid.Parse(_guidStringData.GetNext());
 
-        return id;
+        return suppressOptimizationDiscard;
     }
 #endif
 }

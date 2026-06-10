@@ -34,23 +34,23 @@ public class UlidToString
     [Benchmark(Description = "Guid.ToString", OperationsPerInvoke = operationsPerInvoke, Baseline = true)]
     public string Guid_ToString()
     {
-        string id = "";
+        string suppressOptimizationDiscard = "";
 
         for (int i = 0; i < operationsPerInvoke; i++)
-            id = _data1.GetNext().ToString();
+            suppressOptimizationDiscard = _data1.GetNext().ToString();
 
-        return id;
+        return suppressOptimizationDiscard;
     }
 #endif
 
     [Benchmark(Description = "Ulid.ToString", OperationsPerInvoke = operationsPerInvoke)]
     public string Ulid_ToString()
     {
-        string id = "";
+        string suppressOptimizationDiscard = "";
 
         for (int i = 0; i < operationsPerInvoke; i++)
-            id = _data2.GetNext().ToString();
+            suppressOptimizationDiscard = _data2.GetNext().ToString();
 
-        return id;
+        return suppressOptimizationDiscard;
     }
 }
