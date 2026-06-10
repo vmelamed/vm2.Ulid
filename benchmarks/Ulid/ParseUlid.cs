@@ -15,7 +15,7 @@ public class ParseUlid
     const int operationsPerInvoke = 1000;
 
     PreGeneratedData<string> _stringData = null!;
-    PreGeneratedData<byte[]> _utf16Data = null!;
+    PreGeneratedData<byte[]> _utf8Data = null!;
 #if GUID_BASELINE
     PreGeneratedData<string> _guidStringData = null!;
 #endif
@@ -26,7 +26,7 @@ public class ParseUlid
         UlidFactory _factory = new();
 
         _stringData = new(operationsPerInvoke, _ => _factory.NewUlid().ToString());
-        _utf16Data = new(operationsPerInvoke, _ => Encoding.UTF8.GetBytes(_factory.NewUlid().ToString()));
+        _utf8Data = new(operationsPerInvoke, _ => Encoding.UTF8.GetBytes(_factory.NewUlid().ToString()));
 #if GUID_BASELINE
         _guidStringData = new(operationsPerInvoke, _ => Guid.NewGuid().ToString());
 #endif
@@ -49,7 +49,7 @@ public class ParseUlid
         Ulid id = default;
 
         for (int i = 0; i < operationsPerInvoke; i++)
-            id = Ulid.Parse(_utf16Data.GetNext());
+            id = Ulid.Parse(_utf8Data.GetNext());
 
         return id;
     }
