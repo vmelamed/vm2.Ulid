@@ -1,5 +1,25 @@
 # Changelog
 
+## v5.1.1-preview.1 - 2026-06-10
+
+### Fixed
+
+- correct variable names and improve benchmark operations per invoke
+- re-add OperationsPerInvoke
+- rename optimization discards in benchmark methods
+
+### Internal
+
+- promote to stable v5.1.0 [skip ci]
+- update changelog for v5.1.0 [skip ci]
+- update dependencies
+- update Microsoft packages to version 10.0.9 in packages.lock.json
+- update vm2.TestUtilities to version 2.1.1
+
+### Performance
+
+- add OperationsPerInvoke=1000 to benchmark tests for improved performance measurement
+
 ## v5.1.0 - 2026-06-09
 
 See prereleases below.
