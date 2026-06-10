@@ -1,0 +1,27 @@
+name: "Rebuild Benchmark History"
+
+on:
+  workflow_dispatch:
+    inputs:
+      repeat:
+        description: Independent runs to record per benchmark
+        type: number
+        default: 10
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  rebuild:
+    strategy:
+      fail-fast: false
+      matrix:
+        benchmark-project:
+          - benchmarks/Ulid/Ulid.Benchmarks.csproj
+    uses: vmelamed/vm2.DevOps/.github/workflows/_rebuild_bench_history.yaml@main
+    secrets:
+      BENCHER_API_TOKEN: ${{ secrets.BENCHER_API_TOKEN }}
+    with:
+      benchmark-project: ${{ matrix.benchmark-project }}
+      repeat: ${{ fromJSON(inputs.repeat) }}
