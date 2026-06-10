@@ -36,34 +36,34 @@ public class NewUlid
     [Benchmark(Description = "Guid.NewGuid", OperationsPerInvoke = operationsPerInvoke, Baseline = true)]
     public Guid Guid_NewGuid()
     {
-        Guid id = default;
+        Guid suppressOptimizationDiscard = default;
 
         for (int i = 0; i < operationsPerInvoke; i++)
-            id = Guid.NewGuid();
+            suppressOptimizationDiscard = Guid.NewGuid();
 
-        return id;
+        return suppressOptimizationDiscard;
     }
 #endif
 
     [Benchmark(Description = "Ulid.NewUlid", OperationsPerInvoke = operationsPerInvoke)]
     public Ulid Ulid_NewUlid()
     {
-        Ulid id = default;
+        Ulid suppressOptimizationDiscard = default;
 
         for (int i = 0; i < operationsPerInvoke; i++)
-            id = Ulid.NewUlid();
+            suppressOptimizationDiscard = Ulid.NewUlid();
 
-        return id;
+        return suppressOptimizationDiscard;
     }
 
     [Benchmark(Description = "Factory.NewUlid", OperationsPerInvoke = operationsPerInvoke)]
     public Ulid Factory_NewUlid()
     {
-        Ulid id = default;
+        Ulid suppressOptimizationDiscard = default;
 
         for (int i = 0; i < operationsPerInvoke; i++)
-            id = Factory.NewUlid();
+            suppressOptimizationDiscard = Factory.NewUlid();
 
-        return id;
+        return suppressOptimizationDiscard;
     }
 }
