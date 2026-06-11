@@ -2,8 +2,8 @@ name: "Rebuild Benchmark History"
 
 # Manually triggered (UI/phone) per-repo entry point. Re-records this repo's benchmark history to Bencher.dev by running
 # every benchmark project under benchmarks/ N times (record-only: no thresholds, no failure on a noisy point). Use after a
-# runner-image change or a benchmark restructure invalidates the existing baseline. Shared, identical across repos -- a repo
-# with no benchmarks/ simply has nothing to do.
+# runner-image changes or after a benchmark restructuring invalidates the existing baseline. Shared, identical across repos -- a
+# repo with no benchmarks/ simply has nothing to do.
 
 on:
   workflow_dispatch:
