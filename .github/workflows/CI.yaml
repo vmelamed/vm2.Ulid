@@ -30,17 +30,17 @@ on:
         default: false
 
       skip-benchmarks:
-        description: Skip benchmark tests. THE CI WORKFLOW WILL FAIL -- use only for faster CI run.
+        description: Skip benchmark tests. WARNING! THE CI WORKFLOW WILL FAIL -- use only for faster CI test run.
         type: boolean
         default: false
 
       skip-tests:
-        description: Skip unit/integration tests. THE CI WORKFLOW WILL FAIL -- use only for faster CI run.
+        description: Skip unit/integration tests. WARNING! THE CI WORKFLOW WILL FAIL -- use only for faster CI test run.
         type: boolean
         default: false
 
       skip-packages:
-        description: Skip packaging the artifacts. THE CI WORKFLOW WILL FAIL -- use only for faster CI run.
+        description: Skip packaging the artifacts. WARNING! THE CI WORKFLOW WILL FAIL -- use only for faster CI test run.
         type: boolean
         default: false
 
