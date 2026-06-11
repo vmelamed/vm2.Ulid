@@ -1,5 +1,16 @@
 # Changelog
 
+## v5.2.0-preview.1 - 2026-06-11
+
+### Added
+
+- add workflow to rebuild benchmark history [skip ci]
+- update RebuildBenchmarkHistory.yaml with improved comments and remove unused matrix strategy
+
+### Fixed
+
+- adjust comments for clarity in RebuildBenchmarkHistory.yaml
+
 ## v5.1.1-preview.1 - 2026-06-10
 
 ### Fixed
