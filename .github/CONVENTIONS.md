@@ -167,6 +167,7 @@ The project owner is a non-native English speaker.
 - `var` when the type is obvious from the right-hand side
 - **Nullable reference types always enabled**; treat warnings as design feedback.
 - **No static mutable state** unless guarded with **proper encapsulation and synchronization** (prefer `ReaderWriterLockSlim` over `Lock`, `Mutex`, `Event`)
+- Prefer `[GeneratedRegex(...)]` partial methods over `new Regex(..., RegexOptions.Compiled)` for static patterns in .NET 8+ code.
 - **Dependency injection** over service locator
 - Use `System.TimeProvider` (.NET 8 BCL) for time abstraction and `FakeTimeProvider` (from `Microsoft.Extensions.TimeProvider.Testing`) for tests — **never** introduce a homegrown `IClock`-style interface (Val!)
 - Guard clauses at method entry (throw early, no nested pyramids)

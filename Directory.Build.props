@@ -265,7 +265,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <!-- Add repo-specific package references here -->
+        <!-- ADD REPO-SPECIFIC PACKAGE REFERENCES HERE -->
         <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
     </ItemGroup>
 
