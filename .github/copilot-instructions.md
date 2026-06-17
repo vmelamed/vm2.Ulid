@@ -9,10 +9,9 @@ use the same source of truth.
 
 ## Package-Specific Guidance
 
-- .NET package that implements
-[Universally Unique Lexicographically Sortable Identifier (ULID)](https://github.com/ulid/spec).
+- .NET package that implements [Universally Unique Lexicographically Sortable Identifier (ULID)](https://github.com/ulid/spec).
 - The package exposes a `vm2.Ulid` value type and a `vm2.UlidFactory` for stable, monotonic generation.
--ULIDs must increase monotonically within the same millisecond. When multiple ULIDs are generated in a single millisecond, each subsequent ULID is greater by one in the least significant byte(s). A ULID factory tracks the timestamp and the last random bytes for each call. When the timestamp matches the previous generation, the factory increments the prior random part instead of generating a new random value.
+- ULIDs must increase monotonically within the same millisecond. When multiple ULIDs are generated in a single millisecond, each subsequent ULID is greater by one in the least significant byte(s). A ULID factory tracks the timestamp and the last random bytes for each call. When the timestamp matches the previous generation, the factory increments the prior random part instead of generating a new random value.
 - The `vm2.UlidFactory` class encapsulates the requirements and exposes a simple interface for generating ULIDs. Use multiple `vm2.UlidFactory` instances when needed, e.g. one per aggregate root or database table.
 - ULID factories MUST be thread-safe and ensure monotonicity of generated ULIDs across application contexts. The factory uses two providers: one for the random bytes and one for the timestamp.
 - Use dependency injection to construct the factory and manage the providers. DI keeps the provider lifetimes explicit, makes testing simple, and enforces a single, consistent configuration across the app or service.

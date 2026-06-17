@@ -44,8 +44,8 @@ public sealed class UlidFactory(IUlidRandomProvider? randomProvider = null, Time
                     if (unchecked(++randomSpan[i]) != 0)
                         return new Ulid(_lastTimestamp, randomSpan);
 
-                // this is extremely unlikely case - we ran out of consecutive values for this millisecond.
-                // This is 1 in 2^80 chance of happening.
+                // We ran out of consecutive values for this millisecond.
+                // This has 2^-80 chance of happening.
                 throw new OverflowException("Random component overflowed; cannot generate more ULIDs for this millisecond.");
             }
 
