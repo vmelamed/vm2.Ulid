@@ -1,5 +1,17 @@
 # Changelog
 
+## v5.2.1-preview.2 - 2026-06-17
+
+### Internal
+
+- sync, no code changes [skip ci]
+- Bump the minor-and-patch group with 2 updates
+- update dependencies; copilot-instructions
+- rename
+- update AI documentation and improve comments for clarity
+- update project files and documentation for clarity and accuracy
+- update performance benchmarks and add roadmap section to AI docs
+
 ## v5.2.1-preview.1 - 2026-06-11
 
 ### Internal
