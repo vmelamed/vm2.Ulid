@@ -18,9 +18,9 @@ Implements [Universally Unique Lexicographically Sortable Identifier (ULID)](htt
 
 ### Key Design Decisions
 
-- `Ulid` is a `readonly record struct` (128-bit value)
+- `Ulid` is a `readonly struct` (128-bit value)
 - `UlidFactory` tracks timestamp and last random bytes for same-millisecond monotonicity
-- Randomness and timestamp are injected via `IRandomNumberGenerator` and `System.TimeProvider` — testable, DI-friendly
+- Randomness and timestamp are injected via `IUlidRandomProvider` and `System.TimeProvider` — testable, DI-friendly
 - `Ulid.NewUlid()` static method uses an internal singleton factory (convenience API)
 - Full `Guid` interop: `ToGuid()` and `new Ulid(guid)`
 - UTF-8 and UTF-16 parsing supported
@@ -29,9 +29,9 @@ Implements [Universally Unique Lexicographically Sortable Identifier (ULID)](htt
 - ULID factories MUST be thread-safe and ensure monotonicity of generated ULIDs across application contexts. The factory uses two providers: one for the random bytes and one for the timestamp.
 - Use dependency injection to construct the factory and manage the providers. DI keeps the provider lifetimes explicit, makes testing simple, and enforces a single, consistent configuration across the app or service.
 - In simple scenarios, use the static method `vm2.Ulid.NewUlid()` instead of `vm2.UlidFactory`. It uses an internal single static factory instance with a cryptographic random number generator and a clock based on `System.TimeProvider.System.GetUtcNow().ToUnixTimeMilliseconds()`.
-- By default the `vm2.UlidFactory` uses a thread-safe, cryptographic random number generator (`vm2.UlidRandomProviders.CryptoRandom`). For a different source of randomness, use the  pseudo-random number generator `vm2.UlidRandomProviders.PseudoRandom` or provide your own implementation of `vm2.IRandomNumberGenerator` to the factory.
+- By default the `vm2.UlidFactory` uses a thread-safe, cryptographic random number generator (`vm2.Providers.Ulid.CryptoRandom`). For a different source of randomness, use the  pseudo-random number generator `vm2.Providers.Ulid.PseudoRandom` or provide your own implementation of `vm2.IUlidRandomProvider` to the factory.
 - By default, the timestamp provider uses `System.TimeProvider.System.GetUtcNow().ToUnixTimeMilliseconds()` converted to Unix epoch time in milliseconds. For a different source of time, e.g. use `Microsoft.Extensions.Time.Testing.FakeTimeProvider` (package `Microsoft.Extensions.TimeProvider.Testing`) or provide implementation that overrides `System.TimeProvider`.
-- The `vm2.Ulid` type is marked with the `System.Text.Json.Serialization.JsonConverterAttribute`. For Newtonsoft.Json, use the companion project in `src/Serialization.NsJson.Ulid` ([source code](https://github.com/vmelamed/vm2.Ulid/blob/main/src/Serialization.NsJson.Ulid/)).
+- The `vm2.Ulid` type is marked with the `System.Text.Json.Serialization.JsonConverterAttribute`. For Newtonsoft.Json, use [the companion package](https://www.nuget.org/packages/vm2.Ulid.Serialization.NsJson/) with  ([source code](https://github.com/vmelamed/vm2.Ulid/blob/main/src/Serialization.NsJson.Ulid/)).
 
 ## Common Local Commands
 
@@ -74,11 +74,11 @@ Performance numbers pending re-run — see README for the latest benchmark table
 
 ## Active Work / Known Issues
 
-- Internally the Ulid is stored as a 128-bit value - `ReadOnlyMemory<byte>` (wrapping `byte[16]`) array - a reference type wrapper. Is this the most efficient way. Could a value based `ulong low; ulong high` or `Vector128<byte>` provide better performance or memory layout? Can the performance of the Ulid generation and conversions to/from string be improved by using a different internal representation?
+- Internally the Ulid is stored as a 128-bit value. It is a `ReadOnlyMemory<byte>` wrapping a `byte[16]` array - a reference type wrapper. Is this the most efficient way. Could a value based `ulong low; ulong high` or `Vector128<byte>` provide better performance or memory layout? Can the performance of the Ulid generation and conversions to/from string be improved by using a different internal representation?
 
 ## Prompting Notes for This Package
 
-- When working on `Ulid` struct internals: note it is a `readonly record struct`; all operations must be non-mutating.
+- When working on `Ulid` struct internals: note it is a `readonly struct`; all operations must be non-mutating.
 - When working on `UlidFactory`: the monotonicity invariant is the core correctness concern — any change must preserve it under concurrent access.
-- When writing tests: always inject `System.TimeProvider` and `IRandomNumberGenerator` for determinism. Never rely on live clock or RNG in unit tests.
+- When writing tests: always inject `System.TimeProvider` and `IUlidRandomProvider` in the provider instances for determinism. Never rely on live clock or RNG in unit tests.
 - Benchmarks use BenchmarkDotNet; always run in Release configuration.
