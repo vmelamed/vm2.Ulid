@@ -1,5 +1,11 @@
 # Changelog
 
+## v5.2.1-preview.3 - 2026-06-18
+
+### Fixed
+
+- drop TOC from AI docs - they don't need it. Replace perf.data ref with ref to the README.md
+
 ## v5.2.1-preview.2 - 2026-06-17
 
 ### Internal
