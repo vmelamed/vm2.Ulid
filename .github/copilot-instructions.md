@@ -58,32 +58,7 @@ Use `dotnet test --project <path>` per project; solution-wide `dotnet test` is n
 
 Performance numbers:
 
-```
-
-BenchmarkDotNet v0.15.8, Linux Ubuntu 24.04.4 LTS (Noble Numbat)
-AMD EPYC 7763 2.45GHz, 1 CPU, 4 logical and 2 physical cores
-.NET SDK 10.0.301
-  [Host]     : .NET 10.0.9 (10.0.9, 10.0.926.27113), X64 RyuJIT x86-64-v3
-  DefaultJob : .NET 10.0.9 (10.0.9, 10.0.926.27113), X64 RyuJIT x86-64-v3
-
-
-```
-| Type         | Method                  | RandomProviderType | Mean      | Error    | StdDev   | Ratio | RatioSD | Gen0   | Allocated | Alloc Ratio |
-|------------- |------------------------ |------------------- |----------:|---------:|---------:|------:|--------:|-------:|----------:|------------:|
-| **ParseUlid**    | **Ulid.Parse(StringUtf16)** | **?**                  |  **64.57 ns** | **0.676 ns** | **0.632 ns** |  **4.48** |    **0.05** | **0.0023** |      **40 B** |        **0.42** |
-| UlidToString | Guid.ToString           | ?                  |  14.43 ns | 0.065 ns | 0.058 ns |  1.00 |    0.01 | 0.0057 |      96 B |        1.00 |
-| ParseUlid    | Ulid.Parse(StringUtf8)  | ?                  |  55.10 ns | 0.168 ns | 0.149 ns |  3.82 |    0.02 | 0.0024 |      40 B |        0.42 |
-| UlidToString | Ulid.ToString           | ?                  |  43.27 ns | 0.189 ns | 0.177 ns |  3.00 |    0.02 | 0.0048 |      80 B |        0.83 |
-| ParseUlid    | Guid.Parse(string)      | ?                  |  28.33 ns | 0.095 ns | 0.089 ns |  1.96 |    0.01 |      - |         - |        0.00 |
-|              |                         |                    |           |          |          |       |         |        |           |             |
-| **NewUlid**      | **Guid.NewGuid**            | **CryptoRandom**       | **612.36 ns** | **1.952 ns** | **1.826 ns** |  **1.00** |    **0.00** |      **-** |         **-** |          **NA** |
-| NewUlid      | Ulid.NewUlid            | CryptoRandom       |  62.14 ns | 0.277 ns | 0.259 ns |  0.10 |    0.00 | 0.0023 |      40 B |          NA |
-| NewUlid      | Factory.NewUlid         | CryptoRandom       |  62.06 ns | 0.392 ns | 0.366 ns |  0.10 |    0.00 | 0.0023 |      40 B |          NA |
-|              |                         |                    |           |          |          |       |         |        |           |             |
-| **NewUlid**      | **Guid.NewGuid**            | **PseudoRandom**       | **606.42 ns** | **4.686 ns** | **4.383 ns** |  **1.00** |    **0.01** |      **-** |         **-** |          **NA** |
-| NewUlid      | Ulid.NewUlid            | PseudoRandom       |  62.10 ns | 0.430 ns | 0.402 ns |  0.10 |    0.00 | 0.0023 |      40 B |          NA |
-| NewUlid      | Factory.NewUlid         | PseudoRandom       |  61.92 ns | 0.329 ns | 0.308 ns |  0.10 |    0.00 | 0.0023 |      40 B |          NA |
-
+See [the performance section in the README](https://github.com/vmelamed/vm2.Ulid#performance) for detailed benchmark results.
 
 ## Known Trade-offs and Design Notes
 

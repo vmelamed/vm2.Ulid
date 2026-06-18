@@ -312,26 +312,30 @@ complexity when designing a distributed ULID strategy.
 
 ## Performance
 
-```text
-BenchmarkDotNet v0.15.8, Linux Ubuntu 24.04.3 LTS (Noble Numbat)
-AMD EPYC 7763 2.61GHz, 1 CPU, 4 logical and 2 physical cores
-.NET SDK 10.0.103
-  [Host]   : .NET 10.0.3 (10.0.3, 10.0.326.7603), X64 RyuJIT x86-64-v3
-  ShortRun : .NET 10.0.3 (10.0.3, 10.0.326.7603), X64 RyuJIT x86-64-v3
-
-Job=ShortRun  IterationCount=3  LaunchCount=1
-WarmupCount=3
 ```
 
-| Type         | Method                  | RandomProviderType | Mean     | Error    | StdDev   | Gen0   | Allocated |
-|------------- |------------------------ |------------------- |---------:|---------:|---------:|-------:|----------:|
-| ParseUlid    | Ulid.Parse(StringUtf16) | ?                  | 65.91 ns | 0.558 ns | 0.522 ns | 0.0024 |      40 B |
-| UlidToString | Ulid.ToString           | ?                  | 48.28 ns | 0.251 ns | 0.222 ns | 0.0048 |      80 B |
-| ParseUlid    | Ulid.Parse(StringUtf8)  | ?                  | 58.05 ns | 0.315 ns | 0.294 ns | 0.0024 |      40 B |
-| NewUlid      | Ulid.NewUlid            | CryptoRandom       | 66.03 ns | 0.074 ns | 0.066 ns | 0.0024 |      40 B |
-| NewUlid      | Factory.NewUlid         | CryptoRandom       | 65.51 ns | 0.030 ns | 0.025 ns | 0.0024 |      40 B |
-| NewUlid      | Ulid.NewUlid            | PseudoRandom       | 65.26 ns | 0.094 ns | 0.078 ns | 0.0024 |      40 B |
-| NewUlid      | Factory.NewUlid         | PseudoRandom       | 65.55 ns | 0.151 ns | 0.141 ns | 0.0024 |      40 B |
+BenchmarkDotNet v0.15.8, Linux Ubuntu 24.04.4 LTS (Noble Numbat)
+AMD EPYC 7763 2.45GHz, 1 CPU, 4 logical and 2 physical cores
+.NET SDK 10.0.301
+  [Host]     : .NET 10.0.9 (10.0.9, 10.0.926.27113), X64 RyuJIT x86-64-v3
+  DefaultJob : .NET 10.0.9 (10.0.9, 10.0.926.27113), X64 RyuJIT x86-64-v3
+
+
+```
+
+| Type         | Method                  | RandomProviderType | Mean      | Error    | StdDev   | Ratio | RatioSD | Gen0   | Allocated | Alloc Ratio |
+|------------- |------------------------ |------------------- |----------:|---------:|---------:|------:|--------:|-------:|----------:|------------:|
+| **ToString** | **Guid.ToString**       | **?**              |  **14.43 ns** | **0.065 ns** | **0.058 ns** |  **1.00** |    **0.01** | **0.0057** |      **96 B** |        **1.00** |
+| **Parse**| **Guid.Parse(string)**  | **?**              |  **28.33 ns** | **0.095 ns** | **0.089 ns** |  **1.96** |    **0.01** |      - |         - |        **0.00** |
+| ToString | Ulid.ToString           | ?                  |  43.27 ns | 0.189 ns | 0.177 ns |  3.00 |    0.02 | 0.0048 |      80 B |        0.83 |
+| Parse    | Ulid.Parse(StringUtf16) | ?                  |  64.57 ns | 0.676 ns | 0.632 ns |  4.48 |    0.05 | 0.0023 |      40 B |        0.42 |
+| Parse    | Ulid.Parse(StringUtf8)  | ?                  |  55.10 ns | 0.168 ns | 0.149 ns |  3.82 |    0.02 | 0.0024 |      40 B |        0.42 |
+|              |                         |                    |           |          |          |       |         |        |           |             |
+| **New**      | **Guid.NewGuid**            | **N/A**       | **612.36 ns** | **1.952 ns** | **1.826 ns** |  **1.00** |    **0.00** |      **-** |         **-** |          **NA** |
+| New      | Ulid.NewUlid            | CryptoRandom       |  62.14 ns | 0.277 ns | 0.259 ns |  0.10 |    0.00 | 0.0023 |      40 B |          NA |
+| New      | Factory.NewUlid         | CryptoRandom       |  62.06 ns | 0.392 ns | 0.366 ns |  0.10 |    0.00 | 0.0023 |      40 B |          NA |
+| New      | Ulid.NewUlid            | PseudoRandom       |  62.10 ns | 0.430 ns | 0.402 ns |  0.10 |    0.00 | 0.0023 |      40 B |          NA |
+| New      | Factory.NewUlid         | PseudoRandom       |  61.92 ns | 0.329 ns | 0.308 ns |  0.10 |    0.00 | 0.0023 |      40 B |          NA |
 
 Legend:
 
@@ -342,8 +346,7 @@ Legend:
 - Allocated : Allocated memory per single operation (managed only, inclusive, 1KB = 1024B)
 - 1 ns      : 1 Nanosecond (0.000000001 or 10^-9 sec)
 
-random number generator on every call, whereas `Ulid.NewUlid` only uses it when the millisecond timestamp changes and if it
-doesn't, it simply increments the random part of the previous call.
+Guid.NewGuid employs the full UUID (Universally Unique Identifier) algorithm (including the use of the random number generator) on every call, whereas `Ulid.NewUlid` only does that when the millisecond timestamp changes and if it doesn't, it simply increments the random part of the previous call.
 
 ## Related Documents and Packages
 
