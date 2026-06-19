@@ -49,6 +49,11 @@ dotnet pack vm2.Ulid.slnx --configuration Release
 
 # Run benchmarks (Release only)
 dotnet run --project benchmarks/Ulid/Ulid.Benchmarks.csproj --configuration Release -- --filter "*"
+
+# If the benchmark tests are already built, you can run the compiled executable directly:
+benchmarks/Ulid/bin/Release/net10.0/Ulid.Benchmarks --help
+benchmarks/Ulid/bin/Release/net10.0/Ulid.Benchmarks --filter "*" # on Linux
+benchmarks/Ulid/bin/Release/net10.0/Ulid.Benchmarks.exe --filter "*" # on Windows
 ```
 
 Tests use MTP v2 (Microsoft Testing Platform v2) with xUnit v3 — they compile to standalone executables.
