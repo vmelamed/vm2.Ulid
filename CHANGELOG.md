@@ -1,5 +1,11 @@
 # Changelog
 
+## v5.2.1-preview.4 - 2026-06-19
+
+### Internal
+
+- sync CONVENTIONS.md
+
 ## v5.2.1-preview.3 - 2026-06-18
 
 ### Fixed
