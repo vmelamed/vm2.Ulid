@@ -1,5 +1,11 @@
 # Changelog
 
+## v5.2.1-preview.5 - 2026-06-20
+
+### Internal
+
+- update packages
+
 ## v5.2.1-preview.4 - 2026-06-19
 
 ### Internal
