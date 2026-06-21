@@ -43,7 +43,7 @@ jobs:
       save-package-artifacts: ${{ steps.gather-params.outputs.save-package-artifacts }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup DevOps environment variables
         id: setup-env
