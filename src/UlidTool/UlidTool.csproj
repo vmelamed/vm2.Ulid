@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
@@ -22,11 +22,16 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="../Ulid/Ulid.csproj" />
+        <PackageReference Include="System.CommandLine" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="System.CommandLine" />
+        <Using Include="System.CommandLine" />
+        <Using Include="vm2" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../Ulid/Ulid.csproj" />
     </ItemGroup>
 
     <ItemGroup>

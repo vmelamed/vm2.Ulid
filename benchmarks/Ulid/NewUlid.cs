@@ -4,6 +4,7 @@
 namespace vm2.Benchmarks.Ulid;
 
 using vm2;
+using vm2.Providers.Ulid;
 
 #if SHORT_RUN
 [ShortRunJob]

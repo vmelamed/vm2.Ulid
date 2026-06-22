@@ -1,4 +1,8 @@
-name: ClearCache.yaml - manually trigger clearing of all NuGet caches (For Emergency Use Only!)
+name: Clear Caches
+
+# Workflow for manually triggering clearing of caches.
+# This is useful when dependabot updates dependencies but the contents of the cache conflicts with the updates,
+# e.g., in packages.lock.json files
 
 on:
   workflow_dispatch:
@@ -8,7 +12,7 @@ on:
         description: 'Reason for clearing cache'
         required: true
         type: string
-        default: 'Emergency cache cleanup'
+        default: 'Cache content conflicts with the dependencies'
 
       cache-pattern:
         description: 'Cache key pattern to delete (e.g.: nuget-)'

@@ -103,14 +103,38 @@
         <VerifyReferenceAotCompatibility>true</VerifyReferenceAotCompatibility>
     </PropertyGroup>
 
-    <!-- ================ Common Package References for All projects ================ -->
+    <!-- ================ Common Package References and usings for All projects ================ -->
     <ItemGroup>
-        <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="all" />
-        <PackageReference Include="MinVer" PrivateAssets="all" />
+        <!-- The following package references are available to all projects during the build but are NOT listed
+             as dependencies in the published .nuspec — consumers of your NuGet package will not transitively
+             receive them. This is controlled by PrivateAssets="all": all assets are private to this project.
+             To expose one of these packages to consumers in a specific project, override it with, e.g.,
+             <PackageReference Update="PackageName" PrivateAssets="none" /> or the NuGet default
+             <PackageReference Update="PackageName" PrivateAssets="contentfiles;analyzers;build" />
+        -->
+        <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="all" /><!-- needed only during the build process for source link references to GitHub repositories -->
+        <PackageReference Include="MinVer" PrivateAssets="all" /><!-- needed only during building/packaging to determine the version numbers based on the git history -->
         <!-- Add more, repo-specific package references below in the designated placeholder -->
     </ItemGroup>
 
-    <!-- Print version info after build for all projects - CI will capture it in the Step Summary -->
+    <ItemGroup>
+        <Using Include="System.Collections" />
+        <Using Include="System.Collections.Concurrent" />
+        <Using Include="System.Collections.Immutable" />
+        <Using Include="System.Collections.Frozen" />
+        <Using Include="System.Diagnostics" />
+        <Using Include="System.Diagnostics.CodeAnalysis" />
+        <Using Include="System.Globalization" />
+        <Using Include="System.Runtime.Serialization" />
+        <Using Include="System.Runtime.CompilerServices" />
+        <Using Include="System.Linq.Expressions" />
+        <Using Include="System.Text" />
+        <Using Include="System.Text.Json" />
+        <Using Include="System.Text.Json.Nodes" />
+        <Using Include="System.Text.RegularExpressions" />
+    </ItemGroup>
+
+    <!-- Print version info after build for all projects - CI will capture it and analyze it in the Step Summary -->
     <Target Name="PrintVersion" AfterTargets="Build">
         <Message Importance="high" Text="AssemblyVersion: $(AssemblyVersion)" />
         <Message Importance="high" Text="FileVersion: $(FileVersion)" />
@@ -149,7 +173,8 @@
     </PropertyGroup>
 
     <ItemGroup Condition="$(IsTestProject) == 'true'">
-        <!-- Use MTP v2 for all environments - VS 2022 should support it -->
+        <!-- Use MTP v2 for all environments -->
+        <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
         <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" />
         <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" />
         <PackageReference Include="xunit.v3.mtp-v2" />
@@ -165,9 +190,11 @@
 
     <!-- Common usings for the test projects: -->
     <ItemGroup Condition="$(IsTestProject) == 'true'">
+        <Using Include="Microsoft.Extensions.Time.Testing" />
         <Using Include="Xunit" />
         <Using Include="FluentAssertions" />
         <Using Include="NSubstitute" />
+        <Using Include="vm2.TestUtilities" />
     </ItemGroup>
 
     <!-- Copy repo-level test configuration to test output directory -->
@@ -243,12 +270,6 @@
         -->
     </ItemGroup>
 
-    <PropertyGroup>
-        <DefineConstants Condition="
-            $(IsInBenchmarksFolder) == 'true' AND '$(CI)' != 'true'
-            ">$(DefineConstants);SHORT_RUN</DefineConstants>
-    </PropertyGroup>
-
     <!-- common usings for benchmark projects in the ./benchmarks folder: -->
     <ItemGroup Condition="$(IsInBenchmarksFolder) == 'true'">
         <Using Include="BenchmarkDotNet" />
@@ -259,14 +280,19 @@
         <Using Include="BenchmarkDotNet.Running" />
     </ItemGroup>
 
+    <PropertyGroup>
+        <DefineConstants Condition="
+            $(IsInBenchmarksFolder) == 'true' AND '$(CI)' != 'true'
+            ">$(DefineConstants);SHORT_RUN</DefineConstants>
+    </PropertyGroup>
+
     <!-- settings for example projects in the ./examples folder: -->
     <PropertyGroup Condition="$(IsInExamplesFolder) == 'true'">
         <!-- Example projects settings -->
     </PropertyGroup>
 
+    <!-- ADD REPO-SPECIFIC PACKAGE REFERENCES AND USINGS BELOW -->
     <ItemGroup>
-        <!-- ADD REPO-SPECIFIC PACKAGE REFERENCES HERE -->
-        <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
     </ItemGroup>
 
 </Project>

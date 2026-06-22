@@ -1,4 +1,7 @@
-name: Publish NuGet Pre-Release
+name: Publish Prerelease NuGet Packages
+
+# This workflow handles the publishing of NuGet pre-releases. It is triggered after the CI workflow completes successfully for
+# pushes to the main branch and can also be manually triggered via the workflow_dispatch event.
 
 on:
   workflow_run:
