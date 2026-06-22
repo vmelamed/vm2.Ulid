@@ -2,12 +2,6 @@
   "version": 2,
   "dependencies": {
     "net10.0": {
-      "Microsoft.Extensions.TimeProvider.Testing": {
-        "type": "Direct",
-        "requested": "[10.7.0, )",
-        "resolved": "10.7.0",
-        "contentHash": "THd3CJ9e/ftm/3+Z69E51MQy4n46so4Zs/vUevMCYR5tjZsP+INqD4npXARVQwB2nnG+eQ8SI6ERLe/tn6gwSA=="
-      },
       "Microsoft.NET.ILLink.Tasks": {
         "type": "Direct",
         "requested": "[10.0.9, )",
@@ -56,10 +50,7 @@
         "contentHash": "+dJsbPJ3FyUbTZNplFj0RCKePFizmv6ewDV46JE9q/IVH4c3xTCftHfHelLsAKf0jryIPqgMb5GpS0x7TAY3mg=="
       },
       "vm2.Ulid": {
-        "type": "Project",
-        "dependencies": {
-          "Microsoft.Extensions.TimeProvider.Testing": "[10.7.0, )"
-        }
+        "type": "Project"
       }
     }
   }

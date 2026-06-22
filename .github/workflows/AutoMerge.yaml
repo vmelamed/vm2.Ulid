@@ -1,4 +1,4 @@
-name: "Auto-merge automated dependency PRs"
+name: "Auto-merge Update PRs by Dependabot"
 
 # Automatically enables auto-merge (rebase) on Dependabot PRs and on
 # github-actions[bot] PRs labelled 'dependencies' (e.g. lock-file refresh).

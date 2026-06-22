@@ -1,5 +1,8 @@
 name: "CI: Build, Test, Benchmark, Pack"
 
+# Continuous Integration (CI) workflow for building, testing, benchmarking, and packaging the projects in the repo.
+# This workflow is triggered on push, pull request, and can also be manually triggered via workflow_dispatch.
+
 on:
   push:
     branches:

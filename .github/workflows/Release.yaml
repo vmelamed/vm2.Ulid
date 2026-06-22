@@ -1,4 +1,7 @@
-name: Publish NuGet Stable Release
+name: Publish Release NuGet Package
+
+# This workflow handles the publishing of NuGet stable releases. It is only **triggered manually** via the workflow_dispatch
+# event from the **main branch**.
 
 on:
   # we release from main only, on manual trigger only
