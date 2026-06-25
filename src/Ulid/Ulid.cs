@@ -118,7 +118,7 @@ public readonly partial struct Ulid :
     /// Initializes a new instance of the <see cref="Ulid"/> struct using the specified string representation.
     /// </summary>
     /// <param name="source">The string representation of the ULID to parse. Must be a valid ULID string.</param>
-    public Ulid([NotNull] string source) => _ulidBytes = Parse(source)._ulidBytes;
+    public Ulid(string source) => _ulidBytes = Parse(source)._ulidBytes;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Ulid"/> struct from the bytes of the specified <see cref="Guid"/>.
@@ -213,7 +213,7 @@ public readonly partial struct Ulid :
     /// Defines an explicit conversion from a string to a <see cref="Ulid"/> instance.
     /// </summary>
     /// <param name="s"></param>
-    public static explicit operator Ulid([NotNull] string s) => new(s);
+    public static explicit operator Ulid(string s) => new(s);
 
     /// <summary>
     /// Defines an implicit conversion from a <see cref="Ulid"/> to a <see cref="Guid"/> and vice versa.
@@ -302,7 +302,7 @@ public readonly partial struct Ulid :
         for (var i = 0; i < UlidStringLength; i++)
         {
             // get the least significant 5 bits from the number and convert it to character
-            destination[UlidStringLength-i-1] = CrockfordDigits[(byte)ulidAsNumber & UlidDigitMask];
+            destination[UlidStringLength - i - 1] = CrockfordDigits[(byte)ulidAsNumber & UlidDigitMask];
             ulidAsNumber >>>= BitsPerUlidDigit;
         }
 
@@ -341,7 +341,7 @@ public readonly partial struct Ulid :
         for (var i = 0; i < UlidStringLength; i++)
         {
             // get the least significant 5 bits from the number and convert it to character
-            destination[UlidStringLength-i-1] = CrockfordDigitsUtf8[(byte)ulidAsNumber & UlidDigitMask];
+            destination[UlidStringLength - i - 1] = CrockfordDigitsUtf8[(byte)ulidAsNumber & UlidDigitMask];
             ulidAsNumber >>>= BitsPerUlidDigit;
         }
 
@@ -519,21 +519,21 @@ public readonly partial struct Ulid :
     public static bool operator ==(Ulid left, Ulid right) => left.Equals(right);
 
     /// <inheritdoc/>
-    public static bool operator !=(Ulid left, Ulid right) => !(left==right);
+    public static bool operator !=(Ulid left, Ulid right) => !(left == right);
     #endregion
 
     #region IComparisonOperators<Ulid, Ulid, bool>
     /// <inheritdoc/>
-    public static bool operator <(Ulid left, Ulid right) => left.CompareTo(right)<0;
+    public static bool operator <(Ulid left, Ulid right) => left.CompareTo(right) < 0;
 
     /// <inheritdoc/>
-    public static bool operator <=(Ulid left, Ulid right) => left.CompareTo(right)<=0;
+    public static bool operator <=(Ulid left, Ulid right) => left.CompareTo(right) <= 0;
 
     /// <inheritdoc/>
-    public static bool operator >(Ulid left, Ulid right) => left.CompareTo(right)>0;
+    public static bool operator >(Ulid left, Ulid right) => left.CompareTo(right) > 0;
 
     /// <inheritdoc/>
-    public static bool operator >=(Ulid left, Ulid right) => left.CompareTo(right)>=0;
+    public static bool operator >=(Ulid left, Ulid right) => left.CompareTo(right) >= 0;
     #endregion
 
     #region IIncrementOperators<Ulid>
@@ -543,7 +543,7 @@ public readonly partial struct Ulid :
         var newUlidBytes = value.Bytes.ToArray();
         var span = newUlidBytes.AsSpan();
 
-        var i = span.Length-1;
+        var i = span.Length - 1;
         for (; i >= 0; i--)
             if (unchecked(++span[i]) != 0)
                 return new Ulid(span, false);
