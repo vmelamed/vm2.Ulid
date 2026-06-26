@@ -79,7 +79,7 @@ The project owner is a non-native English speaker.
 
 - **See the repo's `.editorconfig` first** — it is authoritative for style and analyzers
 - File-scoped namespaces
-- Implicit usings for common namespaces (defined in `usings.cs`)
+- Implicit usings for common namespaces (defined in `usings.cs`) or `<Using Include="..." />` in `*.csproj` and `Directory.Build.props`
 - `record` for immutable data models and DTOs
 - `readonly record struct` for small immutable value objects (e.g. `Ulid`, `Result<T>`)
 - `internal` by default; **`public` only for intentional API surface**. For referencing internal classes and members from say test projects, use the `InternalsVisibleTo` attribute rather than making them `public`
