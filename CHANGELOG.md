@@ -1,5 +1,19 @@
 # Changelog
 
+## v5.2.1-preview.6 - 2026-06-26
+
+### Fixed
+
+- update conventions for async handling and error management [skip ci]
+- remove unnecessary nullability annotations for string parameters
+- update timestamp provider description for clarity and consistency
+
+### Internal
+
+- Bump the minor-and-patch group with 1 update
+- diff-shared
+- diff-shared
+
 ## v5.2.1-preview.5 - 2026-06-20
 
 ### Internal
