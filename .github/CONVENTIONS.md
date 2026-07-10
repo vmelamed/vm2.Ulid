@@ -84,6 +84,19 @@ The project owner is a non-native English speaker.
 - `readonly record struct` for small immutable value objects (e.g. `Ulid`, `Result<T>`)
 - `internal` by default; **`public` only for intentional API surface**. For referencing internal classes and members from say test projects, use the `InternalsVisibleTo` attribute rather than making them `public`
 - `sealed` by default; open **only** when extensibility is required and justified
+- **Instance methods for a type's own algebra; extension methods only to adapt what you don't own.** A method's
+  natural home is *inside* the type when the type is yours and the method is part of its core behavior — it gets direct
+  access to private state (no widening the public surface just to feed a helper), it is discoverable on `.` without an
+  import, and the type's behavior stays cohesive in one file. Reach for an **extension method** when, and only when:
+  - the receiver is a type you **do not own** (`Task<T>`, `IEnumerable<T>`, `Func<>`, `Nullable<T>`, a third-party type)
+    — you *cannot* add an instance method, so lifting/adapting it (`.MapAsync`, `.Traverse`, `.ToResult`) must be an
+    extension. This is why LINQ and most FP combinators over BCL types are extensions;
+  - the operation is defined over a **pattern across several types** rather than one type (`Traverse`, `Sequence`,
+    `Apply`), so no single type is its home.
+
+  Do **not** scatter a type's own core operations (e.g. `Option<T>.Map`/`Bind`, `Result<T>.Ensure`/`Tap`) into external
+  static classes; keep them inside the type. When extensions are unavoidable, group them in one clearly named static
+  class per concern (`OptionExtensions`, `ResultAsyncExtensions`) so the out-of-type code is organized, not sprinkled.
 - Expression-bodied members when trivial and readable (one-liners, simple getters)
 - `var` when the type is obvious from the right-hand side
 - **Nullable reference types always enabled**; treat warnings as design feedback
