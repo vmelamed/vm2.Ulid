@@ -7,6 +7,14 @@ shared conventions to ensure **consistency across all repositories** and to prov
 The key words **MUST**, **MUST NOT**, **SHOULD**, **SHOULD NOT**, and **MAY** in this document are to be interpreted as
 described in [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119).
 
+> [!IMPORTANT]
+> **These are defaults with reasons, not dogma.** Always question a rule rather than obey it reflexively: a rule
+> earns the burden of proof for *following* it, and an exception earns the burden of proof for *breaking* it — adjudicate
+> each case on its merits, not on the rule's authority. You **MAY** break any convention here when you can articulate why
+> its underlying reason does not apply to the case at hand — but you **MUST** record that rationale in writing (a code
+> comment, the `CLAUDE.md`, or the PR description), so the exception is a documented, auditable decision rather than
+> silent drift. An undocumented deviation is a violation; a documented, well-argued one is the process working.
+
 > [!NOTE]
 > This file is **copied identically to each repo's `.github/` directory** via `diff-shared.sh`.
 > The canonical source of truth is `vm2.Templates/templates/AddNewPackage/content/.github/CONVENTIONS.md`.
@@ -236,6 +244,19 @@ exceptions, and never references `vm2.Functional`; `TryDo` is for consumers who 
 - Mock only external collaborators (I/O, time, random, repository, bus); never mock value objects
 - Strive for 80% code coverage on critical paths; prioritize meaningful tests over coverage numbers
 - Upload coverage to Codecov
+- **Equality-contract tests for every value type.** Any type that defines value equality (`record`,
+  `record struct`, or a `struct`/`class` overriding `Equals`/`GetHashCode`/`==`) **MUST** have tests pinning the
+  contract: reflexivity, symmetry, transitivity, `Equals`/`==` agreement, and `GetHashCode` consistency (equal
+  values hash equal). A type that is **not** meant to be compared MUST make that explicit (do not silently rely on
+  the reflection-based `ValueType.Equals` fallback — it boxes and is a hidden performance trap). This applies to
+  domain value objects and to library primitives alike.
+- **Algebraic-law tests for every monadic (or otherwise law-bearing) type.** A type that claims to be a monad,
+  functor, applicative, monoid, etc. **MUST** have tests proving the corresponding laws hold — for a monad: functor
+  identity (`m.Map(x => x) == m`), left identity (`Return(a).Bind(f) == f(a)`), right identity (`m.Bind(Return) == m`),
+  associativity, and `Map`/`Bind` consistency (`m.Map(f) == m.Bind(x => Return(f(x)))`). These are trivial to verify
+  for simple types and essential for complex ones (e.g. a parser's `Bind`); write them **regardless**, as executable
+  specification. Prefer `[Theory]` with representative functions/inputs for simple types; reach for property-based
+  generation (FsCheck/CsCheck) where the input space is large.
 
 ## Performance Benchmarks
 
