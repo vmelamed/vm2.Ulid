@@ -19,8 +19,8 @@ env:
     "src/Serialization.NsJson.Ulid/Serialization.NsJson.Ulid.csproj",
     "src/UlidTool/UlidTool.csproj"
     ]
-  # Ensure the NUGET_API_KEY secret is issued by the server selected here.
-  NUGET_SERVER: ${{ vars.NUGET_SERVER || 'github' }}
+  NUGET_SERVER: ${{ vars.NUGET_SERVER || 'nuget' }}
+  NUGET_USERNAME: ${{ vars.NUGET_USERNAME || 'valo@vtmelamed.com' }}
   PREPROCESSOR_SYMBOLS: ""
   CONFIGURATION: ${{ vars.CONFIGURATION || 'Release' }} # The build configuration: Debug, Release, etc.
   DOTNET_VERSION: ${{ vars.DOTNET_VERSION || '10.0.x' }} # The .NET SDK version to use.
@@ -43,10 +43,13 @@ jobs:
       minver-prerelease-id: ${{ steps.gather-params.outputs.minver-prerelease-id }}
       reason: ${{ steps.gather-params.outputs.reason }}
       nuget-server: ${{ steps.gather-params.outputs.nuget-server }}
+      nuget-username: ${{ steps.gather-params.outputs.nuget-username }}
       save-package-artifacts: ${{ steps.gather-params.outputs.save-package-artifacts }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - name: Setup DevOps environment variables
         id: setup-env
@@ -69,6 +72,7 @@ jobs:
           minver_tag_prefix='${{ env.MINVERTAGPREFIX }}'
           minver_prerelease_id='${{ env.MINVERDEFAULTPRERELEASEIDENTIFIERS }}'
           nuget_server='${{ env.NUGET_SERVER }}'
+          nuget_username='${{ env.NUGET_USERNAME }}'
           save_package_artifacts='${{ env.SAVE_PACKAGE_ARTIFACTS }}'
           reason="Stable Release (main manually tagged with a release tag)"
 
@@ -89,6 +93,7 @@ jobs:
               minver_prerelease_id \
               reason \
               nuget_server \
+              nuget_username \
               save_package_artifacts
 
   log-trigger:
@@ -107,12 +112,11 @@ jobs:
       - get-params
     uses: vmelamed/vm2.DevOps/.github/workflows/_release.yaml@main
     secrets:
-      RELEASE_PAT: ${{ secrets.RELEASE_PAT }} # Required PAT for pushing changelog and tags past branch protection.
-      # Make sure to set the API key issued by the selected NuGet server.
-      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+      RELEASE_PAT: ${{ secrets.RELEASE_PAT }}     # Required PAT for pushing changelog and tags past branch protection.
     permissions:
       contents: write # Required to checkout the code, push changelog, and create tags
       packages: write # Required to add stable NuGet packages
+      id-token: write # Required for authentication with the NuGet server
     with:
       dotnet-version: ${{ needs.get-params.outputs.dotnet-version }}
       package-projects: ${{ needs.get-params.outputs.package-projects }}
@@ -122,4 +126,5 @@ jobs:
       minver-prerelease-id: ${{ needs.get-params.outputs.minver-prerelease-id }}
       reason: ${{ needs.get-params.outputs.reason }}
       nuget-server: ${{ needs.get-params.outputs.nuget-server }}
+      nuget-username: ${{ needs.get-params.outputs.nuget-username }}
       save-package-artifacts: ${{ fromJson(needs.get-params.outputs.save-package-artifacts) }}
