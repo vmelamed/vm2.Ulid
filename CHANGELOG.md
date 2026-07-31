@@ -1,5 +1,11 @@
 # Changelog
 
+## v5.2.2-preview.2 - 2026-07-31
+
+### Internal
+
+- clean up comments and formatting in workflow files
+
 ## v5.2.2-preview.1 - 2026-07-31
 
 ### Fixed
