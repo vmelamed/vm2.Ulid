@@ -1,5 +1,24 @@
 # Changelog
 
+## v5.2.2-preview.1 - 2026-07-31
+
+### Fixed
+
+- clarify implicit usings in conventions for consistency [skip ci]
+
+### Internal
+
+- change `.github/copilot-instructions.md` to refer to both `CONVENTIONS.md` AND to `../CLAUDE.md` [skip ci]
+- update changelog for v5.2.1 [skip ci]
+- update Copilot instructions header to reflect correct package name [skip ci]
+- enhance conventions for instance and extension methods [skip ci]
+- update conventions to include interface honesty and AI co-authorship guidelines [skip ci]
+- enhance conventions for AI coding assistants and testing requirements [skip ci]
+- Update SDK and package versions across the project
+- update package versions for System.CommandLine, CodeCoverage, and NSubstitute
+- update NuGet server configuration and username in workflows; bump vm2.TestUtilities version to 2.1.4
+- update dependencies
+
 ## v5.2.1 - 2026-06-29
 
 See prereleases below.
