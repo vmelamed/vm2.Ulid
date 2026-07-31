@@ -33,7 +33,8 @@ jobs:
   get-params:
     name: Prepare the parameters
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' && github.ref_name == 'main' }} # Only allow manual releases from the main branch, as a safety measure against accidental releases from PRs or other branches.
+    # Only allow manual releases from the main branch, as a safety measure against accidental releases from PRs or other branches.
+    if: ${{ github.event_name == 'workflow_dispatch' && github.ref_name == 'main' }}
     outputs:
       dotnet-version: ${{ steps.gather-params.outputs.dotnet-version }}
       package-projects: ${{ steps.gather-params.outputs.package-projects }}
@@ -112,7 +113,7 @@ jobs:
       - get-params
     uses: vmelamed/vm2.DevOps/.github/workflows/_release.yaml@main
     secrets:
-      RELEASE_PAT: ${{ secrets.RELEASE_PAT }}     # Required PAT for pushing changelog and tags past branch protection.
+      RELEASE_PAT: ${{ secrets.RELEASE_PAT }} # Required PAT for pushing changelog and tags past branch protection.
     permissions:
       contents: write # Required to checkout the code, push changelog, and create tags
       packages: write # Required to add stable NuGet packages

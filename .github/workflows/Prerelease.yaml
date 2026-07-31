@@ -36,12 +36,12 @@ env:
   NUGET_SERVER: ${{ vars.NUGET_SERVER || 'nuget' }}
   NUGET_USERNAME: ${{ vars.NUGET_USERNAME || 'valo@vtmelamed.com' }}
   PREPROCESSOR_SYMBOLS: ""
-  CONFIGURATION: ${{ vars.CONFIGURATION || 'Release' }} # The build configuration: Debug, Release, etc.
-  DOTNET_VERSION: ${{ vars.DOTNET_VERSION || '10.0.x' }} # The .NET SDK version to use.
-  MINVERTAGPREFIX: ${{ vars.MINVERTAGPREFIX || 'v' }} # The MinVer tag prefix.
+  CONFIGURATION: ${{ vars.CONFIGURATION || 'Release' }}                                             # The build configuration: Debug, Release, etc.
+  DOTNET_VERSION: ${{ vars.DOTNET_VERSION || '10.0.x' }}                                            # The .NET SDK version to use.
+  MINVERTAGPREFIX: ${{ vars.MINVERTAGPREFIX || 'v' }}                                               # The MinVer tag prefix.
   MINVERDEFAULTPRERELEASEIDENTIFIERS: ${{ vars.MINVERDEFAULTPRERELEASEIDENTIFIERS || 'preview.0' }} # The MinVer default pre-release identifiers.
-  SAVE_PACKAGE_ARTIFACTS: ${{ vars.SAVE_PACKAGE_ARTIFACTS || false }} # Set the variable to "true" to save package artifacts.
-  VERBOSE: ${{ vars.VERBOSE || false }} # Set the variable to "true" to enable verbose logging in scripts.
+  SAVE_PACKAGE_ARTIFACTS: ${{ vars.SAVE_PACKAGE_ARTIFACTS || false }}                               # Set the variable to "true" to save package artifacts.
+  VERBOSE: ${{ vars.VERBOSE || false }}                                                             # Set the variable to "true" to enable verbose logging in scripts.
 
 jobs:
   get-params:
@@ -134,7 +134,7 @@ jobs:
       - get-params
     uses: vmelamed/vm2.DevOps/.github/workflows/_prerelease.yaml@main
     secrets:
-      RELEASE_PAT: ${{ secrets.RELEASE_PAT }}     # Required PAT for pushing changelog and tags past branch protection.
+      RELEASE_PAT: ${{ secrets.RELEASE_PAT }} # Required PAT for pushing changelog and tags past branch protection.
     permissions:
       contents: write # Required to checkout the code, push changelog, and create tags
       packages: write # Required to add pre-release NuGet packages
