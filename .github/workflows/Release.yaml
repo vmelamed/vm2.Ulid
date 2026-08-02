@@ -83,6 +83,19 @@ jobs:
               reason='${{ inputs.reason }}'
           fi
 
+          dump_vars --force --quiet \
+              --header "Job get-params outputs:" \
+              package_projects \
+              package_projects_len \
+              dotnet_version \
+              preprocessor_symbols \
+              minver_tag_prefix \
+              minver_prerelease_id \
+              reason \
+              nuget_server \
+              nuget_username \
+              save_package_artifacts
+
           # Set the outputs:
           args_to_github_output \
               package_projects \
