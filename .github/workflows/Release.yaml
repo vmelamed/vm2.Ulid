@@ -38,7 +38,6 @@ jobs:
     outputs:
       dotnet-version: ${{ steps.gather-params.outputs.dotnet-version }}
       package-projects: ${{ steps.gather-params.outputs.package-projects }}
-      package-projects-len: ${{ steps.gather-params.outputs.package-projects-len }}
       preprocessor-symbols: ${{ steps.gather-params.outputs.preprocessor-symbols }}
       minver-tag-prefix: ${{ steps.gather-params.outputs.minver-tag-prefix }}
       minver-prerelease-id: ${{ steps.gather-params.outputs.minver-prerelease-id }}
@@ -121,7 +120,6 @@ jobs:
     with:
       dotnet-version: ${{ needs.get-params.outputs.dotnet-version }}
       package-projects: ${{ needs.get-params.outputs.package-projects }}
-      package-projects-len: ${{ needs.get-params.outputs.package-projects-len }}
       preprocessor-symbols: ${{ needs.get-params.outputs.preprocessor-symbols }}
       minver-tag-prefix: ${{ needs.get-params.outputs.minver-tag-prefix }}
       minver-prerelease-id: ${{ needs.get-params.outputs.minver-prerelease-id }}
