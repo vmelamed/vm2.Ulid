@@ -1,5 +1,11 @@
 # Changelog
 
+## v5.2.2-preview.7 - 2026-08-02
+
+### Internal
+
+- enhance variable dumping in workflows to support markdown formatting
+
 ## v5.2.2-preview.6 - 2026-08-02
 
 ### Internal
