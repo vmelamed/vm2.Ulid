@@ -83,7 +83,7 @@ jobs:
               reason='${{ inputs.reason }}'
           fi
 
-          dump_vars --force --quiet \
+          dump_vars --force --quiet --markdown \
               --header "Job get-params outputs:" \
               package_projects \
               package_projects_len \
@@ -94,7 +94,8 @@ jobs:
               reason \
               nuget_server \
               nuget_username \
-              save_package_artifacts
+              save_package_artifacts |
+              to_summary
 
           # Set the outputs:
           args_to_github_output \
