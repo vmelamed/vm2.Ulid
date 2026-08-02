@@ -1,5 +1,11 @@
 # Changelog
 
+## v5.2.2-preview.3 - 2026-08-02
+
+### Internal
+
+- remove unused package-projects-len output from workflows
+
 ## v5.2.2-preview.2 - 2026-07-31
 
 ### Internal
