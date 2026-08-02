@@ -85,16 +85,16 @@ env:
   MAX_GEN2_COLLECTS: ${{ vars.MAX_GEN2_COLLECTS || 1 }}
   MINVERTAGPREFIX: ${{ vars.MINVERTAGPREFIX || 'v' }}
   MINVERDEFAULTPRERELEASEIDENTIFIERS: ${{ vars.MINVERDEFAULTPRERELEASEIDENTIFIERS || 'preview.0' }}
-  RESET_BENCHMARK_THRESHOLDS: ${{ vars.RESET_BENCHMARK_THRESHOLDS || 'false' }}
-  VERBOSE: ${{ vars.VERBOSE || 'false' }}
+  RESET_BENCHMARK_THRESHOLDS: ${{ vars.RESET_BENCHMARK_THRESHOLDS || false }}
+  VERBOSE: ${{ vars.VERBOSE || true }}
 
 jobs:
   prerun-ci:
     name: Prerun-CI
+    if: github.event_name != 'push' || !contains(github.event.head_commit.message, '[skip ci]')
     runs-on: ubuntu-latest # in this workflow the runner doesn't matter - we're just preparing the inputs for the next workload(s).
     permissions:
       pull-requests: read
-    if: github.event_name != 'push' || !contains(github.event.head_commit.message, '[skip ci]')
     outputs:
       build-projects: ${{ steps.gather-params.outputs.build-projects }}
       test-projects: ${{ steps.gather-params.outputs.test-projects }}

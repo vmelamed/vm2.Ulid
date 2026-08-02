@@ -34,14 +34,14 @@ env:
     "src/UlidTool/UlidTool.csproj"
     ]
   NUGET_SERVER: ${{ vars.NUGET_SERVER || 'nuget' }}
-  NUGET_USERNAME: ${{ vars.NUGET_USERNAME || 'vmelamed' }}
+  NUGET_USERNAME: ${{ vars.NUGET_USERNAME }}
   PREPROCESSOR_SYMBOLS: ""
   CONFIGURATION: ${{ vars.CONFIGURATION || 'Release' }}                                             # The build configuration: Debug, Release, etc.
   DOTNET_VERSION: ${{ vars.DOTNET_VERSION || '10.0.x' }}                                            # The .NET SDK version to use.
   MINVERTAGPREFIX: ${{ vars.MINVERTAGPREFIX || 'v' }}                                               # The MinVer tag prefix.
   MINVERDEFAULTPRERELEASEIDENTIFIERS: ${{ vars.MINVERDEFAULTPRERELEASEIDENTIFIERS || 'preview.0' }} # The MinVer default pre-release identifiers.
   SAVE_PACKAGE_ARTIFACTS: ${{ vars.SAVE_PACKAGE_ARTIFACTS || false }}                               # Set the variable to "true" to save package artifacts.
-  VERBOSE: ${{ vars.VERBOSE || false }}                                                             # Set the variable to "true" to enable verbose logging in scripts.
+  VERBOSE: ${{ vars.VERBOSE || true }}                                                             # Set the variable to "true" to enable verbose logging in scripts.
 
 jobs:
   get-params:
