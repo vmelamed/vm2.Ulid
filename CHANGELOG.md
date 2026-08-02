@@ -1,5 +1,11 @@
 # Changelog
 
+## v5.2.2-preview.6 - 2026-08-02
+
+### Internal
+
+- add variable dumping in get-params job for better debugging
+
 ## v5.2.2-preview.5 - 2026-08-02
 
 ### Internal
