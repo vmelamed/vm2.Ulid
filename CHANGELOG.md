@@ -1,5 +1,11 @@
 # Changelog
 
+## v5.2.2-preview.4 - 2026-08-02
+
+### Internal
+
+- update NuGet username in workflows for consistency
+
 ## v5.2.2-preview.3 - 2026-08-02
 
 ### Internal
