@@ -1,5 +1,11 @@
 # Changelog
 
+## v5.2.2-preview.5 - 2026-08-02
+
+### Internal
+
+- update CI and workflow files for consistency in environment variables
+
 ## v5.2.2-preview.4 - 2026-08-02
 
 ### Internal
