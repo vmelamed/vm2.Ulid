@@ -1,5 +1,11 @@
 # Changelog
 
+## v5.2.2-preview.10 - 2026-08-03
+
+### Internal
+
+- promote to stable 5.2.2-preview.10 [skip ci]
+
 ## v5.2.2-preview.9 - 2026-08-03
 
 ### Internal
