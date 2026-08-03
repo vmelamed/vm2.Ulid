@@ -151,6 +151,7 @@ jobs:
     permissions:
       contents: write # Required to checkout the code, push changelog, and create tags
       packages: write # Required to add pre-release NuGet packages
+      actions: read
     with:
       dotnet-version: ${{ needs.get-params.outputs.dotnet-version }}
       package-projects: ${{ needs.get-params.outputs.package-projects }}
