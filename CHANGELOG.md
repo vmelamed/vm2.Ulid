@@ -1,5 +1,12 @@
 # Changelog
 
+## v5.2.2-preview.9 - 2026-08-03
+
+### Internal
+
+- enhance Prerelease workflow to include NuGet package publishing steps
+- add read permissions for actions in Prerelease workflow
+
 ## v5.2.2-preview.8 - 2026-08-02
 
 ### Internal
