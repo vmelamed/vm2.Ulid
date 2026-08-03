@@ -151,7 +151,6 @@ jobs:
     permissions:
       contents: write # Required to checkout the code, push changelog, and create tags
       packages: write # Required to add pre-release NuGet packages
-      id-token: write # Required for authentication with the NuGet server
     with:
       dotnet-version: ${{ needs.get-params.outputs.dotnet-version }}
       package-projects: ${{ needs.get-params.outputs.package-projects }}
@@ -164,11 +163,75 @@ jobs:
       save-package-artifacts: ${{ fromJson(needs.get-params.outputs.save-package-artifacts) }}
       sha: ${{ github.event.workflow_run.head_sha || github.sha }}
 
+  publish:
+    name: Publish NuGet prerelease packages
+    if: needs.get-params.outputs.nuget-server == 'nuget'
+    needs:
+      - get-params
+      - prerelease
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read   # Required to read workflow run artifact IDs (for downloading package artifacts if the NuGet server is 'nuget')
+      id-token: write # Required for authentication with the NuGet server
+    steps:
+      - name: Download package artifact
+        # Download package artifacts if the user requested it or if the NuGet server is 'nuget' (NuGet.org)
+        # since we cannot publish to NuGet.org with OIDC in the prev. job, we need to get the artifacts and publish them here.
+        if: needs.get-params.outputs.nuget-server == 'nuget'
+        uses: actions/download-artifact@v8
+        with:
+          artifact-ids: ${{ needs.prerelease.outputs.artifact-ids }}
+          path: artifacts/pack
+          merge-multiple: true
+
+      - name: Debug OIDC claims (temporary)
+        if: env.VERBOSE == 'true' || needs.get-params.outputs.nuget-server == 'nuget' # Temp. debug OIDC claims if verbose logging is enabled or if the NuGet server is 'nuget' (NuGet.org)
+        shell: bash
+        run: |
+          set -euo pipefail
+          tok_json="$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=api://AzureADTokenExchange")"
+          jwt="$(echo "$tok_json" | jq -r '.value')"
+          payload="$(echo "$jwt" | cut -d'.' -f2 | tr '_-' '/+' | base64 -d 2>/dev/null || true)"
+          echo "$payload" | jq '{repository, repository_id, repository_owner, repository_owner_id, workflow, workflow_ref, job_workflow_ref, ref, sha, actor}'
+
+      - name: Authenticate with NuGet.org trusted publishing to get steps.nuget-login.outputs.NUGET_API_KEY
+        if: needs.get-params.outputs.nuget-server == 'nuget'
+        id: nuget-login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ needs.get-params.outputs.nuget-username }}
+
+      - name: Publish NuGet prerelease packages
+        if: needs.get-params.outputs.nuget-server == 'nuget'
+        shell: bash
+        run: |
+          set -euo pipefail
+          artifacts_dir="artifacts/pack"
+          server_url="https://api.nuget.org/v3/index.json"
+          server_api_key="${{ steps.nuget-login.outputs.NUGET_API_KEY }}"
+          for pkg in "$artifacts_dir"/*.nupkg; do
+              echo "Publishing package: $pkg"
+              dotnet nuget push "$pkg" \
+                  --source "$server_url" \
+                  --api-key "$server_api_key" \
+                  --skip-duplicate
+          done
+
   remind-changelog:
     name: Reminder - review CHANGELOG.md
+    if: |
+      always() &&
+      needs.prerelease.result == 'success' &&
+      (
+        needs.get-params.outputs.nuget-server != 'nuget' ||
+        needs.publish.result == 'success'
+      )
     runs-on: ubuntu-latest
     needs:
+      - get-params
       - prerelease
+      - publish
     steps:
       - name: Post reminder
         shell: bash
