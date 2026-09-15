@@ -27,6 +27,7 @@ body = """{%- if tag is defined -%}
 ### Internal
 
 DevOps changes only.
+
 {%- endif -%}
 """
 trim = false

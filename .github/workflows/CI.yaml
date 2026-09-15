@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-2026 Val Melamed
+
 name: "CI: Build, Test, Benchmark, Pack"
 
 # Continuous Integration (CI) workflow for building, testing, benchmarking, and packaging the projects in the repo.
@@ -25,26 +28,31 @@ on:
       preprocessor-symbols:
         description: Preprocessor symbols separated by semicolon, space, or comma.
         type: string
+        required: true
         default: "SHORT_RUN"
 
       reset-benchmark-thresholds:
         description: Reset Bencher thresholds, if performance degradation is expected.
         type: boolean
+        required: true
         default: false
 
       skip-benchmarks:
         description: Skip benchmark tests. WARNING! THE CI WORKFLOW WILL FAIL -- use only for faster CI test run.
         type: boolean
+        required: true
         default: false
 
       skip-tests:
         description: Skip unit/integration tests. WARNING! THE CI WORKFLOW WILL FAIL -- use only for faster CI test run.
         type: boolean
+        required: true
         default: false
 
       skip-packages:
         description: Skip packaging the artifacts. WARNING! THE CI WORKFLOW WILL FAIL -- use only for faster CI test run.
         type: boolean
+        required: true
         default: false
 
 # Concurrency: cancel in-progress runs for the same ref
@@ -76,9 +84,8 @@ env:
     [
     "ubuntu-latest"
     ]
-  PREPROCESSOR_SYMBOLS: ""
   DOTNET_VERSION: ${{ vars.DOTNET_VERSION || '10.0.x' }}
-  CONFIGURATION: ${{ vars.CONFIGURATION || 'Release' }}
+  PREPROCESSOR_SYMBOLS: ""
   MIN_COVERAGE_PCT: ${{ vars.MIN_COVERAGE_PCT || 80 }}
   MAX_REGRESSION_PCT: ${{ vars.MAX_REGRESSION_PCT || 20 }}
   MAX_GEN1_COLLECTS: ${{ vars.MAX_GEN1_COLLECTS || 2 }}
@@ -91,18 +98,19 @@ env:
 jobs:
   prerun-ci:
     name: Prerun-CI
+    # Collects CI parameters from repo env, repository vars, and workflow_dispatch inputs,
+    # and exposes them as step outputs for the pre-run-ci job.
     if: github.event_name != 'push' || !contains(github.event.head_commit.message, '[skip ci]')
     runs-on: ubuntu-latest # in this workflow the runner doesn't matter - we're just preparing the inputs for the next workload(s).
     permissions:
       pull-requests: read
     outputs:
-      build-projects: ${{ steps.gather-params.outputs.build-projects }}
-      test-projects: ${{ steps.gather-params.outputs.test-projects }}
-      benchmark-projects: ${{ steps.gather-params.outputs.benchmark-projects }}
-      package-projects: ${{ steps.gather-params.outputs.package-projects }}
+      # build-projects: ${{ steps.gather-params.outputs.build-projects }}
+      # test-projects: ${{ steps.gather-params.outputs.test-projects }}
+      # benchmark-projects: ${{ steps.gather-params.outputs.benchmark-projects }}
+      # package-projects: ${{ steps.gather-params.outputs.package-projects }}
       runners-os: ${{ steps.gather-params.outputs.runners-os }}
       dotnet-version: ${{ steps.gather-params.outputs.dotnet-version }}
-      configuration: ${{ steps.gather-params.outputs.configuration }}
       preprocessor-symbols: ${{ steps.gather-params.outputs.preprocessor-symbols }}
       min-coverage-pct: ${{ steps.gather-params.outputs.min-coverage-pct }}
       max-regression-pct: ${{ steps.gather-params.outputs.max-regression-pct }}
@@ -118,16 +126,15 @@ jobs:
     steps:
       - name: Gather CI inputs
         id: gather-params
-        uses: vmelamed/vm2.DevOps/.github/actions/gather-inputs@main
+        uses: vmelamed/vm2.DevOps/.github/actions/gather-inputs@big-bang
         with:
-          build-projects: ${{ env.BUILD_PROJECTS }}
-          test-projects: ${{ env.TEST_PROJECTS }}
-          benchmark-projects: ${{ env.BENCHMARK_PROJECTS }}
-          package-projects: ${{ env.PACKAGE_PROJECTS }}
+          # build-projects: ${{ env.BUILD_PROJECTS }}
+          # test-projects: ${{ env.TEST_PROJECTS }}
+          # benchmark-projects: ${{ env.BENCHMARK_PROJECTS }}
+          # package-projects: ${{ env.PACKAGE_PROJECTS }}
           runners-os: ${{ env.RUNNERS_OS }}
-          preprocessor-symbols: ${{ env.PREPROCESSOR_SYMBOLS }}
           dotnet-version: ${{ env.DOTNET_VERSION }}
-          configuration: ${{ env.CONFIGURATION }}
+          preprocessor-symbols: ${{ env.PREPROCESSOR_SYMBOLS }}
           min-coverage-pct: ${{ env.MIN_COVERAGE_PCT }}
           max-regression-pct: ${{ env.MAX_REGRESSION_PCT }}
           max-gen1-collects: ${{ env.MAX_GEN1_COLLECTS }}
@@ -148,7 +155,7 @@ jobs:
     needs:
       - prerun-ci
     if: ${{ needs.prerun-ci.outputs.skip-push != 'true' }}
-    uses: vmelamed/vm2.DevOps/.github/workflows/_ci.yaml@main
+    uses: vmelamed/vm2.DevOps/.github/workflows/_ci.yaml@big-bang
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       BENCHER_API_TOKEN: ${{ secrets.BENCHER_API_TOKEN }}
@@ -159,13 +166,11 @@ jobs:
       pull-requests: write # Required to comment on PRs
       checks: write # Required to create GitHub Checks
     with:
-      build-projects: ${{ needs.prerun-ci.outputs.build-projects }}
-      test-projects: ${{ needs.prerun-ci.outputs.test-projects }}
-      benchmark-projects: ${{ needs.prerun-ci.outputs.benchmark-projects }}
-      package-projects: ${{ needs.prerun-ci.outputs.package-projects }}
+      build-projects: ${{ env.BUILD_PROJECTS }}
+      test-projects: ${{ env.TEST_PROJECTS }}
+      benchmark-projects: ${{ env.BENCHMARK_PROJECTS }}
+      package-projects: ${{ env.PACKAGE_PROJECTS }}
       runners-os: ${{ needs.prerun-ci.outputs.runners-os }}
-      dotnet-version: ${{ needs.prerun-ci.outputs.dotnet-version }}
-      configuration: ${{ needs.prerun-ci.outputs.configuration }}
       preprocessor-symbols: ${{ needs.prerun-ci.outputs.preprocessor-symbols }}
       min-coverage-pct: ${{ fromJSON(needs.prerun-ci.outputs.min-coverage-pct) }}
       max-regression-pct: ${{ fromJSON(needs.prerun-ci.outputs.max-regression-pct) }}
@@ -190,7 +195,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup DevOps environment variables
-        uses: vmelamed/vm2.DevOps/.github/actions/setup-env@main
+        uses: vmelamed/vm2.DevOps/.github/actions/setup-env@big-bang
 
       - name: Evaluate CI result
         shell: bash

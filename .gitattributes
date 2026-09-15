@@ -33,3 +33,6 @@ packages.lock.json merge=nugetlock
 *.ico binary
 *.dll binary
 *.exe binary
+
+# Git hook scripts (no extension) must stay LF and executable
+scripts/githooks/* text eol=lf
