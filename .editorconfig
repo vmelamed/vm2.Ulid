@@ -3,7 +3,7 @@
 guidelines = 128 dashed, 80 dotted, 50 dotted #160 solid
 
 # C# project files
-[*.csproj]
+[*.{csproj}]
 charset = utf-8
 indent_style = space
 indent_size = 4
@@ -11,7 +11,7 @@ insert_final_newline = true
 
 # C# files
 [*.cs]
-file_header_template = SPDX-License-Identifier: MIT\nCopyright (c) 2025-2026 Val Melamed
+file_header_template = SPDX-License-Identifier: MIT\nCopyright (c) 2025-2026 Val Melamed\n
 
 # IDE0073: The file header does not match the required text
 dotnet_diagnostic.IDE0073.severity = warning
@@ -21,6 +21,10 @@ dotnet_diagnostic.IDE0073.severity = warning
 indent_size = 4
 indent_style = space
 tab_width = 4
+
+# New line preferences
+end_of_line = crlf
+insert_final_newline = false
 
 # Spell checker
 spelling_languages = en-us
@@ -32,6 +36,7 @@ spelling_error_severity = information
 # Organize usings
 dotnet_separate_import_directive_groups = true
 dotnet_sort_system_directives_first = true
+file_header_template = unset
 
 # this. and Me. preferences
 dotnet_style_qualification_for_event = false
@@ -370,7 +375,44 @@ csharp_style_prefer_unbound_generic_type_in_nameof = true:suggestion
 csharp_prefer_static_anonymous_function = true:suggestion
 csharp_style_prefer_implicitly_typed_lambda_expression = true:suggestion
 
-dotnet_diagnostic.CA1860.severity = none       # Avoid using 'Enumerable.Any()' extension method
+[*.{cs,vb}]
+dotnet_style_readonly_field = false:suggestion
+dotnet_style_predefined_type_for_locals_parameters_members = true:suggestion
+dotnet_style_predefined_type_for_member_access = true:suggestion
+dotnet_style_require_accessibility_modifiers = omit_if_default:silent
+dotnet_style_allow_multiple_blank_lines_experimental = false:suggestion
+dotnet_style_allow_statement_immediately_after_block_experimental = true:silent
+dotnet_code_quality_unused_parameters = all:suggestion
+dotnet_style_parentheses_in_arithmetic_binary_operators = never_if_unnecessary:silent
+dotnet_style_parentheses_in_other_binary_operators = never_if_unnecessary:silent
+dotnet_style_parentheses_in_relational_binary_operators = never_if_unnecessary:silent
+dotnet_style_parentheses_in_other_operators = never_if_unnecessary:silent
+dotnet_style_qualification_for_field = false:silent
+dotnet_style_qualification_for_property = false:silent
+dotnet_style_qualification_for_method = false:silent
+dotnet_style_qualification_for_event = false:silent
+dotnet_style_operator_placement_when_wrapping = beginning_of_line
+tab_width = 4
+indent_size = 4
+end_of_line = crlf
+dotnet_style_coalesce_expression = true:suggestion
+dotnet_style_null_propagation = true:suggestion
+dotnet_style_prefer_is_null_check_over_reference_equality_method = true:suggestion
+dotnet_style_prefer_auto_properties = true:suggestion
+dotnet_style_object_initializer = true:suggestion
+dotnet_style_prefer_collection_expression = when_types_exactly_match:suggestion
+dotnet_style_collection_initializer = true:suggestion
+dotnet_style_prefer_simplified_boolean_expressions = true:suggestion
+dotnet_style_prefer_conditional_expression_over_assignment = true:silent
+dotnet_style_prefer_conditional_expression_over_return = true:silent
+dotnet_style_explicit_tuple_names = true:suggestion
+dotnet_style_prefer_inferred_tuple_names = true:suggestion
+dotnet_style_prefer_inferred_anonymous_type_member_names = true:suggestion
+dotnet_style_prefer_compound_assignment = true:suggestion
+dotnet_style_prefer_simplified_interpolation = true:suggestion
+dotnet_style_namespace_match_folder = true:suggestion
+
+dotnet_diagnostic.CA1859.severity = none       # Avoid using 'Enumerable.Any()' extension method
 dotnet_diagnostic.CA1031.severity = warning    # Don't catch System.Exception
 dotnet_diagnostic.CA2200.severity = warning    # Use 'throw;' to preserve stack
 dotnet_diagnostic.CA2219.severity = warning    # Don't throw in finally/filter

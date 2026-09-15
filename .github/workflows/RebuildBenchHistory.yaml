@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025-2026 Val Melamed
+
 name: "Rebuild Benchmark History"
 
 # Manually triggered (UI/mobile) per-repo entry point. Re-records this repo's benchmark history to Bencher.dev by running
@@ -19,7 +22,7 @@ permissions:
 
 jobs:
   rebuild:
-    uses: vmelamed/vm2.DevOps/.github/workflows/_rebuild_bench_history.yaml@main
+    uses: vmelamed/vm2.DevOps/.github/workflows/_rebuild_bench_history.yaml@big-bang
     secrets:
       BENCHER_API_TOKEN: ${{ secrets.BENCHER_API_TOKEN }}
     with:

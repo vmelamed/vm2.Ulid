@@ -11,38 +11,38 @@
         <!-- Property to be used in conditions for detecting the solution's main product projects -->
         <IsProductProject Condition="
             $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]src[/\\]', System.Text.RegularExpressions.RegexOptions.IgnoreCase)) OR
-            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '\.Templates$', System.Text.RegularExpressions.RegexOptions.IgnoreCase))">
-            true
-        </IsProductProject>
+            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '\.Templates$', System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+            ">true</IsProductProject>
 
         <!-- Property to be used in conditions for detecting test projects -->
         <IsTestProject Condition="
             $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]tests?[/\\]', System.Text.RegularExpressions.RegexOptions.IgnoreCase)) AND
-            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectName), '\.Tests$', System.Text.RegularExpressions.RegexOptions.IgnoreCase))">
-            true
-        </IsTestProject>
+            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectName), '\.Tests$', System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+            ">true</IsTestProject>
 
         <!-- Property to be used in conditions for detecting test library projects (test utilities, test extensions, etc.) -->
         <IsTestLibraryProject Condition="
             $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]tests?[/\\]', System.Text.RegularExpressions.RegexOptions.IgnoreCase)) AND
-            !$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectName), '\.Tests$', System.Text.RegularExpressions.RegexOptions.IgnoreCase))">
-            true
-        </IsTestLibraryProject>
+            !$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectName), '\.Tests$', System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+            ">true</IsTestLibraryProject>
 
         <!-- Property to be used in conditions for detecting benchmark tests -->
         <IsInBenchmarksFolder Condition="
-            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]benchmarks?[/\\]', System.Text.RegularExpressions.RegexOptions.IgnoreCase))">
-            true
-        </IsInBenchmarksFolder>
+            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]benchmarks?[/\\]', System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+            ">true</IsInBenchmarksFolder>
 
         <!-- Property to be used in conditions for detecting example usage projects -->
         <IsInExamplesFolder Condition="
-            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]examples?[/\\]', System.Text.RegularExpressions.RegexOptions.IgnoreCase))">
-            true
-        </IsInExamplesFolder>
+            $([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[/\\]examples?[/\\]', System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+            ">true</IsInExamplesFolder>
+
+        <!-- Property to be used in conditions for detecting CI environment -->
+        <IsCI Condition="'$(CI)' == 'true' OR '$(GITHUB_ACTIONS)' == 'true' OR '$(TF_BUILD)' == 'true'">true</IsCI>
     </PropertyGroup>
 
     <PropertyGroup>
+        <RepoRoot>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'Directory.Build.props'))</RepoRoot>
+
         <GITHUB_RUN_NUMBER Condition="'$(GITHUB_RUN_NUMBER)' == ''">0</GITHUB_RUN_NUMBER>
 
         <!-- To use if there are OS-specific differences in the public .NET APIs -->
@@ -51,29 +51,26 @@
 
         <!-- Use to define custom preprocessor symbols as a semicolon-separated list, e.g. dotnet build -p:preprocessor_symbols="SHORT_RUN;FEATURE_A;FEATURE_B"
              without overriding the rest of the symbols like DEBUG, TRACE, etc. -->
-        <!-- Accept only a semicolon-separated list of valid C# preprocessor symbols. -->
+        <!-- Accept only a semicolon-separated list of valid C# preprocessor symbols or empty string. -->
         <PreprocessorSymbolsValid Condition="'$(preprocessor_symbols)' == ''">true</PreprocessorSymbolsValid>
-
         <PreprocessorSymbolsValid Condition="
             '$(preprocessor_symbols)' != '' AND
-            $([System.Text.RegularExpressions.Regex]::IsMatch('$(preprocessor_symbols)', '^([A-Za-z_][A-Za-z0-9_]*)(;[A-Za-z_][A-Za-z0-9_]*)*$'))">
-            true
-        </PreprocessorSymbolsValid>
+            $([System.Text.RegularExpressions.Regex]::IsMatch('$(preprocessor_symbols)', '^([A-Za-z_][A-Za-z0-9_]*)(;[A-Za-z_][A-Za-z0-9_]*)*$'))
+            ">true</PreprocessorSymbolsValid>
 
-        <DefineConstants Condition="'$(PreprocessorSymbolsValid)' == 'true'">
-            $(preprocessor_symbols);$(DefineConstants)
-        </DefineConstants>
-
-        <RepoRoot>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'Directory.Build.props'))</RepoRoot>
+        <DefineConstants Condition="'$(PreprocessorSymbolsValid)' == 'true'">$(DefineConstants);$(preprocessor_symbols)</DefineConstants>
     </PropertyGroup>
 
+    <!-- Make sure the preprocessor directives are valid before building. -->
     <Target Name="ValidatePreprocessorSymbols" BeforeTargets="PrepareForBuild">
         <Error Condition="'$(PreprocessorSymbolsValid)' != 'true'" Code="VM20001" Text="preprocessor_symbols must contain valid semicolon-separated C# identifiers. Value: '$(preprocessor_symbols)'." />
     </Target>
 
     <!-- ================ Common Settings for All projects ================ -->
     <PropertyGroup Label="Packages">
-        <TargetFramework Condition="'$(TargetFramework)' == ''">net10.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
+        <Configuration Condition="'$(IsCI)' == 'true'">Release</Configuration>
+        <Configuration Condition="'$(IsCI)' != 'true'">Debug</Configuration>
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -87,23 +84,40 @@
         <DebugType>portable</DebugType>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
-        <RestoreLockedMode Condition="'$(CI)' == 'true'">true</RestoreLockedMode>
+        <RestoreLockedMode Condition="'$(IsCI)' == 'true'">true</RestoreLockedMode>
         <NuGetAuditLevel>moderate</NuGetAuditLevel>
-        <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+        <ContinuousIntegrationBuild Condition="'$(IsCI)' == 'true'">true</ContinuousIntegrationBuild>
+        <DOTNET_CLI_TELEMETRY_OPTOUT>true</DOTNET_CLI_TELEMETRY_OPTOUT>
+        <DOTNET_SKIP_FIRST_TIME_EXPERIENCE>true</DOTNET_SKIP_FIRST_TIME_EXPERIENCE>
+    </PropertyGroup>
+
+    <PropertyGroup Label="MinVer">
         <MinVerTagPrefix>v</MinVerTagPrefix>
         <MinVerDefaultPreReleaseIdentifiers>preview.0</MinVerDefaultPreReleaseIdentifiers>
-        <!-- Artifacts output layout settings
-        <UseArtifactsOutput>true</UseArtifactsOutput>
-        <ArtifactsPath Condition="'$(ARTIFACTS_DIR)' != ''">$([MSBuild]::NormalizePath('$(RepoRoot)', '$(ARTIFACTS_DIR)'))</ArtifactsPath>
-        -->
         <!-- Fallback defaults for MinVer variables (e.g., Dependabot runs without git tags) -->
         <MinVerMajor Condition="'$(MinVerMajor)' == ''">0</MinVerMajor>
         <MinVerMinor Condition="'$(MinVerMinor)' == ''">0</MinVerMinor>
         <MinVerPatch Condition="'$(MinVerPatch)' == ''">1</MinVerPatch>
         <AssemblyVersion>$(MinVerMajor).$(MinVerMinor).$(GITHUB_RUN_NUMBER).$(MinVerPatch)</AssemblyVersion>
         <FileVersion>$(MinVerMajor).$(MinVerMinor).$(MinVerPatch).$(GITHUB_RUN_NUMBER)</FileVersion>
-        <DOTNET_CLI_TELEMETRY_OPTOUT>true</DOTNET_CLI_TELEMETRY_OPTOUT>
-        <DOTNET_SKIP_FIRST_TIME_EXPERIENCE>true</DOTNET_SKIP_FIRST_TIME_EXPERIENCE>
+    </PropertyGroup>
+
+    <PropertyGroup Label="ArtifactsLayout">
+        <UseArtifactsOutput>true</UseArtifactsOutput>
+        <!-- <ArtifactsPath Condition="
+        '$(ArtifactsPath)' == '' AND '$(ARTIFACTS_DIR)' != ''
+        ">$([MSBuild]::NormalizePath('$(RepoRoot)', '$(ARTIFACTS_DIR)'))</ArtifactsPath> -->
+        <!-- <ArtifactsPath Condition="
+        '$(ArtifactsPath)' == '' AND '$(ARTIFACTS_DIR)' == ''
+        ">$([MSBuild]::NormalizePath('$(RepoRoot)', 'artifacts'))</ArtifactsPath> -->
+    </PropertyGroup>
+
+    <!-- The following group builds the product project(s) as AOT compatible and enforces verification of the dependencies AOT compatibility -->
+    <PropertyGroup Label="AoT" Condition="'$(IsProductProject)' == 'true'">
+        <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+        <IsTrimmable>true</IsTrimmable>
+        <IsAotCompatible>true</IsAotCompatible>
+        <VerifyReferenceAotCompatibility>true</VerifyReferenceAotCompatibility>
     </PropertyGroup>
 
     <!-- ================ Package properties for all vm2 packages ================ -->
@@ -125,13 +139,37 @@
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
     </PropertyGroup>
 
-    <!-- The following group builds the product project(s) as AOT compatible and enforces verification of the dependencies AOT compatibility -->
-    <PropertyGroup Label="AoT" Condition="'$(IsProductProject)' == 'true'">
-        <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
-        <IsTrimmable>true</IsTrimmable>
-        <IsAotCompatible>true</IsAotCompatible>
-        <VerifyReferenceAotCompatibility>true</VerifyReferenceAotCompatibility>
-    </PropertyGroup>
+    <!-- Print version info after build for all projects - CI will capture it and analyze it in the Step Summary -->
+    <Target Name="PrintVersion" AfterTargets="Build">
+        <!-- Build Properties: -->
+        <Message Importance="high" Text="Configuration=$(Configuration)" />
+        <Message Importance="high" Text="TargetFramework=$(TargetFramework)" />
+        <Message Importance="high" Text="RuntimeIdentifier=$(RuntimeIdentifier)" />
+        <Message Importance="high" Text="Platform=$(Platform)" />
+
+        <!-- Artifacts Layout Properties: -->
+        <Message Importance="high" Text="UseArtifactsOutput=$(UseArtifactsOutput)" Condition="'$(UseArtifactsOutput)' != ''" />
+        <Message Importance="high" Text="ArtifactsPath=$(ArtifactsPath)" Condition="'$(ArtifactsPath)' != ''" />
+        <Message Importance="high" Text="ArtifactsPivot=$(ArtifactsPivot)" Condition="'$(ArtifactsPivot)' != ''" />
+        <Message Importance="high" Text="ArtifactsProjectName=$(ArtifactsProjectName)" Condition="'$(ArtifactsProjectName)' != ''" />
+
+        <!-- Build Result Properties: -->
+        <Message Importance="high" Text="TargetPath=$(TargetPath)" />
+        <Message Importance="high" Text="PackageOutputPath=$(PackageOutputPath)" />
+
+        <!-- Version Strings: -->
+        <Message Importance="high" Text="AssemblyVersion=$(AssemblyVersion)" />
+        <Message Importance="high" Text="FileVersion=$(FileVersion)" />
+        <Message Importance="high" Text="InformationalVersion=$(InformationalVersion)" />
+        <Message Importance="high" Text="PackageVersion=$(PackageVersion)" />
+        <Message Importance="high" Text="Version=$(Version)" />
+
+        <!-- Package Properties -->
+        <Message Importance="high" Text="PackageOutputPath=$(PackageOutputPath)" />
+        <Message Importance="high" Text="PackageId=$(PackageId)" />
+        <Message Importance="high" Text="PackageVersion=$(PackageVersion)" />
+
+    </Target>
 
     <!-- ================ Common Package References and usings for All projects ================ -->
     <ItemGroup>
@@ -163,15 +201,6 @@
         <Using Include="System.Text.Json.Nodes" />
         <Using Include="System.Text.RegularExpressions" />
     </ItemGroup>
-
-    <!-- Print version info after build for all projects - CI will capture it and analyze it in the Step Summary -->
-    <Target Name="PrintVersion" AfterTargets="Build">
-        <Message Importance="high" Text="AssemblyVersion: $(AssemblyVersion)" />
-        <Message Importance="high" Text="FileVersion: $(FileVersion)" />
-        <Message Importance="high" Text="InformationalVersion: $(InformationalVersion)" />
-        <Message Importance="high" Text="PackageVersion: $(PackageVersion)" />
-        <Message Importance="high" Text="Version: $(Version)" />
-    </Target>
 
     <!-- ================ Test Projects Settings ================ -->
     <!-- Test stack:
@@ -312,7 +341,7 @@
     </ItemGroup>
 
     <PropertyGroup>
-        <DefineConstants Condition="'$(IsInBenchmarksFolder)' == 'true' AND '$(CI)' != 'true'">$(DefineConstants);SHORT_RUN</DefineConstants>
+        <DefineConstants Condition="'$(IsInBenchmarksFolder)' == 'true' AND '$(IsCI)' != 'true'">$(DefineConstants);SHORT_RUN</DefineConstants>
     </PropertyGroup>
 
     <!-- settings for example projects in the ./examples folder: -->
