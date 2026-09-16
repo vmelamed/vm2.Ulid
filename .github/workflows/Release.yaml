@@ -59,6 +59,8 @@ jobs:
       - name: Setup DevOps environment variables
         id: setup-env
         uses: vmelamed/vm2.DevOps/.github/actions/setup-env@big-bang
+        with:
+          ref: big-bang
 
       - name: Setup the latest jq
         id: setup-jq
@@ -175,6 +177,8 @@ jobs:
       - name: Setup DevOps environment variables
         id: setup-env
         uses: vmelamed/vm2.DevOps/.github/actions/setup-env@big-bang
+        with:
+          ref: big-bang
 
       - name: Publish NuGet release packages
         shell: bash
