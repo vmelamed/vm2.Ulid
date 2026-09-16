@@ -70,7 +70,6 @@
     <PropertyGroup Label="Packages">
         <TargetFramework>net10.0</TargetFramework>
         <Configuration Condition="'$(IsCI)' == 'true'">Release</Configuration>
-        <Configuration Condition="'$(IsCI)' != 'true'">Debug</Configuration>
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -104,12 +103,7 @@
 
     <PropertyGroup Label="ArtifactsLayout">
         <UseArtifactsOutput>true</UseArtifactsOutput>
-        <!-- <ArtifactsPath Condition="
-        '$(ArtifactsPath)' == '' AND '$(ARTIFACTS_DIR)' != ''
-        ">$([MSBuild]::NormalizePath('$(RepoRoot)', '$(ARTIFACTS_DIR)'))</ArtifactsPath> -->
-        <!-- <ArtifactsPath Condition="
-        '$(ArtifactsPath)' == '' AND '$(ARTIFACTS_DIR)' == ''
-        ">$([MSBuild]::NormalizePath('$(RepoRoot)', 'artifacts'))</ArtifactsPath> -->
+        <!-- Do not define ArtifactsPath - the workflows use hardcoded value for it <repo-root>/artifacts -->
     </PropertyGroup>
 
     <!-- The following group builds the product project(s) as AOT compatible and enforces verification of the dependencies AOT compatibility -->

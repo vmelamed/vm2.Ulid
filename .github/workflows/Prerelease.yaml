@@ -39,11 +39,9 @@ env:
   NUGET_SERVER: ${{ vars.NUGET_SERVER || 'nuget' }}
   NUGET_USERNAME: ${{ vars.NUGET_USERNAME || 'vmelamed' }}
   PREPROCESSOR_SYMBOLS: ""
-  CONFIGURATION: ${{ vars.CONFIGURATION || 'Release' }}                         # The build configuration: Debug, Release, etc.
-  FRAMEWORK: ${{ vars.FRAMEWORK || '10.0.x' }}                        # The .NET SDK version to use.
   MINVERTAGPREFIX: ${{ vars.MINVERTAGPREFIX || 'v' }}                           # The MinVer tag prefix.
   MINVERDEFAULTPRERELEASEIDENTIFIERS: ${{ vars.MINVERDEFAULTPRERELEASEIDENTIFIERS || 'preview.0' }} # The MinVer default pre-release identifiers.
-  ARTIFACTS_PATH: ${{ vars.ARTIFACTS_PATH || 'artifacts' }}                       # The directory to store build artifacts.
+  ARTIFACTS_PATH: artifacts                                                     # The directory to store build artifacts.
   VERBOSE: ${{ vars.VERBOSE || false }}                                         # Set the variable to "true" to enable verbose logging in scripts.
 
 jobs:
@@ -88,9 +86,7 @@ jobs:
         run: |
           source $DEVOPS_LIB_DIR/gh_core.sh
 
-          framework='${{ env.FRAMEWORK }}'
           package_projects=$(validate_json_array '${{ env.PACKAGE_PROJECTS }}' '[]' is_safe_existing_file)
-          configuration='${{ env.CONFIGURATION }}'
           preprocessor_symbols='${{ env.PREPROCESSOR_SYMBOLS }}'
           minver_tag_prefix='${{ env.MINVERTAGPREFIX }}'
           minver_prerelease_id='${{ env.MINVERDEFAULTPRERELEASEIDENTIFIERS }}'
@@ -109,8 +105,6 @@ jobs:
           dump_vars --force --quiet --markdown \
               --header "Job get-params outputs:" \
               package_projects \
-              package_projects_len \
-              framework \
               preprocessor_symbols \
               minver_tag_prefix \
               minver_prerelease_id \
@@ -122,8 +116,6 @@ jobs:
           # Set the outputs:
           args_to_github_output \
               package_projects \
-              framework \
-              configuration \
               preprocessor_symbols \
               minver_tag_prefix \
               minver_prerelease_id \
@@ -155,8 +147,6 @@ jobs:
       id-token: write # Required for authentication with the NuGet server
     with:
       package-projects: ${{ needs.get-params.outputs.package-projects }}
-      target-framework: ${{ needs.get-params.outputs.target-framework }}
-      configuration: ${{ needs.get-params.outputs.configuration }}
       preprocessor-symbols: ${{ needs.get-params.outputs.preprocessor-symbols }}
       minver-tag-prefix: ${{ needs.get-params.outputs.minver-tag-prefix }}
       minver-prerelease-id: ${{ needs.get-params.outputs.minver-prerelease-id }}

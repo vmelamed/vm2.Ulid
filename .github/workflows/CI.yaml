@@ -84,7 +84,6 @@ env:
     [
     "ubuntu-latest"
     ]
-  DOTNET_VERSION: ${{ vars.DOTNET_VERSION || '10.0.x' }}
   PREPROCESSOR_SYMBOLS: ""
   MIN_COVERAGE_PCT: ${{ vars.MIN_COVERAGE_PCT || 80 }}
   MAX_REGRESSION_PCT: ${{ vars.MAX_REGRESSION_PCT || 20 }}
@@ -105,12 +104,11 @@ jobs:
     permissions:
       pull-requests: read
     outputs:
-      # build-projects: ${{ steps.gather-params.outputs.build-projects }}
-      # test-projects: ${{ steps.gather-params.outputs.test-projects }}
-      # benchmark-projects: ${{ steps.gather-params.outputs.benchmark-projects }}
-      # package-projects: ${{ steps.gather-params.outputs.package-projects }}
+      build-projects: ${{ steps.gather-params.outputs.build-projects }}
+      test-projects: ${{ steps.gather-params.outputs.test-projects }}
+      benchmark-projects: ${{ steps.gather-params.outputs.benchmark-projects }}
+      package-projects: ${{ steps.gather-params.outputs.package-projects }}
       runners-os: ${{ steps.gather-params.outputs.runners-os }}
-      dotnet-version: ${{ steps.gather-params.outputs.dotnet-version }}
       preprocessor-symbols: ${{ steps.gather-params.outputs.preprocessor-symbols }}
       min-coverage-pct: ${{ steps.gather-params.outputs.min-coverage-pct }}
       max-regression-pct: ${{ steps.gather-params.outputs.max-regression-pct }}
@@ -128,12 +126,11 @@ jobs:
         id: gather-params
         uses: vmelamed/vm2.DevOps/.github/actions/gather-inputs@big-bang
         with:
-          # build-projects: ${{ env.BUILD_PROJECTS }}
-          # test-projects: ${{ env.TEST_PROJECTS }}
-          # benchmark-projects: ${{ env.BENCHMARK_PROJECTS }}
-          # package-projects: ${{ env.PACKAGE_PROJECTS }}
+          build-projects: ${{ env.BUILD_PROJECTS }}
+          test-projects: ${{ env.TEST_PROJECTS }}
+          benchmark-projects: ${{ env.BENCHMARK_PROJECTS }}
+          package-projects: ${{ env.PACKAGE_PROJECTS }}
           runners-os: ${{ env.RUNNERS_OS }}
-          dotnet-version: ${{ env.DOTNET_VERSION }}
           preprocessor-symbols: ${{ env.PREPROCESSOR_SYMBOLS }}
           min-coverage-pct: ${{ env.MIN_COVERAGE_PCT }}
           max-regression-pct: ${{ env.MAX_REGRESSION_PCT }}
@@ -166,10 +163,10 @@ jobs:
       pull-requests: write # Required to comment on PRs
       checks: write # Required to create GitHub Checks
     with:
-      build-projects: ${{ env.BUILD_PROJECTS }}
-      test-projects: ${{ env.TEST_PROJECTS }}
-      benchmark-projects: ${{ env.BENCHMARK_PROJECTS }}
-      package-projects: ${{ env.PACKAGE_PROJECTS }}
+      build-projects: ${{ needs.prerun-ci.outputs.build-projects }}
+      test-projects: ${{ needs.prerun-ci.outputs.test-projects }}
+      benchmark-projects: ${{ needs.prerun-ci.outputs.benchmark-projects }}
+      package-projects: ${{ needs.prerun-ci.outputs.package-projects }}
       runners-os: ${{ needs.prerun-ci.outputs.runners-os }}
       preprocessor-symbols: ${{ needs.prerun-ci.outputs.preprocessor-symbols }}
       min-coverage-pct: ${{ fromJSON(needs.prerun-ci.outputs.min-coverage-pct) }}
@@ -200,35 +197,38 @@ jobs:
       - name: Evaluate CI result
         shell: bash
         run: |
-          {
-              if [[ "${{ needs.prerun-ci.result }}" == "failure" || "${{ needs.prerun-ci.result }}" == "cancelled" ]]; then
-                  echo "❌  ERROR: Arguments gathering and preparation failed"
-                  exit 1
-              fi
-              if [[ "${{ needs.run-ci.result }}" == "skipped" ]]; then
-                  echo "⚠️  WARNING: CI was skipped (push to non-main branch with open PR). Prerelease will not be triggered."
-                  echo "              CI skipped (prerun-ci: ${{ needs.prerun-ci.result }}, run-ci: skipped)"
-              elif [[ "${{ needs.run-ci.result }}" == "failure" || "${{ needs.run-ci.result }}" == "cancelled" ]]; then
-                  echo "❌  ERROR: CI pipeline ${{ needs.run-ci.result }}"
-                  exit 1
-              else
-                  echo "✅  INFO: CI completed (prerun-ci: ${{ needs.prerun-ci.result }}, run-ci: ${{ needs.run-ci.result }})"
-              fi
+          source $DEVOPS_LIB_DIR/gh_core.sh
 
-              exit_code=0
+          prerun_ci_result="${{ needs.prerun-ci.result }}"
+          run_ci_result="${{ needs.run-ci.result }}"
 
-              if [[ "${{ needs.prerun-ci.outputs.skip-benchmarks }}" == "true" ]]; then
-                  echo "⚠️  WARNING: Benchmarks were skipped. The CI workflow is marked as failed, but it was intentional to save time. Use this option only for testing non-benchmark CI jobs faster."
-                  exit_code=1
-              fi
-              if [[ "${{ needs.prerun-ci.outputs.skip-tests }}" == "true" ]]; then
-                  echo "⚠️  WARNING: Tests were skipped. The CI workflow is marked as failed, but it was intentional to save time. Use this option only for testing non-test CI jobs faster."
-                  exit_code=1
-              fi
-              if [[ "${{ needs.prerun-ci.outputs.skip-packages }}" == "true" ]]; then
-                  echo "⚠️  WARNING: Building packages was skipped. The CI workflow is marked as failed, but it was intentional to save time. Use this option only for testing non-package CI jobs faster."
-                  exit_code=1
-              fi
+          if [[ $prerun_ci_result == "failure" || $prerun_ci_result == "cancelled" ]]; then
+              error -ns "CI pipeline pre-run(arguments gathering and preparation) $prerun_ci_result."
+              exit 1
+          fi
+          if [[ $run_ci_result == "skipped" ]]; then
+              warning "CI was skipped (push to non-main branch with open PR). Prerelease will not be triggered." \
+                      "CI skipped (prerun-ci: $prerun_ci_result, run-ci: skipped)"
+          elif [[ $run_ci_result == "failure" || $run_ci_result == "cancelled" ]]; then
+              error -ns "CI pipeline run $run_ci_result"
+              exit 1
+          else
+              info "CI completed (prerun-ci: $prerun_ci_result, run-ci: $run_ci_result)"
+          fi
 
-              exit $exit_code
-          } >> "$GITHUB_STEP_SUMMARY"
+          rc=0
+
+          if [[ "${{ needs.prerun-ci.outputs.skip-benchmarks }}" == "true" ]]; then
+              warning "Benchmarks were skipped. The CI workflow is marked as failed, but it was intentional to save time. Use this option only for testing non-benchmark CI jobs faster."
+              rc=1
+          fi
+          if [[ "${{ needs.prerun-ci.outputs.skip-tests }}" == "true" ]]; then
+              warning "Tests were skipped. The CI workflow is marked as failed, but it was intentional to save time. Use this option only for testing non-test CI jobs faster."
+              rc=1
+          fi
+          if [[ "${{ needs.prerun-ci.outputs.skip-packages }}" == "true" ]]; then
+              warning "Building packages was skipped. The CI workflow is marked as failed, but it was intentional to save time. Use this option only for testing non-package CI jobs faster."
+              rc=1
+          fi
+
+          exit $rc
