@@ -126,6 +126,7 @@ jobs:
         id: gather-params
         uses: vmelamed/vm2.DevOps/.github/actions/gather-inputs@big-bang
         with:
+          ref: big-bang
           build-projects: ${{ env.BUILD_PROJECTS }}
           test-projects: ${{ env.TEST_PROJECTS }}
           benchmark-projects: ${{ env.BENCHMARK_PROJECTS }}
@@ -193,6 +194,8 @@ jobs:
     steps:
       - name: Setup DevOps environment variables
         uses: vmelamed/vm2.DevOps/.github/actions/setup-env@big-bang
+        with:
+          ref: big-bang
 
       - name: Evaluate CI result
         shell: bash
