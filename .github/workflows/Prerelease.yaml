@@ -41,7 +41,9 @@ env:
   PREPROCESSOR_SYMBOLS: ""
   MINVERTAGPREFIX: ${{ vars.MINVERTAGPREFIX || 'v' }}                           # The MinVer tag prefix.
   MINVERDEFAULTPRERELEASEIDENTIFIERS: ${{ vars.MINVERDEFAULTPRERELEASEIDENTIFIERS || 'preview.0' }} # The MinVer default pre-release identifiers.
-  ARTIFACTS_PATH: artifacts                                                     # The directory to store build artifacts.
+  # this must be the same across all jobs and steps below.
+  # We must know where to find the artifacts and where to download/upload to/from across all jobs and steps here.
+  ARTIFACTS_PATH: artifacts
   VERBOSE: ${{ vars.VERBOSE || false }}                                         # Set the variable to "true" to enable verbose logging in scripts.
 
 jobs:
@@ -75,8 +77,6 @@ jobs:
       - name: Setup DevOps environment variables
         id: setup-env
         uses: vmelamed/vm2.DevOps/.github/actions/setup-env@big-bang
-        with:
-          ref: big-bang
 
       - name: Setup the latest jq
         id: setup-jq
@@ -195,8 +195,6 @@ jobs:
       - name: Setup DevOps environment variables
         id: setup-env
         uses: vmelamed/vm2.DevOps/.github/actions/setup-env@big-bang
-        with:
-          ref: big-bang
 
       - name: Publish NuGet prerelease packages
         shell: bash
