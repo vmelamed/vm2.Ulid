@@ -1,0 +1,25 @@
+<!-- Directory.Solution.props -->
+<!--
+  Imported at the very start of a solution build's own internal "metaproject" evaluation,
+  before that metaproject computes its own default Configuration/Platform and injects them as
+  global properties into every project it builds. A solution build never imports
+  Directory.Build.props/.targets at all, and these two files do not import each other, so
+  IsCI's derivation is deliberately duplicated here rather than shared; see
+  Directory.Build.props for the authoritative definition.
+
+  Without this file, a plain `dotnet build <solution>` in CI (no explicit -c) silently resolves
+  Configuration to "Debug": the metaproject's own default becomes a global property on every
+  contained project, which Directory.Build.props's own IsCI-conditioned default cannot override,
+  since global properties are immutable for the lifetime of a project's evaluation, regardless
+  of where in the import chain (props or targets) a PropertyGroup assignment appears. Confirmed
+  empirically: renaming Directory.Build.props to Directory.Build.targets does not fix this, and
+  neither does the documented TreatAsLocalProperty escape hatch (it does not work for SDK-style
+  projects; see https://github.com/dotnet/msbuild/issues/7656). This file fixes it at the
+  correct layer, the solution's own default, before it is ever injected per project.
+-->
+<Project>
+    <PropertyGroup>
+        <IsCI Condition="'$(CI)' == 'true' OR '$(GITHUB_ACTIONS)' == 'true' OR '$(TF_BUILD)' == 'true'">true</IsCI>
+        <Configuration Condition="'$(Configuration)' == '' AND '$(IsCI)' == 'true'">Release</Configuration>
+    </PropertyGroup>
+</Project>
