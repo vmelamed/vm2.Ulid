@@ -87,7 +87,9 @@ jobs:
               reason='${{ inputs.reason }}'
           fi
 
-          dump_vars --force --quiet --markdown \
+          dump_vars \
+              --force \
+              --quiet \
               --header "Job get-params outputs:" \
               package_projects \
               package_projects_len \
@@ -96,8 +98,7 @@ jobs:
               minver_prerelease_id \
               reason \
               nuget_server \
-              nuget_username \
-              to_summary
+              nuget_username | to_summary
 
           # Set the outputs:
           args_to_github_output \
