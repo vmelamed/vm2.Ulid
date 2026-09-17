@@ -90,6 +90,7 @@ jobs:
           dump_vars \
               --force \
               --quiet \
+              --markdown \
               --header "Job get-params outputs:" \
               package_projects \
               package_projects_len \
