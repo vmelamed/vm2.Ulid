@@ -1,5 +1,12 @@
 # Changelog
 
+## v5.3.0-preview.6 - 2026-09-18
+
+### Internal
+
+- drop ARTIFACTS_PATH from Prerelease.yaml's own download/publish job
+- trigger prerelease test
+
 ## v5.3.0-preview.5 - 2026-09-18
 
 ### Fixed
