@@ -170,11 +170,15 @@ jobs:
       actions: read   # Required to read workflow run artifact IDs (for downloading package artifacts if the NuGet server is 'nuget')
       id-token: write # Required for authentication with the NuGet server
     steps:
+      # merge-multiple: true flattens all downloaded package artifacts into one directory -- without it, each
+      # artifact-id lands in its own nested subfolder (artifacts/packages/<artifact-name>/*.nupkg), one level
+      # deeper than the flat artifacts/packages/*.nupkg glob the publish step below expects.
       - name: Download package artifact
         uses: actions/download-artifact@v8
         with:
           artifact-ids: ${{ needs.build-prerelease.outputs.artifact-ids }}
           path: ${{ env.ARTIFACTS_PATH }}/packages
+          merge-multiple: true
 
       # TODO: remove this debug step once OIDC claims are verified
       - name: Debug OIDC claims (temporary)
