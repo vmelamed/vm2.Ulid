@@ -37,14 +37,20 @@ on:
         required: true
         default: false
 
-      skip-benchmarks:
-        description: Skip benchmark tests. WARNING! THE CI WORKFLOW WILL FAIL -- use only for faster CI test run.
+      skip-build:
+        description: Skip building. WARNING! THE CI WORKFLOW WILL FAIL -- use only for faster CI test run.
         type: boolean
         required: true
         default: false
 
       skip-tests:
         description: Skip unit/integration tests. WARNING! THE CI WORKFLOW WILL FAIL -- use only for faster CI test run.
+        type: boolean
+        required: true
+        default: false
+
+      skip-benchmarks:
+        description: Skip benchmark tests. WARNING! THE CI WORKFLOW WILL FAIL -- use only for faster CI test run.
         type: boolean
         required: true
         default: false
@@ -117,8 +123,9 @@ jobs:
       minver-tag-prefix: ${{ steps.gather-params.outputs.minver-tag-prefix }}
       minver-prerelease-id: ${{ steps.gather-params.outputs.minver-prerelease-id }}
       reset-benchmark-thresholds: ${{ steps.gather-params.outputs.reset-benchmark-thresholds }}
-      skip-benchmarks: ${{ steps.gather-params.outputs.skip-benchmarks }}
+      skip-build: ${{ steps.gather-params.outputs.skip-build }}
       skip-tests: ${{ steps.gather-params.outputs.skip-tests }}
+      skip-benchmarks: ${{ steps.gather-params.outputs.skip-benchmarks }}
       skip-packages: ${{ steps.gather-params.outputs.skip-packages }}
       skip-push: ${{ steps.gather-params.outputs.skip-push }}
     steps:
@@ -143,8 +150,9 @@ jobs:
           dispatch-runners-os: ${{ inputs.runners-os }}
           dispatch-preprocessor-symbols: ${{ inputs.preprocessor-symbols }}
           dispatch-reset-benchmark-thresholds: ${{ inputs.reset-benchmark-thresholds }}
-          dispatch-skip-benchmarks: ${{ inputs.skip-benchmarks }}
+          dispatch-skip-build: ${{ inputs.skip-build }}
           dispatch-skip-tests: ${{ inputs.skip-tests }}
+          dispatch-skip-benchmarks: ${{ inputs.skip-benchmarks }}
           dispatch-skip-packages: ${{ inputs.skip-packages }}
 
   run-ci:
@@ -176,8 +184,9 @@ jobs:
       minver-tag-prefix: ${{ needs.prerun-ci.outputs.minver-tag-prefix }}
       minver-prerelease-id: ${{ needs.prerun-ci.outputs.minver-prerelease-id }}
       reset-benchmark-thresholds: ${{ needs.prerun-ci.outputs.reset-benchmark-thresholds == 'true' }}
-      skip-benchmarks: ${{ needs.prerun-ci.outputs.skip-benchmarks == 'true' }}
+      skip-build: ${{ needs.prerun-ci.outputs.skip-build == 'true' }}
       skip-tests: ${{ needs.prerun-ci.outputs.skip-tests == 'true' }}
+      skip-benchmarks: ${{ needs.prerun-ci.outputs.skip-benchmarks == 'true' }}
       skip-packages: ${{ needs.prerun-ci.outputs.skip-packages == 'true' }}
 
   # Gate job: single required status check for branch protection.
@@ -218,16 +227,20 @@ jobs:
 
           rc=0
 
-          if [[ "${{ needs.prerun-ci.outputs.skip-benchmarks }}" == "true" ]]; then
-              warning "Benchmarks were skipped. The CI workflow is marked as failed, but it was intentional to save time. Use this option only for testing non-benchmark CI jobs faster."
+          if [[ "${{ needs.prerun-ci.outputs.skip-build }}" == "true" ]]; then
+              warning "Building the code was skipped. The CI workflow is intentionally marked as failed to save time. Use this option only for testing non-build CI jobs faster."
               rc=1
           fi
           if [[ "${{ needs.prerun-ci.outputs.skip-tests }}" == "true" ]]; then
-              warning "Tests were skipped. The CI workflow is marked as failed, but it was intentional to save time. Use this option only for testing non-test CI jobs faster."
+              warning "Tests were skipped. The CI workflow is intentionally marked as failed to save time. Use this option only for testing non-test CI jobs faster."
+              rc=1
+          fi
+          if [[ "${{ needs.prerun-ci.outputs.skip-benchmarks }}" == "true" ]]; then
+              warning "Benchmarks were skipped. The CI workflow is intentionally marked as failed to save time. Use this option only for testing non-benchmark CI jobs faster."
               rc=1
           fi
           if [[ "${{ needs.prerun-ci.outputs.skip-packages }}" == "true" ]]; then
-              warning "Building packages was skipped. The CI workflow is marked as failed, but it was intentional to save time. Use this option only for testing non-package CI jobs faster."
+              warning "Building packages was skipped. The CI workflow is intentionally marked as failed to save time. Use this option only for testing non-package CI jobs faster."
               rc=1
           fi
 
