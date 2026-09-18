@@ -1,5 +1,11 @@
 # Changelog
 
+## v5.3.0-preview.4 - 2026-09-18
+
+### Internal
+
+- trigger prerelease test
+
 ## v5.3.0-preview.3 - 2026-09-18
 
 ### Internal
