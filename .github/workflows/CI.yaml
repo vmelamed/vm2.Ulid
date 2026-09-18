@@ -67,9 +67,18 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  # BUILD_PROJECTS: >-
+  #   [
+  #   "vm2.Ulid.slnx"
+  #   ]
   BUILD_PROJECTS: >-
     [
-    "vm2.Ulid.slnx"
+    "src/Ulid/Ulid.csproj",
+    "src/Serialization.NsJson.Ulid/Serialization.NsJson.Ulid.csproj",
+    "src/UlidTool/UlidTool.csproj",
+    "tests/Ulid/Ulid.Tests.csproj",
+    "tests/UlidTool/UlidTool.Tests.csproj",
+    "benchmarks/Ulid/Ulid.Benchmarks.csproj"
     ]
   TEST_PROJECTS: >-
     [
