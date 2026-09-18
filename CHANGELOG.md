@@ -1,5 +1,30 @@
 # Changelog
 
+## v5.3.0-preview.1 - 2026-09-18
+
+### Added
+
+- add skip-build workflow_dispatch input
+
+### Fixed
+
+- change the MinVerDefaultPreReleaseIdentifiers to preview.0; separate artifacts output layout settings with a comment
+- align workflows with vm2.DevOps big-bang cleanup (dotnet-version, Configuration, ArtifactsPath)
+- pass ref: big-bang explicitly to setup-env/gather-inputs calls
+- remove ref: big-bang, setup-env now self-detects it
+- add Directory.Solution.props to fix solution-build Configuration
+- update dump_vars command in workflows
+- use --markdown when dump_vars goes to_summary
+- validate_json_array is a by-reference validator, not a stdout function
+
+### Internal
+
+- update dependencies
+- drop UTF-8 BOM from *.cs files; standardize on charset = utf-8
+- update dependencies, temp. work with big-bang branch of DevOps, added SPDX, diff-shared updates
+- temporarily list every project individually in BUILD_PROJECTS
+- temporarily allow manual Prerelease dispatch from big-bang
+
 ## v5.2.2-preview.11 - 2026-08-03
 
 ### Internal
