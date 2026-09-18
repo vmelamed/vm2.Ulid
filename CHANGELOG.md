@@ -1,5 +1,15 @@
 # Changelog
 
+## v5.3.0-preview.5 - 2026-09-18
+
+### Fixed
+
+- flatten downloaded package artifacts before publishing
+
+### Internal
+
+- trigger prerelease test
+
 ## v5.3.0-preview.4 - 2026-09-18
 
 ### Internal
