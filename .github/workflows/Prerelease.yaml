@@ -88,7 +88,8 @@ jobs:
         run: |
           source $DEVOPS_LIB_DIR/gh_core.sh
 
-          package_projects=$(validate_json_array '${{ env.PACKAGE_PROJECTS }}' '[]' is_safe_existing_file)
+          package_projects='${{ env.PACKAGE_PROJECTS }}'
+          validate_json_array package_projects '[]' is_safe_existing_file
           preprocessor_symbols='${{ env.PREPROCESSOR_SYMBOLS }}'
           minver_tag_prefix='${{ env.MINVERTAGPREFIX }}'
           minver_prerelease_id='${{ env.MINVERDEFAULTPRERELEASEIDENTIFIERS }}'
