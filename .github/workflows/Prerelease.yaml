@@ -41,9 +41,6 @@ env:
   PREPROCESSOR_SYMBOLS: ""
   MINVERTAGPREFIX: ${{ vars.MINVERTAGPREFIX || 'v' }}                           # The MinVer tag prefix.
   MINVERDEFAULTPRERELEASEIDENTIFIERS: ${{ vars.MINVERDEFAULTPRERELEASEIDENTIFIERS || 'preview.0' }} # The MinVer default pre-release identifiers.
-  # this must be the same across all jobs and steps below.
-  # We must know where to find the artifacts and where to download/upload to/from across all jobs and steps here.
-  ARTIFACTS_PATH: artifacts
   VERBOSE: ${{ vars.VERBOSE || false }}                                         # Set the variable to "true" to enable verbose logging in scripts.
 
 jobs:
@@ -170,27 +167,31 @@ jobs:
       actions: read   # Required to read workflow run artifact IDs (for downloading package artifacts if the NuGet server is 'nuget')
       id-token: write # Required for authentication with the NuGet server
     steps:
+      # This job never builds anything -- it only downloads .nupkg files another job already produced and pushes
+      # them -- so "packages" here is just a local staging directory for this job's own runner, not the
+      # Directory.Build.props-derived ArtifactsPath the rest of the pipeline uses for real build output.
+      #
       # merge-multiple: true flattens all downloaded package artifacts into one directory -- without it, each
-      # artifact-id lands in its own nested subfolder (artifacts/packages/<artifact-name>/*.nupkg), one level
-      # deeper than the flat artifacts/packages/*.nupkg glob the publish step below expects.
+      # artifact-id lands in its own nested subfolder (packages/<artifact-name>/*.nupkg), one level deeper than
+      # the flat packages/*.nupkg glob the publish step below expects.
       - name: Download package artifact
         uses: actions/download-artifact@v8
         with:
           artifact-ids: ${{ needs.build-prerelease.outputs.artifact-ids }}
-          path: ${{ env.ARTIFACTS_PATH }}/packages
+          path: packages
           merge-multiple: true
 
-      # TODO: remove this debug step once OIDC claims are verified
-      - name: Debug OIDC claims (temporary)
-        if: needs.get-params.outputs.nuget-server == 'nuget' # Temp. debug OIDC claims if verbose logging is enabled or if the NuGet server is 'nuget' (NuGet.org)
-        shell: bash
-        run: |
-          set -euo pipefail
-          tok_json="$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=api://AzureADTokenExchange")"
-          jwt="$(echo "$tok_json" | jq -r '.value')"
-          payload="$(echo "$jwt" | cut -d'.' -f2 | tr '_-' '/+' | base64 -d 2>/dev/null || true)"
-          echo "$payload" | jq '{repository, repository_id, repository_owner, repository_owner_id, workflow, workflow_ref, job_workflow_ref, ref, sha, actor}'
+      # # TODO: remove this debug step once OIDC claims are verified
+      # - name: Debug OIDC claims (temporary)
+      #   if: needs.get-params.outputs.nuget-server == 'nuget' # Temp. debug OIDC claims if verbose logging is enabled or if the NuGet server is 'nuget' (NuGet.org)
+      #   shell: bash
+      #   run: |
+      #     set -euo pipefail
+      #     tok_json="$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+      #       "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=api://AzureADTokenExchange")"
+      #     jwt="$(echo "$tok_json" | jq -r '.value')"
+      #     payload="$(echo "$jwt" | cut -d'.' -f2 | tr '_-' '/+' | base64 -d 2>/dev/null || true)"
+      #     echo "$payload" | jq '{repository, repository_id, repository_owner, repository_owner_id, workflow, workflow_ref, job_workflow_ref, ref, sha, actor}'
 
       - name: Authenticate with NuGet.org trusted publishing to get steps.nuget-login.outputs.NUGET_API_KEY
         if: needs.get-params.outputs.nuget-server == 'nuget'
@@ -210,7 +211,7 @@ jobs:
 
           set -euo pipefail
 
-          artifacts_dir="$ARTIFACTS_PATH/packages"
+          artifacts_dir="packages"
           nuget_server="${{ needs.get-params.outputs.nuget-server }}"
           case "$nuget_server" in
               nuget )
