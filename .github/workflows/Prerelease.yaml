@@ -52,7 +52,7 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       ( github.event_name == 'workflow_dispatch' &&
-        github.ref_name == 'main' )
+        ( github.ref_name == 'main' || github.ref_name == 'big-bang' ) )
       ||
       ( github.event_name == 'workflow_run' &&
         github.event.workflow_run.event == 'push' &&
