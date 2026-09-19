@@ -1,5 +1,15 @@
 # Changelog
 
+## v5.3.0-preview.8 - 2026-09-19
+
+### Fixed
+
+- obtain the NuGet.org trusted-publishing key here, pass it to _prerelease.yaml
+
+### Internal
+
+- trigger prerelease test
+
 ## v5.3.0-preview.7 - 2026-09-19
 
 ### Internal
