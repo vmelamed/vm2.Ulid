@@ -36,7 +36,7 @@ spelling_error_severity = information
 # Organize usings
 dotnet_separate_import_directive_groups = true
 dotnet_sort_system_directives_first = true
-file_header_template = unset
+file_header_template = SPDX-License-Identifier: MIT\nCopyright (c) 2025-2026 Val Melamed\n
 
 # this. and Me. preferences
 dotnet_style_qualification_for_event = false
