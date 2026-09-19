@@ -47,6 +47,8 @@ jobs:
   get-params:
     name: Prepare the parameters
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write # Required for the NuGet.org trusted-publishing OIDC exchange below
     if: |
       ( github.event_name == 'workflow_dispatch' &&
         ( github.ref_name == 'main' || github.ref_name == 'big-bang' ) )
@@ -62,7 +64,7 @@ jobs:
       minver-prerelease-id: ${{ steps.gather-params.outputs.minver-prerelease-id }}
       reason: ${{ steps.gather-params.outputs.reason }}
       nuget-server: ${{ steps.gather-params.outputs.nuget-server }}
-      nuget-username: ${{ steps.gather-params.outputs.nuget-username }}
+      nuget-api-key: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
 
     steps:
       - name: Checkout
@@ -124,6 +126,18 @@ jobs:
               nuget_server \
               nuget_username
 
+      # NuGet.org trusted publishing keys the OIDC trust policy off job_workflow_ref, which for a reusable workflow
+      # names the workflow FILE that is running, not the repository that called it -- _prerelease.yaml (in
+      # vm2.DevOps) can never satisfy a trust policy scoped to THIS repository, so the exchange has to happen here,
+      # in the job whose job_workflow_ref actually matches the policy. The resulting short-lived key is handed to
+      # _prerelease.yaml as a secret below instead.
+      - name: Authenticate with NuGet.org trusted publishing
+        if: steps.gather-params.outputs.nuget-server == 'nuget'
+        id: nuget-login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ steps.gather-params.outputs.nuget-username }}
+
   log-trigger:
     name: Log manual trigger reason
     if: github.event_name == 'workflow_dispatch'
@@ -140,13 +154,15 @@ jobs:
       - get-params
     uses: vmelamed/vm2.DevOps/.github/workflows/_prerelease.yaml@big-bang
     secrets:
-      RELEASE_PAT: ${{ secrets.RELEASE_PAT }}     # Required PAT for pushing changelog and tags past branch protection.
-      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }} # Only used when nuget-server is not 'nuget' (NuGet.org uses OIDC trusted publishing).
+      RELEASE_PAT: ${{ secrets.RELEASE_PAT }} # Required PAT for pushing changelog and tags past branch protection.
+      # For 'nuget' (NuGet.org), this is the short-lived key get-params already obtained via its own OIDC trusted-
+      # publishing exchange (job_workflow_ref there matches this repo's trust policy). For 'github'/a custom URL,
+      # it falls back to this repo's own static secret.
+      NUGET_API_KEY: ${{ needs.get-params.outputs.nuget-api-key || secrets.NUGET_API_KEY }}
     permissions:
       actions: read # Required to checkout the code, push changelog, and create tags
       contents: write # Required to checkout the code, push changelog, and create tags
       packages: write # Required to add pre-release NuGet packages
-      id-token: write # Required for authentication with the NuGet server
     with:
       package-projects: ${{ needs.get-params.outputs.package-projects }}
       preprocessor-symbols: ${{ needs.get-params.outputs.preprocessor-symbols }}
@@ -154,7 +170,6 @@ jobs:
       minver-prerelease-id: ${{ needs.get-params.outputs.minver-prerelease-id }}
       reason: ${{ needs.get-params.outputs.reason }}
       nuget-server: ${{ needs.get-params.outputs.nuget-server }}
-      nuget-username: ${{ needs.get-params.outputs.nuget-username }}
       sha: ${{ github.event.workflow_run.head_sha || github.sha }}
 
   remind-changelog:
