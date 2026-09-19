@@ -114,19 +114,16 @@ jobs:
       - get-params
     uses: vmelamed/vm2.DevOps/.github/workflows/_release.yaml@big-bang
     secrets:
-      RELEASE_PAT: ${{ secrets.RELEASE_PAT }}     # Required PAT for pushing changelog and tags past branch protection.
+      RELEASE_PAT: ${{ secrets.RELEASE_PAT }} # Required PAT for pushing changelog and tags past branch protection.
     permissions:
       actions: read # Required to checkout the code, push changelog, and create tags
       contents: write # Required to checkout the code, push changelog, and create tags
       packages: write # Required to add stable NuGet packages
-      id-token: write # Required for authentication with the NuGet server
     with:
       package-projects: ${{ needs.get-params.outputs.package-projects }}
       preprocessor-symbols: ${{ needs.get-params.outputs.preprocessor-symbols }}
       minver-tag-prefix: ${{ needs.get-params.outputs.minver-tag-prefix }}
       reason: ${{ needs.get-params.outputs.reason }}
-      nuget-server: ${{ needs.get-params.outputs.nuget-server }}
-      nuget-username: ${{ needs.get-params.outputs.nuget-username }}
 
   publish-release:
     name: Publish NuGet release packages
