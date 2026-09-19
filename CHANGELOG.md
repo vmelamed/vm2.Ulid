@@ -1,5 +1,9 @@
 # Changelog
 
+## v5.3.0 - 2026-09-19
+
+See prereleases below.
+
 ## v5.3.0-preview.9 - 2026-09-19
 
 ### Internal
