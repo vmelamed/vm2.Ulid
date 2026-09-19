@@ -103,7 +103,6 @@
 
     <PropertyGroup Label="ArtifactsLayout">
         <UseArtifactsOutput>true</UseArtifactsOutput>
-        <!-- Do not define ArtifactsPath - the workflows use hardcoded value for it <repo-root>/artifacts -->
     </PropertyGroup>
 
     <!-- The following group builds the product project(s) as AOT compatible and enforces verification of the dependencies AOT compatibility -->

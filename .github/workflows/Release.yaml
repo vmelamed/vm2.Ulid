@@ -135,13 +135,6 @@ jobs:
       actions: read   # Required to read workflow run artifact IDs (for downloading package artifacts if the NuGet server is 'nuget')
       id-token: write # Required for authentication with the NuGet server
     steps:
-      # This job never builds anything -- it only downloads .nupkg files another job already produced and pushes
-      # them -- so "packages" here is just a local staging directory for this job's own runner, not the
-      # Directory.Build.props-derived ArtifactsPath the rest of the pipeline uses for real build output.
-      #
-      # merge-multiple: true flattens all downloaded package artifacts into one directory -- without it, each
-      # artifact-id lands in its own nested subfolder (packages/<artifact-name>/*.nupkg), one level deeper than
-      # the flat packages/*.nupkg glob the publish step below expects.
       - name: Download package artifact
         uses: actions/download-artifact@v8
         with:
