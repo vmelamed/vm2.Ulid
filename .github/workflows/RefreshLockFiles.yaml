@@ -13,8 +13,6 @@ on:
 jobs:
   refresh:
     uses: vmelamed/vm2.DevOps/.github/workflows/_refresh_lockfiles.yaml@main
-    with:
-      target-framework: ${{ vars.FRAMEWORK || '10.0.x' }}
     secrets:
       GH_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
     permissions:
