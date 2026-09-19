@@ -35,7 +35,7 @@ jobs:
     # Only allow manual releases from the main branch, as a safety measure against accidental releases from PRs or other branches.
     if: |
       ${{ github.event_name == 'workflow_dispatch' &&
-          github.ref_name == 'main' || github.ref_name == 'big-bang' }}
+          github.ref_name == 'main' }}
     outputs:
       package-projects: ${{ steps.gather-params.outputs.package-projects }}
       preprocessor-symbols: ${{ steps.gather-params.outputs.preprocessor-symbols }}
@@ -52,11 +52,11 @@ jobs:
 
       - name: Setup DevOps environment variables
         id: setup-env
-        uses: vmelamed/vm2.DevOps/.github/actions/setup-env@big-bang
+        uses: vmelamed/vm2.DevOps/.github/actions/setup-env@main
 
       - name: Setup the latest jq
         id: setup-jq
-        uses: vmelamed/vm2.DevOps/.github/actions/setup-jq@big-bang
+        uses: vmelamed/vm2.DevOps/.github/actions/setup-jq@main
 
       - name: Gather argument values depending on the event
         id: gather-params
@@ -112,7 +112,7 @@ jobs:
     name: Release - package and publish NuGet stable release packages
     needs:
       - get-params
-    uses: vmelamed/vm2.DevOps/.github/workflows/_release.yaml@big-bang
+    uses: vmelamed/vm2.DevOps/.github/workflows/_release.yaml@main
     secrets:
       RELEASE_PAT: ${{ secrets.RELEASE_PAT }} # Required PAT for pushing changelog and tags past branch protection.
     permissions:
@@ -158,7 +158,7 @@ jobs:
 
       - name: Setup DevOps environment variables
         id: setup-env
-        uses: vmelamed/vm2.DevOps/.github/actions/setup-env@big-bang
+        uses: vmelamed/vm2.DevOps/.github/actions/setup-env@main
 
       - name: Publish NuGet release packages
         shell: bash

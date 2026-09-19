@@ -49,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       ( github.event_name == 'workflow_dispatch' &&
-        ( github.ref_name == 'main' || github.ref_name == 'big-bang' ) )
+        github.ref_name == 'main' )
       ||
       ( github.event_name == 'workflow_run' &&
         github.event.workflow_run.event == 'push' &&
@@ -73,11 +73,11 @@ jobs:
 
       - name: Setup DevOps environment variables
         id: setup-env
-        uses: vmelamed/vm2.DevOps/.github/actions/setup-env@big-bang
+        uses: vmelamed/vm2.DevOps/.github/actions/setup-env@main
 
       - name: Setup the latest jq
         id: setup-jq
-        uses: vmelamed/vm2.DevOps/.github/actions/setup-jq@big-bang
+        uses: vmelamed/vm2.DevOps/.github/actions/setup-jq@main
 
       - name: Gather argument values depending on the event
         id: gather-params
@@ -139,7 +139,7 @@ jobs:
     name: Prerelease - package and release NuGet prerelease
     needs:
       - get-params
-    uses: vmelamed/vm2.DevOps/.github/workflows/_prerelease.yaml@big-bang
+    uses: vmelamed/vm2.DevOps/.github/workflows/_prerelease.yaml@main
     secrets:
       RELEASE_PAT: ${{ secrets.RELEASE_PAT }}     # Required PAT for pushing changelog and tags past branch protection.
     permissions:
@@ -202,7 +202,7 @@ jobs:
 
       - name: Setup DevOps environment variables
         id: setup-env
-        uses: vmelamed/vm2.DevOps/.github/actions/setup-env@big-bang
+        uses: vmelamed/vm2.DevOps/.github/actions/setup-env@main
 
       - name: Publish NuGet prerelease packages
         shell: bash
