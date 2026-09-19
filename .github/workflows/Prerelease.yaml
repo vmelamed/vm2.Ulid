@@ -56,15 +56,14 @@ jobs:
         github.event.workflow_run.conclusion == 'success' &&
         !contains(github.event.workflow_run.head_commit.message, '[skip ci]') )
     outputs:
-      target-framework: ${{ steps.gather-params.outputs.target-framework }}
       package-projects: ${{ steps.gather-params.outputs.package-projects }}
-      configuration: ${{ steps.gather-params.outputs.configuration }}
       preprocessor-symbols: ${{ steps.gather-params.outputs.preprocessor-symbols }}
       minver-tag-prefix: ${{ steps.gather-params.outputs.minver-tag-prefix }}
       minver-prerelease-id: ${{ steps.gather-params.outputs.minver-prerelease-id }}
       reason: ${{ steps.gather-params.outputs.reason }}
       nuget-server: ${{ steps.gather-params.outputs.nuget-server }}
       nuget-username: ${{ steps.gather-params.outputs.nuget-username }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -136,12 +135,13 @@ jobs:
           echo "::notice::Reason: ${{ inputs.reason }}"
 
   build-prerelease:
-    name: Prerelease - package and release NuGet prerelease
+    name: Prerelease - package and release NuGet prerelease packages
     needs:
       - get-params
     uses: vmelamed/vm2.DevOps/.github/workflows/_prerelease.yaml@big-bang
     secrets:
       RELEASE_PAT: ${{ secrets.RELEASE_PAT }}     # Required PAT for pushing changelog and tags past branch protection.
+      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }} # Only used when nuget-server is not 'nuget' (NuGet.org uses OIDC trusted publishing).
     permissions:
       actions: read # Required to checkout the code, push changelog, and create tags
       contents: write # Required to checkout the code, push changelog, and create tags
@@ -157,101 +157,11 @@ jobs:
       nuget-username: ${{ needs.get-params.outputs.nuget-username }}
       sha: ${{ github.event.workflow_run.head_sha || github.sha }}
 
-  publish-prerelease:
-    name: Publish NuGet prerelease packages
-    needs:
-      - get-params
-      - build-prerelease
-    runs-on: ubuntu-latest
-    permissions:
-      actions: read   # Required to read workflow run artifact IDs (for downloading package artifacts if the NuGet server is 'nuget')
-      id-token: write # Required for authentication with the NuGet server
-    steps:
-      # This job never builds anything -- it only downloads .nupkg files another job already produced and pushes
-      # them -- so "packages" here is just a local staging directory for this job's own runner, not the
-      # Directory.Build.props-derived ArtifactsPath the rest of the pipeline uses for real build output.
-      #
-      # merge-multiple: true flattens all downloaded package artifacts into one directory -- without it, each
-      # artifact-id lands in its own nested subfolder (packages/<artifact-name>/*.nupkg), one level deeper than
-      # the flat packages/*.nupkg glob the publish step below expects.
-      - name: Download package artifact
-        uses: actions/download-artifact@v8
-        with:
-          artifact-ids: ${{ needs.build-prerelease.outputs.artifact-ids }}
-          path: packages
-          merge-multiple: true
-
-      # # TODO: remove this debug step once OIDC claims are verified
-      # - name: Debug OIDC claims (temporary)
-      #   if: needs.get-params.outputs.nuget-server == 'nuget' # Temp. debug OIDC claims if verbose logging is enabled or if the NuGet server is 'nuget' (NuGet.org)
-      #   shell: bash
-      #   run: |
-      #     set -euo pipefail
-      #     tok_json="$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-      #       "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=api://AzureADTokenExchange")"
-      #     jwt="$(echo "$tok_json" | jq -r '.value')"
-      #     payload="$(echo "$jwt" | cut -d'.' -f2 | tr '_-' '/+' | base64 -d 2>/dev/null || true)"
-      #     echo "$payload" | jq '{repository, repository_id, repository_owner, repository_owner_id, workflow, workflow_ref, job_workflow_ref, ref, sha, actor}'
-
-      - name: Authenticate with NuGet.org trusted publishing to get steps.nuget-login.outputs.NUGET_API_KEY
-        if: needs.get-params.outputs.nuget-server == 'nuget'
-        id: nuget-login
-        uses: NuGet/login@v1
-        with:
-          user: ${{ needs.get-params.outputs.nuget-username }}
-
-      - name: Setup DevOps environment variables
-        id: setup-env
-        uses: vmelamed/vm2.DevOps/.github/actions/setup-env@big-bang
-
-      - name: Publish NuGet prerelease packages
-        shell: bash
-        run: |
-          source $DEVOPS_LIB_DIR/gh_core.sh
-
-          set -euo pipefail
-
-          artifacts_dir="packages"
-          nuget_server="${{ needs.get-params.outputs.nuget-server }}"
-          case "$nuget_server" in
-              nuget )
-                  server_name="NuGet.org"
-                  server_url="https://api.nuget.org/v3/index.json"
-                  nuget_api_key="${{ steps.nuget-login.outputs.NUGET_API_KEY }}"
-                  ;;
-              github )
-                  server_name="GitHub Packages"
-                  server_url="https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
-                  nuget_api_key="${{ secrets.NUGET_API_KEY }}"
-                  [[ -n "$nuget_api_key" ]] ||
-                      error -ec "$err_missing_argument" "No API key provided for server '$server_name'"
-                  ;;
-              http://*|https://* )
-                  server_name="$nuget_server"
-                  server_url="$nuget_server"
-                  nuget_api_key="${{ secrets.NUGET_API_KEY }}"
-                  [[ -n "$nuget_api_key" ]] ||
-                      error -ec "$err_missing_argument" "No API key provided for server '$server_name'"
-                  ;;
-              * )
-                  error "Unsupported NuGet server: '${{ needs.get-params.outputs.nuget-server }}'. Supported values: 'nuget', 'github', 'custom URL'."
-                  ;;
-          esac
-          exit_if_has_errors
-
-          for pkg in "$artifacts_dir"/*.nupkg; do
-              trace "Publishing package: $pkg"
-              dotnet nuget push "$pkg" \
-                  --source "$server_url" \
-                  --api-key "$nuget_api_key" \
-                  --skip-duplicate
-          done
-
   remind-changelog:
     name: Reminder - review CHANGELOG.md
     runs-on: ubuntu-latest
     needs:
-      - publish-prerelease
+      - build-prerelease
     steps:
       - name: Post reminder
         shell: bash
