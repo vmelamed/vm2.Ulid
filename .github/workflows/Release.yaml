@@ -24,13 +24,8 @@ env:
     ]
   NUGET_SERVER: ${{ vars.NUGET_SERVER || 'nuget' }}
   NUGET_USERNAME: ${{ vars.NUGET_USERNAME || 'vmelamed' }}
-  # *TODO* Semicolon-separated preprocessor symbols to pass to the compiler.
   PREPROCESSOR_SYMBOLS: ""
   MINVERTAGPREFIX: ${{ vars.MINVERTAGPREFIX || 'v' }}                           # The MinVer tag prefix.
-  MINVERDEFAULTPRERELEASEIDENTIFIERS: ${{ vars.MINVERDEFAULTPRERELEASEIDENTIFIERS || 'preview.0' }} # The MinVer default pre-release identifiers.
-  # this must be the same across all jobs and steps below.
-  # We must know where to find the artifacts and where to download/upload to/from across all jobs and steps here.
-  ARTIFACTS_PATH: artifacts
   VERBOSE: ${{ vars.VERBOSE || false }}                                         # Set the variable to "true" to enable verbose logging in scripts.
 
 jobs:
@@ -40,18 +35,15 @@ jobs:
     # Only allow manual releases from the main branch, as a safety measure against accidental releases from PRs or other branches.
     if: |
       ${{ github.event_name == 'workflow_dispatch' &&
-          github.ref_name == 'main' }}
-
+          github.ref_name == 'main' || github.ref_name == 'big-bang' }}
     outputs:
       package-projects: ${{ steps.gather-params.outputs.package-projects }}
-      target-framework: ${{ steps.gather-params.outputs.target-framework }}
-      configuration: ${{ steps.gather-params.outputs.configuration }}
       preprocessor-symbols: ${{ steps.gather-params.outputs.preprocessor-symbols }}
       minver-tag-prefix: ${{ steps.gather-params.outputs.minver-tag-prefix }}
-      minver-prerelease-id: ${{ steps.gather-params.outputs.minver-prerelease-id }}
       reason: ${{ steps.gather-params.outputs.reason }}
       nuget-server: ${{ steps.gather-params.outputs.nuget-server }}
       nuget-username: ${{ steps.gather-params.outputs.nuget-username }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -72,20 +64,18 @@ jobs:
         run: |
           source $DEVOPS_LIB_DIR/gh_core.sh
 
-          package_projects=$(validate_json_array '${{ env.PACKAGE_PROJECTS }}' '[]' is_safe_existing_file)
+          package_projects='${{ env.PACKAGE_PROJECTS }}'
+          validate_json_array package_projects '[]' is_safe_existing_file
           preprocessor_symbols='${{ env.PREPROCESSOR_SYMBOLS }}'
           minver_tag_prefix='${{ env.MINVERTAGPREFIX }}'
-          minver_prerelease_id='${{ env.MINVERDEFAULTPRERELEASEIDENTIFIERS }}'
           nuget_server='${{ env.NUGET_SERVER }}'
           nuget_username='${{ env.NUGET_USERNAME }}'
           reason="Stable Release (main manually tagged with a release tag)"
 
-          if [[ '${{ github.event_name }}' == "workflow_dispatch" ]]; then
-              # For UI manually triggered runs (workflow_dispatch event), use the arg. values from env: vars, secrets, defaults
-              # and override with the inputs from the UI:
+          # For UI manually triggered runs (workflow_dispatch event), use the arg. values from env: vars, secrets, defaults
+          # and override with the inputs from the UI:
 
-              reason='${{ inputs.reason }}'
-          fi
+          reason='${{ inputs.reason }}'
 
           dump_vars \
               --force \
@@ -93,10 +83,8 @@ jobs:
               --markdown \
               --header "Job get-params outputs:" \
               package_projects \
-              package_projects_len \
               preprocessor_symbols \
               minver_tag_prefix \
-              minver_prerelease_id \
               reason \
               nuget_server \
               nuget_username | to_summary
@@ -106,7 +94,6 @@ jobs:
               package_projects \
               preprocessor_symbols \
               minver_tag_prefix \
-              minver_prerelease_id \
               reason \
               nuget_server \
               nuget_username
@@ -122,7 +109,7 @@ jobs:
           echo "::notice::Reason: ${{ inputs.reason }}"
 
   build-release:
-    name: Release - package and publish NuGet stable release
+    name: Release - package and publish NuGet stable release packages
     needs:
       - get-params
     uses: vmelamed/vm2.DevOps/.github/workflows/_release.yaml@big-bang
@@ -141,8 +128,8 @@ jobs:
       nuget-server: ${{ needs.get-params.outputs.nuget-server }}
       nuget-username: ${{ needs.get-params.outputs.nuget-username }}
 
-  publish-prerelease:
-    name: Publish NuGet prerelease packages
+  publish-release:
+    name: Publish NuGet release packages
     needs:
       - get-params
       - build-release
@@ -151,23 +138,19 @@ jobs:
       actions: read   # Required to read workflow run artifact IDs (for downloading package artifacts if the NuGet server is 'nuget')
       id-token: write # Required for authentication with the NuGet server
     steps:
+      # This job never builds anything -- it only downloads .nupkg files another job already produced and pushes
+      # them -- so "packages" here is just a local staging directory for this job's own runner, not the
+      # Directory.Build.props-derived ArtifactsPath the rest of the pipeline uses for real build output.
+      #
+      # merge-multiple: true flattens all downloaded package artifacts into one directory -- without it, each
+      # artifact-id lands in its own nested subfolder (packages/<artifact-name>/*.nupkg), one level deeper than
+      # the flat packages/*.nupkg glob the publish step below expects.
       - name: Download package artifact
         uses: actions/download-artifact@v8
         with:
           artifact-ids: ${{ needs.build-release.outputs.artifact-ids }}
-          path: ${{ env.ARTIFACTS_PATH }}/packages
-
-      # TODO: remove this debug step once OIDC claims are verified
-      - name: Debug OIDC claims (temporary)
-        if: needs.get-params.outputs.nuget-server == 'nuget' # Temp. debug OIDC claims if verbose logging is enabled or if the NuGet server is 'nuget' (NuGet.org)
-        shell: bash
-        run: |
-          set -euo pipefail
-          tok_json="$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=api://AzureADTokenExchange")"
-          jwt="$(echo "$tok_json" | jq -r '.value')"
-          payload="$(echo "$jwt" | cut -d'.' -f2 | tr '_-' '/+' | base64 -d 2>/dev/null || true)"
-          echo "$payload" | jq '{repository, repository_id, repository_owner, repository_owner_id, workflow, workflow_ref, job_workflow_ref, ref, sha, actor}'
+          path: packages
+          merge-multiple: true
 
       - name: Authenticate with NuGet.org trusted publishing to get steps.nuget-login.outputs.NUGET_API_KEY
         if: needs.get-params.outputs.nuget-server == 'nuget'
@@ -187,7 +170,7 @@ jobs:
 
           set -euo pipefail
 
-          artifacts_dir="$ARTIFACTS_PATH/packages"
+          artifacts_dir="packages"
           nuget_server="${{ needs.get-params.outputs.nuget-server }}"
           case "$nuget_server" in
               nuget )
@@ -222,23 +205,3 @@ jobs:
                   --api-key "$nuget_api_key" \
                   --skip-duplicate
           done
-
-  remind-changelog:
-    name: Reminder - review CHANGELOG.md
-    runs-on: ubuntu-latest
-    needs:
-      - publish-prerelease
-    steps:
-      - name: Post reminder
-        shell: bash
-        run: |
-          echo "::notice::Pre-release completed. Now is a good time to review/edit CHANGELOG.md before stable release. CHANGELOG.md only - do not mix-in other files."
-          {
-            echo "## CHANGELOG Reminder"
-            echo
-            echo "> [!IMPORTANT]"
-            echo "> Pre-release completed. Now is a good time to review/edit CHANGELOG.md before stable release."
-            echo "> CHANGELOG.md only - do not mix-in other files."
-            echo
-            echo "Recommended: keep changelog updates in a dedicated commit or PR before the release workflow."
-          } >> "$GITHUB_STEP_SUMMARY"
