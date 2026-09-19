@@ -1,5 +1,12 @@
 # Changelog
 
+## v5.3.0-preview.7 - 2026-09-19
+
+### Internal
+
+- Prerelease.yaml shrinks to gather-params + one call to _prerelease.yaml
+- trigger prerelease test
+
 ## v5.3.0-preview.6 - 2026-09-18
 
 ### Internal
