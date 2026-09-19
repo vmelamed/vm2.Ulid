@@ -22,7 +22,7 @@ permissions:
 
 jobs:
   rebuild:
-    uses: vmelamed/vm2.DevOps/.github/workflows/_rebuild_bench_history.yaml@big-bang
+    uses: vmelamed/vm2.DevOps/.github/workflows/_rebuild_bench_history.yaml@main
     secrets:
       BENCHER_API_TOKEN: ${{ secrets.BENCHER_API_TOKEN }}
     with:

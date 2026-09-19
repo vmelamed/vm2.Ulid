@@ -131,7 +131,7 @@ jobs:
     steps:
       - name: Gather CI inputs
         id: gather-params
-        uses: vmelamed/vm2.DevOps/.github/actions/gather-inputs@big-bang
+        uses: vmelamed/vm2.DevOps/.github/actions/gather-inputs@main
         with:
           build-projects: ${{ env.BUILD_PROJECTS }}
           test-projects: ${{ env.TEST_PROJECTS }}
@@ -160,7 +160,7 @@ jobs:
     needs:
       - prerun-ci
     if: ${{ needs.prerun-ci.outputs.skip-push != 'true' }}
-    uses: vmelamed/vm2.DevOps/.github/workflows/_ci.yaml@big-bang
+    uses: vmelamed/vm2.DevOps/.github/workflows/_ci.yaml@main
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       BENCHER_API_TOKEN: ${{ secrets.BENCHER_API_TOKEN }}
@@ -201,7 +201,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup DevOps environment variables
-        uses: vmelamed/vm2.DevOps/.github/actions/setup-env@big-bang
+        uses: vmelamed/vm2.DevOps/.github/actions/setup-env@main
 
       - name: Evaluate CI result
         shell: bash
