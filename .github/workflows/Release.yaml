@@ -77,26 +77,30 @@ jobs:
 
           reason='${{ inputs.reason }}'
 
-          dump_vars \
-              --force \
-              --quiet \
-              --markdown \
-              --header "Job get-params outputs:" \
-              package_projects \
-              preprocessor_symbols \
-              minver_tag_prefix \
-              reason \
-              nuget_server \
-              nuget_username | to_summary
+          declare -a args=(
+              --force
+              --quiet
+              --markdown
+              --header "Job get-params outputs:"
+              package_projects
+              preprocessor_symbols
+              minver_tag_prefix
+              reason
+              nuget_server
+              nuget_username
+          )
+          dump_vars "${args[@]}" | to_summary
 
           # Set the outputs:
-          args_to_github_output \
-              package_projects \
-              preprocessor_symbols \
-              minver_tag_prefix \
-              reason \
-              nuget_server \
+          args=(
+              package_projects
+              preprocessor_symbols
+              minver_tag_prefix
+              reason
+              nuget_server
               nuget_username
+          )
+          args_to_github_output "${args[@]}"
 
   log-trigger:
     name: Log manual trigger reason
@@ -164,18 +168,18 @@ jobs:
           declare -xri err_argument_value
 
           artifacts_dir="packages"
-          nuget_server="${{ needs.get-params.outputs.nuget-server }}"
+          nuget_server='${{ needs.get-params.outputs.nuget-server }}'
           case "$nuget_server" in
               nuget )
                   server_name="NuGet.org"
                   server_url="https://api.nuget.org/v3/index.json"
-                  nuget_api_key="${{ steps.nuget-login.outputs.NUGET_API_KEY }}"
+                  nuget_api_key='${{ steps.nuget-login.outputs.NUGET_API_KEY }}'
                   ;;
 
               github )
                   server_name="GitHub Packages"
                   server_url="https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
-                  nuget_api_key="${{ secrets.NUGET_API_KEY }}"
+                  nuget_api_key='${{ secrets.NUGET_API_KEY }}'
                   [[ -n "$nuget_api_key" ]] ||
                       error -ec "$err_missing_argument" -ns "No API key provided for server '$server_name'"
                   ;;
@@ -183,7 +187,7 @@ jobs:
               http://*|https://* )
                   server_name="$nuget_server"
                   server_url="$nuget_server"
-                  nuget_api_key="${{ secrets.NUGET_API_KEY }}"
+                  nuget_api_key='${{ secrets.NUGET_API_KEY }}'
                   [[ -n "$nuget_api_key" ]] ||
                       error -ec "$err_missing_argument" -ns "No API key provided for server '$server_name'"
                   ;;
