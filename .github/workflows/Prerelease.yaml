@@ -199,6 +199,9 @@ jobs:
 
           set -euo pipefail
 
+          declare -xri err_missing_argument
+          declare -xri err_argument_value
+
           artifacts_dir="packages"
           nuget_server="${{ needs.get-params.outputs.nuget-server }}"
           case "$nuget_server" in
@@ -207,22 +210,25 @@ jobs:
                   server_url="https://api.nuget.org/v3/index.json"
                   nuget_api_key="${{ steps.nuget-login.outputs.NUGET_API_KEY }}"
                   ;;
+
               github )
                   server_name="GitHub Packages"
                   server_url="https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
                   nuget_api_key="${{ secrets.NUGET_API_KEY }}"
                   [[ -n "$nuget_api_key" ]] ||
-                      error -ec "$err_missing_argument" "No API key provided for server '$server_name'"
+                      error -ec "$err_missing_argument" -ns "No API key provided for server '$server_name'"
                   ;;
+
               http://*|https://* )
                   server_name="$nuget_server"
                   server_url="$nuget_server"
                   nuget_api_key="${{ secrets.NUGET_API_KEY }}"
                   [[ -n "$nuget_api_key" ]] ||
-                      error -ec "$err_missing_argument" "No API key provided for server '$server_name'"
+                      error -ec "$err_missing_argument" -ns "No API key provided for server '$server_name'"
                   ;;
+
               * )
-                  error "Unsupported NuGet server: '${{ needs.get-params.outputs.nuget-server }}'. Supported values: 'nuget', 'github', 'custom URL'."
+                  error -ec "$err_argument_value" -ns "Unsupported NuGet server: '${{ needs.get-params.outputs.nuget-server }}'. Supported values: 'nuget', 'github', 'custom URL'."
                   ;;
           esac
           exit_if_has_errors
