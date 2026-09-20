@@ -1,5 +1,49 @@
 # Changelog
 
+## v5.4.0-preview.1 - 2026-09-20
+
+### Added
+
+- add skip-build workflow_dispatch input
+
+### Fixed
+
+- align workflows with vm2.DevOps big-bang cleanup (dotnet-version, Configuration, ArtifactsPath)
+- pass ref: big-bang explicitly to setup-env/gather-inputs calls
+- remove ref: big-bang, setup-env now self-detects it
+- add Directory.Solution.props to fix solution-build Configuration
+- update dump_vars command in workflows
+- use --markdown when dump_vars goes to_summary
+- validate_json_array is a by-reference validator, not a stdout function
+- flatten downloaded package artifacts before publishing
+- obtain the NuGet.org trusted-publishing key here, pass it to _prerelease.yaml
+- Add file header template for licensing
+- file header in .editorconfig
+
+### Internal
+
+- update dependencies, temp. work with big-bang branch of DevOps, added SPDX, diff-shared updates
+- temporarily list every project individually in BUILD_PROJECTS
+- temporarily allow manual Prerelease dispatch from big-bang
+- update changelog for v5.3.0-preview.1 [skip ci]
+- update changelog for v5.3.0-preview.2 [skip ci]
+- update changelog for v5.3.0-preview.3 [skip ci]
+- update changelog for v5.3.0-preview.4 [skip ci]
+- update changelog for v5.3.0-preview.5 [skip ci]
+- drop ARTIFACTS_PATH from Prerelease.yaml's own download/publish job
+- update changelog for v5.3.0-preview.6 [skip ci]
+- Prerelease.yaml shrinks to gather-params + one call to _prerelease.yaml
+- update changelog for v5.3.0-preview.7 [skip ci]
+- update changelog for v5.3.0-preview.8 [skip ci]
+- update changelog for v5.3.0-preview.9 [skip ci]
+- update changelog for v5.3.0 [skip ci]
+- ref the main branch instead of the temp. test branch when using actions and callable scripts
+- remove target-framework input from RefreshLockFiles workflow
+- diff-shared
+- remove duplicate file header template from .editorconfig [skip ci]
+- synced with diff-shared
+- update CI and workflow documentation for quoting GitHub Actions expressions and using arguments arrays
+
 ## v5.3.0 - 2026-09-19
 
 See prereleases below.
