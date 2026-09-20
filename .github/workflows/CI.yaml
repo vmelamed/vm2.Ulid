@@ -208,24 +208,26 @@ jobs:
         run: |
           source $DEVOPS_LIB_DIR/gh_core.sh
 
+          declare -xri success
+          declare -xri failure
+
           prerun_ci_result="${{ needs.prerun-ci.result }}"
           run_ci_result="${{ needs.run-ci.result }}"
 
           if [[ $prerun_ci_result == "failure" || $prerun_ci_result == "cancelled" ]]; then
-              error -ns "CI pipeline pre-run(arguments gathering and preparation) $prerun_ci_result."
-              exit 1
+              exit_with_error -ec "$failure" -ns "CI pipeline pre-run (arguments gathering and preparation) failed or was cancelled: $prerun_ci_result."
           fi
+
           if [[ $run_ci_result == "skipped" ]]; then
               warning "CI was skipped (push to non-main branch with open PR). Prerelease will not be triggered." \
                       "CI skipped (prerun-ci: $prerun_ci_result, run-ci: skipped)"
           elif [[ $run_ci_result == "failure" || $run_ci_result == "cancelled" ]]; then
-              error -ns "CI pipeline run $run_ci_result"
-              exit 1
+              exit_with_error -ec "$failure" -ns "CI pipeline run failed or was cancelled: $run_ci_result."
           else
               info "CI completed (prerun-ci: $prerun_ci_result, run-ci: $run_ci_result)"
           fi
 
-          rc=0
+          rc=$success
 
           if [[ "${{ needs.prerun-ci.outputs.skip-build }}" == "true" ]]; then
               warning "Building the code was skipped. The CI workflow is intentionally marked as failed to save time. Use this option only for testing non-build CI jobs faster."
@@ -244,4 +246,5 @@ jobs:
               rc=1
           fi
 
+          remove_traps
           exit $rc
