@@ -1,5 +1,9 @@
 # Changelog
 
+## v5.4.0 - 2026-09-20
+
+See prereleases below.
+
 ## v5.4.0-preview.1 - 2026-09-20
 
 ### Added
