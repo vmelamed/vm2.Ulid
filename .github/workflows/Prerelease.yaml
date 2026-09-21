@@ -58,7 +58,6 @@ jobs:
     outputs:
       target-framework: ${{ steps.gather-params.outputs.target-framework }}
       package-projects: ${{ steps.gather-params.outputs.package-projects }}
-      configuration: ${{ steps.gather-params.outputs.configuration }}
       preprocessor-symbols: ${{ steps.gather-params.outputs.preprocessor-symbols }}
       minver-tag-prefix: ${{ steps.gather-params.outputs.minver-tag-prefix }}
       minver-prerelease-id: ${{ steps.gather-params.outputs.minver-prerelease-id }}
@@ -82,6 +81,9 @@ jobs:
       - name: Gather argument values depending on the event
         id: gather-params
         shell: bash
+        env:
+          MINVER_PRERELEASE_ID: ${{ inputs.minver-prerelease-id }}
+          REASON: ${{ inputs.reason }}
         run: |
           source $DEVOPS_LIB_DIR/gh_core.sh
 
@@ -98,8 +100,8 @@ jobs:
               # For UI manually triggered runs (workflow_dispatch event), use the arg. values from env: vars, secrets, defaults
               # and override with the inputs from the UI:
 
-              minver_prerelease_id='${{ inputs.minver-prerelease-id }}'
-              reason='${{ inputs.reason }}'
+              minver_prerelease_id=$MINVER_PRERELEASE_ID
+              reason=$REASON
           fi
 
           declare -a args=(
@@ -185,6 +187,10 @@ jobs:
           path: packages
           merge-multiple: true
 
+      - name: Setup DevOps environment variables
+        id: setup-env
+        uses: vmelamed/vm2.DevOps/.github/actions/setup-env@main
+
       - name: Authenticate with NuGet.org trusted publishing to get steps.nuget-login.outputs.NUGET_API_KEY
         if: needs.get-params.outputs.nuget-server == 'nuget'
         id: nuget-login
@@ -192,12 +198,11 @@ jobs:
         with:
           user: ${{ needs.get-params.outputs.nuget-username }}
 
-      - name: Setup DevOps environment variables
-        id: setup-env
-        uses: vmelamed/vm2.DevOps/.github/actions/setup-env@main
-
       - name: Publish NuGet prerelease packages
         shell: bash
+        env:
+          NUGET_API_KEY: ${{ needs.get-params.outputs.nuget-server == 'nuget' && steps.nuget-login.outputs.NUGET_API_KEY || secrets.NUGET_API_KEY }}
+          NUGET_SERVER: ${{ needs.get-params.outputs.nuget-server }}
         run: |
           source $DEVOPS_LIB_DIR/gh_core.sh
 
@@ -207,41 +212,36 @@ jobs:
           declare -xri err_argument_value
 
           artifacts_dir="packages"
-          nuget_server='${{ needs.get-params.outputs.nuget-server }}'
-          case "$nuget_server" in
+          case "$NUGET_SERVER" in
               nuget )
                   server_name="NuGet.org"
                   server_url="https://api.nuget.org/v3/index.json"
-                  nuget_api_key='${{ steps.nuget-login.outputs.NUGET_API_KEY }}'
                   ;;
 
               github )
                   server_name="GitHub Packages"
                   server_url="https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
-                  nuget_api_key='${{ secrets.NUGET_API_KEY }}'
-                  [[ -n "$nuget_api_key" ]] ||
-                      error -ec "$err_missing_argument" -ns "No API key provided for server '$server_name'"
                   ;;
 
               http://*|https://* )
-                  server_name="$nuget_server"
-                  server_url="$nuget_server"
-                  nuget_api_key='${{ secrets.NUGET_API_KEY }}'
-                  [[ -n "$nuget_api_key" ]] ||
-                      error -ec "$err_missing_argument" -ns "No API key provided for server '$server_name'"
+                  server_name="$NUGET_SERVER"
+                  server_url="$NUGET_SERVER"
                   ;;
 
               * )
                   error -ec "$err_argument_value" -ns "Unsupported NuGet server: '${{ needs.get-params.outputs.nuget-server }}'. Supported values: 'nuget', 'github', 'custom URL'."
                   ;;
           esac
+
+          [[ -n "$NUGET_API_KEY" ]] ||
+              error -ec "$err_missing_argument" -ns "No API key provided for server '$server_name'"
           exit_if_has_errors
 
           for pkg in "$artifacts_dir"/*.nupkg; do
               trace "Publishing package: $pkg"
               dotnet nuget push "$pkg" \
                   --source "$server_url" \
-                  --api-key "$nuget_api_key" \
+                  --api-key "$NUGET_API_KEY" \
                   --skip-duplicate
           done
 
