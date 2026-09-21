@@ -1,5 +1,17 @@
 # Changelog
 
+## v5.4.1-preview.1 - 2026-09-21
+
+### Fixed
+
+- update Prerelease and Release workflows to improve environment variable handling and security
+- security fixes
+
+### Internal
+
+- promote to stable v5.4.0 [skip ci]
+- update changelog for v5.4.0 [skip ci]
+
 ## v5.4.0 - 2026-09-20
 
 See prereleases below.
