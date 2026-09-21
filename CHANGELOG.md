@@ -1,5 +1,16 @@
 # Changelog
 
+## v5.4.1-preview.2 - 2026-09-21
+
+### Fixed
+
+- update Prerelease and Release workflows to improve environment variable handling and security
+- diff-shared
+
+### Internal
+
+- diff-shared CONVENTIONS.md
+
 ## v5.4.1-preview.1 - 2026-09-21
 
 ### Fixed
