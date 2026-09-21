@@ -149,6 +149,7 @@ jobs:
           escaped_reason=$(gh_escape "$REASON")
 
           printf '::notice::Manual release triggered by %s. Reason: %s\n' '${{ github.actor }}' "$escaped_reason"
+          printf '## Manual trigger\n\n**By:** %s\n**Reason:** %s\n' '${{ github.actor }}' "$REASON" | to_stdout
 
   build-prerelease:
     name: Prerelease - package and release NuGet prerelease
