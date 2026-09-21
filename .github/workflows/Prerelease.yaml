@@ -135,11 +135,13 @@ jobs:
     name: Log manual trigger reason
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    env:
+      REASON: ${{ inputs.reason }}
     steps:
       - name: Log manual trigger reason
         run: |
           echo "::notice::Manual release triggered by ${{ github.actor }}"
-          echo "::notice::Reason: ${{ inputs.reason }}"
+          echo "::notice::Reason: $REASON"
 
   build-prerelease:
     name: Prerelease - package and release NuGet prerelease
@@ -212,6 +214,9 @@ jobs:
           declare -xri err_argument_value
 
           artifacts_dir="packages"
+          server_name=$NUGET_SERVER
+          server_url=""
+
           case "$NUGET_SERVER" in
               nuget )
                   server_name="NuGet.org"
