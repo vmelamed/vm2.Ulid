@@ -109,10 +109,17 @@ jobs:
     env:
       REASON: ${{ inputs.reason }}
     steps:
+      - name: Setup DevOps environment variables
+        id: setup-env
+        uses: vmelamed/vm2.DevOps/.github/actions/setup-env@main
+
       - name: Log manual trigger reason
         run: |
-          echo "::notice::Manual release triggered by ${{ github.actor }}"
-          echo "::notice::Reason: $REASON"
+          source $DEVOPS_LIB_DIR/gh_core.sh
+
+          escaped_reason=$(gh_escape "$REASON")
+
+          printf '::notice::Manual release triggered by %s. Reason: %s\n' '${{ github.actor }}' "$escaped_reason"
 
   build-release:
     name: Release - package and publish NuGet stable release packages
@@ -162,7 +169,7 @@ jobs:
       - name: Publish NuGet release packages
         shell: bash
         env:
-          NUGET_API_KEY: ${{ needs.get-params.outputs.nuget-server == 'nuget' && steps.nuget-login.outputs.NUGET_API_KEY || secrets.NUGET_API_KEY }}
+          NUGET_API_KEY: ${{ needs.get-params.outputs.nuget-server != 'nuget' && secrets.NUGET_API_KEY || steps.nuget-login.outputs.NUGET_API_KEY }}
           NUGET_SERVER: ${{ needs.get-params.outputs.nuget-server }}
         run: |
           source $DEVOPS_LIB_DIR/gh_core.sh
@@ -188,12 +195,12 @@ jobs:
                   ;;
 
               http://*|https://* )
-                  server_name="$NUGET_SERVER"
-                  server_url="$NUGET_SERVER"
+                  server_name=$NUGET_SERVER
+                  server_url=$NUGET_SERVER
                   ;;
 
               * )
-                  error -ec "$err_argument_value" -ns "Unsupported NuGet server: '${{ needs.get-params.outputs.nuget-server }}'. Supported values: 'nuget', 'github', 'custom URL'."
+                  error -ec "$err_argument_value" -ns "Unsupported NuGet server: $NUGET_SERVER. Supported values: 'nuget', 'github', 'custom URL'."
                   ;;
           esac
 
