@@ -109,6 +109,8 @@ jobs:
     runs-on: ubuntu-latest # in this workflow the runner doesn't matter - we're just preparing the inputs for the next workload(s).
     permissions:
       pull-requests: read
+    env:
+      DISPATCH_PREPROCESSOR_SYMBOLS: ${{ inputs.preprocessor-symbols }}
     outputs:
       build-projects: ${{ steps.gather-params.outputs.build-projects }}
       test-projects: ${{ steps.gather-params.outputs.test-projects }}
@@ -205,14 +207,18 @@ jobs:
 
       - name: Evaluate CI result
         shell: bash
+        env:
+          prerun_ci_result: '${{ needs.prerun-ci.result }}'
+          run_ci_result: '${{ needs.run-ci.result }}'
+          skip_build: '${{ needs.prerun-ci.outputs.skip-build }}'
+          skip_tests: '${{ needs.prerun-ci.outputs.skip-tests }}'
+          skip_benchmarks: '${{ needs.prerun-ci.outputs.skip-benchmarks }}'
+          skip_packages: '${{ needs.prerun-ci.outputs.skip-packages }}'
         run: |
           source $DEVOPS_LIB_DIR/gh_core.sh
 
           declare -xri success
           declare -xri failure
-
-          prerun_ci_result='${{ needs.prerun-ci.result }}'
-          run_ci_result='${{ needs.run-ci.result }}'
 
           if [[ $prerun_ci_result == "failure" || $prerun_ci_result == "cancelled" ]]; then
               exit_with_error -ec "$failure" -ns "CI pipeline pre-run (arguments gathering and preparation) failed or was cancelled: $prerun_ci_result."
@@ -229,22 +235,18 @@ jobs:
 
           rc=$success
 
-          if [[ '${{ needs.prerun-ci.outputs.skip-build }}' == "true" ]]; then
-              warning "Building the code was skipped. The CI workflow is intentionally marked as failed to save time. Use this option only for testing non-build CI jobs faster."
-              rc=1
-          fi
-          if [[ '${{ needs.prerun-ci.outputs.skip-tests }}' == "true" ]]; then
-              warning "Tests were skipped. The CI workflow is intentionally marked as failed to save time. Use this option only for testing non-test CI jobs faster."
-              rc=1
-          fi
-          if [[ '${{ needs.prerun-ci.outputs.skip-benchmarks }}' == "true" ]]; then
-              warning "Benchmarks were skipped. The CI workflow is intentionally marked as failed to save time. Use this option only for testing non-benchmark CI jobs faster."
-              rc=1
-          fi
-          if [[ '${{ needs.prerun-ci.outputs.skip-packages }}' == "true" ]]; then
-              warning "Building packages was skipped. The CI workflow is intentionally marked as failed to save time. Use this option only for testing non-package CI jobs faster."
-              rc=1
-          fi
+          $skip_build &&
+              warning "Building the code was skipped. The CI workflow is intentionally marked as failed to save time. Use this option only for testing non-build CI jobs faster." &&
+              rc=$failure
+          $skip_tests &&
+              warning "Tests were skipped. The CI workflow is intentionally marked as failed to save time. Use this option only for testing non-test CI jobs faster." &&
+              rc=$failure
+          $skip_benchmarks &&
+              warning "Benchmarks were skipped. The CI workflow is intentionally marked as failed to save time. Use this option only for testing non-benchmark CI jobs faster." &&
+              rc=$failure
+          $skip_packages &&
+              warning "Building packages was skipped. The CI workflow is intentionally marked as failed to save time. Use this option only for testing non-package CI jobs faster." &&
+              rc=$failure
 
           remove_traps
           exit $rc

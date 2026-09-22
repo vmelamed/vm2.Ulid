@@ -27,6 +27,7 @@ env:
   PREPROCESSOR_SYMBOLS: ""
   MINVERTAGPREFIX: ${{ vars.MINVERTAGPREFIX || 'v' }}                           # The MinVer tag prefix.
   VERBOSE: ${{ vars.VERBOSE || false }}                                         # Set the variable to "true" to enable verbose logging in scripts.
+  REASON: ${{ inputs.reason }}
 
 jobs:
   get-params:
@@ -59,24 +60,21 @@ jobs:
       - name: Gather argument values depending on the event
         id: gather-params
         shell: bash
-        env:
-          REASON: ${{ inputs.reason }}
         run: |
           source $DEVOPS_LIB_DIR/gh_core.sh
 
-          package_projects='${{ env.PACKAGE_PROJECTS }}'
+          package_projects=$PACKAGE_PROJECTS
           validate_json_array package_projects '[]' is_safe_existing_file
-          preprocessor_symbols='${{ env.PREPROCESSOR_SYMBOLS }}'
-          minver_tag_prefix='${{ env.MINVERTAGPREFIX }}'
-          nuget_server='${{ env.NUGET_SERVER }}'
-          nuget_username='${{ env.NUGET_USERNAME }}'
-          reason="Stable Release (main manually tagged with a release tag)"
 
-          # For UI manually triggered runs (workflow_dispatch event), use the arg. values from env: vars, secrets, defaults
-          # and override with the inputs from the UI:
+          preprocessor_symbols=$PREPROCESSOR_SYMBOLS
+          minver_tag_prefix=$MINVERTAGPREFIX
+          nuget_server=$NUGET_SERVER
+          nuget_username=$NUGET_USERNAME
 
+          # Release is always activated manually from the GitHub Actions UI:
           reason=$REASON
 
+          gh_reason=$(gh_escape "$reason")
           declare -a args=(
               --force
               --quiet
@@ -85,7 +83,7 @@ jobs:
               package_projects
               preprocessor_symbols
               minver_tag_prefix
-              reason
+              gh_reason
               nuget_server
               nuget_username
           )
@@ -106,8 +104,6 @@ jobs:
     name: Log manual trigger reason
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-    env:
-      REASON: ${{ inputs.reason }}
     steps:
       - name: Setup DevOps environment variables
         id: setup-env
@@ -117,10 +113,10 @@ jobs:
         run: |
           source $DEVOPS_LIB_DIR/gh_core.sh
 
-          escaped_reason=$(gh_escape "$REASON")
+          gh_reason=$(gh_escape "$REASON")
 
-          printf '::notice::Manual release triggered by %s. Reason: %s\n' '${{ github.actor }}' "$escaped_reason"
-          printf '## Manual trigger\n\n**By:** %s\n**Reason:** %s\n' '${{ github.actor }}' "$REASON" | to_stdout
+          printf '::notice::Manual release triggered by %s. Reason: %s\n' '${{ github.actor }}' "$gh_reason"
+          printf '## Manual trigger\n\n**By:** %s\n**Reason:** %s\n' '${{ github.actor }}' "$gh_reason" | to_stdout
 
   build-release:
     name: Release - package and publish NuGet stable release packages
@@ -150,6 +146,13 @@ jobs:
       id-token: write # Required for authentication with the NuGet server
     steps:
       - name: Download package artifact
+        # This job never builds anything -- it only downloads .nupkg files another job already produced and pushes
+        # them -- so "packages" here is just a local staging directory for this job's own runner, not the
+        # Directory.Build.props-derived ArtifactsPath the rest of the pipeline uses for real build output.
+        #
+        # merge-multiple: true flattens all downloaded package artifacts into one directory -- without it, each
+        # artifact-id lands in its own nested subfolder (packages/<artifact-name>/*.nupkg), one level deeper than
+        # the flat packages/*.nupkg glob the publish step below expects.
         uses: actions/download-artifact@v8
         with:
           artifact-ids: ${{ needs.build-release.outputs.artifact-ids }}
@@ -205,9 +208,7 @@ jobs:
                   ;;
           esac
 
-          [[ -n "$NUGET_API_KEY" ]] ||
-              error -ec "$err_missing_argument" -ns "No API key provided for server '$server_name'"
-          exit_if_has_errors
+          [[ -n "$NUGET_API_KEY" ]] || exit_with_error -ec "$err_missing_argument" -ns "No API key provided for server '$server_name'"
 
           for pkg in "$artifacts_dir"/*.nupkg; do
               trace "Publishing package: $pkg"

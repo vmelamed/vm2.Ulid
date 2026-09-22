@@ -42,6 +42,8 @@ env:
   MINVERTAGPREFIX: ${{ vars.MINVERTAGPREFIX || 'v' }}                           # The MinVer tag prefix.
   MINVERDEFAULTPRERELEASEIDENTIFIERS: ${{ vars.MINVERDEFAULTPRERELEASEIDENTIFIERS || 'preview.0' }} # The MinVer default pre-release identifiers.
   VERBOSE: ${{ vars.VERBOSE || false }}                                         # Set the variable to "true" to enable verbose logging in scripts.
+  REASON: ${{ inputs.reason }}
+  MINVER_PRERELEASE_ID: ${{ inputs.minver-prerelease-id }}
 
 jobs:
   get-params:
@@ -56,7 +58,6 @@ jobs:
         github.event.workflow_run.conclusion == 'success' &&
         !contains(github.event.workflow_run.head_commit.message, '[skip ci]') )
     outputs:
-      target-framework: ${{ steps.gather-params.outputs.target-framework }}
       package-projects: ${{ steps.gather-params.outputs.package-projects }}
       preprocessor-symbols: ${{ steps.gather-params.outputs.preprocessor-symbols }}
       minver-tag-prefix: ${{ steps.gather-params.outputs.minver-tag-prefix }}
@@ -81,19 +82,17 @@ jobs:
       - name: Gather argument values depending on the event
         id: gather-params
         shell: bash
-        env:
-          MINVER_PRERELEASE_ID: ${{ inputs.minver-prerelease-id }}
-          REASON: ${{ inputs.reason }}
         run: |
           source $DEVOPS_LIB_DIR/gh_core.sh
 
-          package_projects='${{ env.PACKAGE_PROJECTS }}'
+          package_projects=$PACKAGE_PROJECTS
           validate_json_array package_projects '[]' is_safe_existing_file
-          preprocessor_symbols='${{ env.PREPROCESSOR_SYMBOLS }}'
-          minver_tag_prefix='${{ env.MINVERTAGPREFIX }}'
-          minver_prerelease_id='${{ env.MINVERDEFAULTPRERELEASEIDENTIFIERS }}'
-          nuget_server='${{ env.NUGET_SERVER }}'
-          nuget_username='${{ env.NUGET_USERNAME }}'
+
+          preprocessor_symbols=$PREPROCESSOR_SYMBOLS
+          minver_tag_prefix=$MINVERTAGPREFIX
+          minver_prerelease_id=$MINVERDEFAULTPRERELEASEIDENTIFIERS
+          nuget_server=$NUGET_SERVER
+          nuget_username=$NUGET_USERNAME
           reason="Pre-release: PR approved, tagged with pre-release tag."
 
           if [[ '${{ github.event_name }}' == "workflow_dispatch" ]]; then
@@ -104,6 +103,7 @@ jobs:
               reason=$REASON
           fi
 
+          gh_reason=$(gh_escape "$reason")
           declare -a args=(
               --force
               --quiet
@@ -113,7 +113,7 @@ jobs:
               preprocessor_symbols
               minver_tag_prefix
               minver_prerelease_id
-              reason
+              gh_reason
               nuget_server
               nuget_username
           )
@@ -135,8 +135,6 @@ jobs:
     name: Log manual trigger reason
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-    env:
-      REASON: ${{ inputs.reason }}
     steps:
       - name: Setup DevOps environment variables
         id: setup-env
@@ -146,10 +144,10 @@ jobs:
         run: |
           source $DEVOPS_LIB_DIR/gh_core.sh
 
-          escaped_reason=$(gh_escape "$REASON")
+          gh_reason=$(gh_escape "$REASON")
 
-          printf '::notice::Manual release triggered by %s. Reason: %s\n' '${{ github.actor }}' "$escaped_reason"
-          printf '## Manual trigger\n\n**By:** %s\n**Reason:** %s\n' '${{ github.actor }}' "$REASON" | to_stdout
+          printf '::notice::Manual release triggered by %s. Reason: %s\n' '${{ github.actor }}' "$gh_reason"
+          printf '## Manual trigger\n\n**By:** %s\n**Reason:** %s\n' '${{ github.actor }}' "$gh_reason" | to_stdout
 
   build-prerelease:
     name: Prerelease - package and release NuGet prerelease
@@ -183,14 +181,14 @@ jobs:
       actions: read   # Required to read workflow run artifact IDs (for downloading package artifacts if the NuGet server is 'nuget')
       id-token: write # Required for authentication with the NuGet server
     steps:
-      # This job never builds anything -- it only downloads .nupkg files another job already produced and pushes
-      # them -- so "packages" here is just a local staging directory for this job's own runner, not the
-      # Directory.Build.props-derived ArtifactsPath the rest of the pipeline uses for real build output.
-      #
-      # merge-multiple: true flattens all downloaded package artifacts into one directory -- without it, each
-      # artifact-id lands in its own nested subfolder (packages/<artifact-name>/*.nupkg), one level deeper than
-      # the flat packages/*.nupkg glob the publish step below expects.
       - name: Download package artifact
+        # This job never builds anything -- it only downloads .nupkg files another job already produced and pushes
+        # them -- so "packages" here is just a local staging directory for this job's own runner, not the
+        # Directory.Build.props-derived ArtifactsPath the rest of the pipeline uses for real build output.
+        #
+        # merge-multiple: true flattens all downloaded package artifacts into one directory -- without it, each
+        # artifact-id lands in its own nested subfolder (packages/<artifact-name>/*.nupkg), one level deeper than
+        # the flat packages/*.nupkg glob the publish step below expects.
         uses: actions/download-artifact@v8
         with:
           artifact-ids: ${{ needs.build-prerelease.outputs.artifact-ids }}
@@ -246,9 +244,7 @@ jobs:
                   ;;
           esac
 
-          [[ -n "$NUGET_API_KEY" ]] ||
-              error -ec "$err_missing_argument" -ns "No API key provided for server '$server_name'"
-          exit_if_has_errors
+          [[ -n "$NUGET_API_KEY" ]] || exit_with_error -ec "$err_missing_argument" -ns "No API key provided for server '$server_name'"
 
           for pkg in "$artifacts_dir"/*.nupkg; do
               trace "Publishing package: $pkg"
