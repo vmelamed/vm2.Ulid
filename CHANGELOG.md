@@ -1,5 +1,17 @@
 # Changelog
 
+## v5.4.2-preview.1 - 2026-09-22
+
+### Fixed
+
+- enhance manual trigger logging in workflows for better visibility by writing to GITHUB_STEP_SUMMARY
+
+### Internal
+
+- promote to stable v5.4.1 [skip ci]
+- update changelog for v5.4.1 [skip ci]
+- sync with diff-shared
+
 ## v5.4.1 - 2026-09-21
 
 See prereleases below.
