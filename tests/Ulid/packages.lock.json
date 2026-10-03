@@ -63,15 +63,15 @@
       },
       "vm2.TestUtilities": {
         "type": "Direct",
-        "requested": "[2.1.4, )",
-        "resolved": "2.1.4",
-        "contentHash": "AXV4b0EdQIXO8DAIhAnnFof5rrtDwTReDD9k9MvOUl55Bi8G0RkR1cWUEaSa6PLOneDnD5FzPndioEyUqJPL0g==",
+        "requested": "[2.1.6, )",
+        "resolved": "2.1.6",
+        "contentHash": "wDDzFzdgh6CCpo4X/fPKIfBJvjpXc5N2TdZUv2El6gnfMaVi9/Z4IIOx7zGkibO3yWGOdrsdQLG9SvlTbMINLw==",
         "dependencies": {
-          "FluentAssertions": "8.10.0",
-          "Microsoft.Extensions.DependencyInjection": "10.0.10",
-          "Microsoft.Extensions.Logging": "10.0.10",
-          "Microsoft.Extensions.Logging.Abstractions": "10.0.10",
-          "xunit.v3.extensibility.core": "3.2.2"
+          "FluentAssertions": "8.11.0",
+          "Microsoft.Extensions.DependencyInjection": "10.0.12",
+          "Microsoft.Extensions.Logging": "10.0.12",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.12",
+          "xunit.v3.extensibility.core": "4.0.1"
         }
       },
       "xunit.v3.mtp-v2": {
