@@ -141,7 +141,7 @@ jobs:
           benchmark-projects: ${{ env.BENCHMARK_PROJECTS }}
           package-projects: ${{ env.PACKAGE_PROJECTS }}
           runners-os: ${{ env.RUNNERS_OS }}
-          preprocessor-symbols: ${{ env.PREPROCESSOR_SYMBOLS }}
+          preprocessor-symbols:
           min-coverage-pct: ${{ env.MIN_COVERAGE_PCT }}
           max-regression-pct: ${{ env.MAX_REGRESSION_PCT }}
           max-gen1-collects: ${{ env.MAX_GEN1_COLLECTS }}
@@ -236,16 +236,16 @@ jobs:
 
           rc=$success
 
-          $skip_build &&
+          [[ $skip_build == true ]] &&
               warning "Building the code was skipped. The CI workflow is intentionally marked as failed to save time. Use this option only for testing non-build CI jobs faster." &&
               rc=$failure
-          $skip_tests &&
+          [[ $skip_tests == true ]] &&
               warning "Tests were skipped. The CI workflow is intentionally marked as failed to save time. Use this option only for testing non-test CI jobs faster." &&
               rc=$failure
-          $skip_benchmarks &&
+          [[ $skip_benchmarks == true ]] &&
               warning "Benchmarks were skipped. The CI workflow is intentionally marked as failed to save time. Use this option only for testing non-benchmark CI jobs faster." &&
               rc=$failure
-          $skip_packages &&
+          [[ $skip_packages == true ]] &&
               warning "Building packages was skipped. The CI workflow is intentionally marked as failed to save time. Use this option only for testing non-package CI jobs faster." &&
               rc=$failure
 
