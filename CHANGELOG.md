@@ -1,5 +1,9 @@
 # Changelog
 
+## v5.4.2 - 2026-10-03
+
+See prereleases below.
+
 ## v5.4.2-preview.2 - 2026-10-03
 
 ### Fixed
