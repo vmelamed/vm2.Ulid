@@ -1,5 +1,17 @@
 # Changelog
 
+## v5.4.2-preview.2 - 2026-10-03
+
+### Fixed
+
+- update CI workflows for improved condition checks and logging; bump vm2.TestUtilities version to 2.1.6
+- update vm2.TestUtilities to version 2.1.6 and adjust dependencies in packages.lock.json
+
+### Internal
+
+- diff-share, and sync with DevOps changes
+- diff-shared
+
 ## v5.4.2-preview.1 - 2026-09-22
 
 ### Fixed
