@@ -1,4 +1,5 @@
 <Project>
+    <!-- <<<=== begin shared content -->
     <!-- ====== The following properties detect a project's role based on its directory path and naming conventions. ======= -->
     <PropertyGroup>
         <!-- Initial default values for project role detection -->
@@ -343,9 +344,9 @@
         <IsPackable>false</IsPackable>
         <!-- Example projects settings -->
     </PropertyGroup>
+    <!-- ===>>> end shared content -->
 
-    <!-- ADD REPO-SPECIFIC PACKAGE REFERENCES AND USINGS BELOW -->
-    <ItemGroup>
+    <ItemGroup Label="Repository Specific">
     </ItemGroup>
 
 </Project>
