@@ -93,7 +93,7 @@ jobs:
           minver_tag_prefix=$MINVERTAGPREFIX
           minver_prerelease_id=$MINVERDEFAULTPRERELEASEIDENTIFIERS
           nuget_server=$NUGET_SERVER
-          nuget_username=$NUGET_USERNAME
+          nuget_username=${NUGET_USERNAME:-}
           reason="Pre-release: PR approved, tagged with pre-release tag."
 
           if [[ '${{ github.event_name }}' == "workflow_dispatch" ]]; then
@@ -171,7 +171,7 @@ jobs:
 
   publish-prerelease:
     name: Publish NuGet prerelease packages
-    
+    needs:
       - get-params
       - build-prerelease
     runs-on: ubuntu-latest
@@ -241,6 +241,9 @@ jobs:
               http://*|https://* )
                   server_name=$NUGET_SERVER
                   server_url=$NUGET_SERVER
+                  # for this unknown custom URL, we assume that
+                  #  - the server URL is the same as the server name
+                  #  - the $NUGET_API_KEY is expected to be provided via secrets.NUGET_API_KEY as is
                   ;;
 
               * ) exit_with_error -ec "$err_argument_value" -ns "Unsupported NuGet server: $NUGET_SERVER. Supported values: 'nuget', 'github', 'custom URL'."

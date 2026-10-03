@@ -27,7 +27,7 @@
         <PackageVersion Include="xunit.v3.runner.inproc" Version="4.0.1" />
         <PackageVersion Include="FluentAssertions" Version="8.11.0" />
         <PackageVersion Include="NSubstitute" Version="6.2.0" />
-        <PackageVersion Include="vm2.TestUtilities" Version="2.1.4" />
+        <PackageVersion Include="vm2.TestUtilities" Version="2.1.6" />
         <!-- Visual Studio only: -->
         <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
         <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.0" />

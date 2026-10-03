@@ -162,6 +162,7 @@
         <Message Importance="high" Text="PackageOutputPath=$(PackageOutputPath)" />
         <Message Importance="high" Text="PackageId=$(PackageId)" />
         <Message Importance="high" Text="PackageVersion=$(PackageVersion)" />
+        <Message Importance="high" Text="IncludeSymbols=$(IncludeSymbols)" />
 
     </Target>
 
