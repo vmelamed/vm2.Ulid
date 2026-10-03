@@ -1,9 +1,10 @@
 <Project>
+    <!-- <<<=== begin shared content -->
     <PropertyGroup>
         <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
         <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
     </PropertyGroup>
-    <ItemGroup>
+    <ItemGroup Label="vm2 Common Packages">
         <PackageVersion Include="System.CommandLine" Version="2.0.12" />
         <PackageVersion Include="System.Configuration.ConfigurationManager" Version="10.0.12" />
         <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.12" />
@@ -34,7 +35,10 @@
         <!-- for running with Visual Studio profiler:<PackageVersion Include="Microsoft.VisualStudio.DiagnosticsHub.BenchmarkDotNetDiagnosers" Version="18.0.36421.1" />-->
         <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
         <PackageVersion Include="BenchmarkDotNet.Annotations" Version="0.15.8" />
-        <!-- ADD REPO-SPECIFIC PACKAGE VERSIONS HERE: -->
+    </ItemGroup>
+    <!-- ===>>> end shared content -->
+
+    <ItemGroup Label="Repository Specific">
         <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     </ItemGroup>
 </Project>

@@ -22,13 +22,14 @@ env:
     "src/Serialization.NsJson.Ulid/Serialization.NsJson.Ulid.csproj",
     "src/UlidTool/UlidTool.csproj"
     ]
-  NUGET_SERVER: ${{ vars.NUGET_SERVER || 'nuget' }}
-  NUGET_USERNAME: ${{ vars.NUGET_USERNAME || 'vmelamed' }}
   PREPROCESSOR_SYMBOLS: ""
+  NUGET_SERVER: ${{ vars.NUGET_SERVER || 'nuget' }}
+  NUGET_USERNAME: ${{ vars.NUGET_USERNAME || 'valo' }}
   MINVERTAGPREFIX: ${{ vars.MINVERTAGPREFIX || 'v' }}                           # The MinVer tag prefix.
   VERBOSE: ${{ vars.VERBOSE || false }}                                         # Set the variable to "true" to enable verbose logging in scripts.
   REASON: ${{ inputs.reason }}
 
+# <<<=== begin shared content
 jobs:
   get-params:
     name: Prepare the parameters
@@ -119,16 +120,16 @@ jobs:
           printf '## Manual trigger\n\n**By:** %s\n**Reason:** %s\n' '${{ github.actor }}' "$gh_reason" | to_stdout
 
   build-release:
-    name: Release - package and publish NuGet stable release packages
+    name: Release - package, changelog and tag with release (stable) version
     needs:
       - get-params
     uses: vmelamed/vm2.DevOps/.github/workflows/_release.yaml@main
     secrets:
       RELEASE_PAT: ${{ secrets.RELEASE_PAT }} # Required PAT for pushing changelog and tags past branch protection.
     permissions:
-      actions: read # Required to checkout the code, push changelog, and create tags
       contents: write # Required to checkout the code, push changelog, and create tags
-      packages: write # Required to add stable NuGet packages
+      packages: read  # Required to build stable NuGet packages
+      actions: read   # Required to checkout the code, push changelog, and create tags
     with:
       package-projects: ${{ needs.get-params.outputs.package-projects }}
       preprocessor-symbols: ${{ needs.get-params.outputs.preprocessor-symbols }}
@@ -142,6 +143,7 @@ jobs:
       - build-release
     runs-on: ubuntu-latest
     permissions:
+      packages: write # Required to push to GitHub Packages with github.token
       actions: read   # Required to read workflow run artifact IDs (for downloading package artifacts if the NuGet server is 'nuget')
       id-token: write # Required for authentication with the NuGet server
     steps:
@@ -173,8 +175,13 @@ jobs:
       - name: Publish NuGet release packages
         shell: bash
         env:
-          NUGET_API_KEY: ${{ needs.get-params.outputs.nuget-server != 'nuget' && secrets.NUGET_API_KEY || steps.nuget-login.outputs.NUGET_API_KEY }}
           NUGET_SERVER: ${{ needs.get-params.outputs.nuget-server }}
+          NUGET_API_KEY: >-
+            ${{ needs.get-params.outputs.nuget-server == 'github' && github.token
+             || needs.get-params.outputs.nuget-server == 'nuget'  && steps.nuget-login.outputs.NUGET_API_KEY
+             || needs.get-params.outputs.nuget-server != 'github' &&
+                needs.get-params.outputs.nuget-server != 'nuget'  && secrets.NUGET_API_KEY
+             || '' }}
         run: |
           source $DEVOPS_LIB_DIR/gh_core.sh
 
@@ -203,8 +210,7 @@ jobs:
                   server_url=$NUGET_SERVER
                   ;;
 
-              * )
-                  error -ec "$err_argument_value" -ns "Unsupported NuGet server: $NUGET_SERVER. Supported values: 'nuget', 'github', 'custom URL'."
+              * ) exit_with_error -ec "$err_argument_value" -ns "Unsupported NuGet server: $NUGET_SERVER. Supported values: 'nuget', 'github', 'custom URL'."
                   ;;
           esac
 
@@ -217,3 +223,4 @@ jobs:
                   --api-key "$NUGET_API_KEY" \
                   --skip-duplicate
           done
+# ===>>> end shared content

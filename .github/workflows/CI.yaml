@@ -100,6 +100,7 @@ env:
   RESET_BENCHMARK_THRESHOLDS: ${{ vars.RESET_BENCHMARK_THRESHOLDS || false }}
   VERBOSE: ${{ vars.VERBOSE || true }}
 
+# <<<=== begin shared content
 jobs:
   prerun-ci:
     name: Prerun-CI
@@ -250,3 +251,4 @@ jobs:
 
           remove_traps
           exit $rc
+#  ===>>> end shared content
