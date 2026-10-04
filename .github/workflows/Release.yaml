@@ -80,6 +80,7 @@ jobs:
               --force
               --quiet
               --markdown
+              --gh-escape
               --header "Job get-params outputs:"
               package_projects
               preprocessor_symbols
