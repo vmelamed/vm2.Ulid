@@ -1,5 +1,13 @@
 # Changelog
 
+## v5.4.3-preview.1 - 2026-10-04
+
+### Internal
+
+- promote to stable v5.4.2 [skip ci]
+- update changelog for v5.4.2 [skip ci]
+- diff-shared
+
 ## v5.4.2 - 2026-10-03
 
 See prereleases below.
