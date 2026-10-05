@@ -1,5 +1,11 @@
 # Changelog
 
+## v5.4.3-preview.2 - 2026-10-05
+
+### Internal
+
+- update conventions and workflow scripts for clarity and consistency
+
 ## v5.4.3-preview.1 - 2026-10-04
 
 ### Internal
