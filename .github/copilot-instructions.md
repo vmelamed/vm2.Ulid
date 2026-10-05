@@ -11,5 +11,5 @@ Copilot MUST also read and follow [CLAUDE.md](../CLAUDE.md) before suggesting or
 
 ## Copilot-specific Instructions
 
-Place here any instructions specific to Copilot that are not already covered in the shared conventions or context above.
+<!-- Place below any instructions specific to Copilot that are not already covered in the shared CONVENTIONS.md or CLAUD.md. -->
 <!-- ===>>> end shared content -->

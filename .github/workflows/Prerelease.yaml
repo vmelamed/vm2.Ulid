@@ -104,7 +104,6 @@ jobs:
               reason=$REASON
           fi
 
-          gh_reason=$(gh_escape "$reason")
           declare -a args=(
               --force
               --quiet
@@ -115,7 +114,7 @@ jobs:
               preprocessor_symbols
               minver_tag_prefix
               minver_prerelease_id
-              gh_reason
+              reason
               nuget_server
               nuget_username
           )
