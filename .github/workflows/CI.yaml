@@ -28,7 +28,7 @@ on:
       preprocessor-symbols:
         description: Preprocessor symbols separated by semicolon, space, or comma.
         type: string
-        required: true
+        required: false
         default: "SHORT_RUN"
 
       reset-benchmark-thresholds:
