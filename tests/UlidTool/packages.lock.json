@@ -27,23 +27,24 @@
       },
       "Microsoft.Testing.Extensions.CodeCoverage": {
         "type": "Direct",
-        "requested": "[18.11.2, )",
-        "resolved": "18.11.2",
-        "contentHash": "bT6awBEUR+fjPpeLAN++4qx5q0sgA9SeJt6QfijnFFPxNSr68BYsYFMQH8L8kY6vMJd3fuvFAFBht4JtWQcWtQ==",
+        "requested": "[18.12.0, )",
+        "resolved": "18.12.0",
+        "contentHash": "BST/sWYpKk9OXO7Yxktcg6FWORRsHU0EdCbMwZ7d3OqJsMKlrNHIZ30g0Ib4k5T5acJYXRBmg9mNrTU/N6cy1g==",
         "dependencies": {
           "Microsoft.DiaSymReader": "2.2.10",
           "Microsoft.Extensions.DependencyModel": "10.0.10",
-          "Microsoft.Testing.Platform": "2.4.0"
+          "Microsoft.Testing.Platform": "2.5.0",
+          "Mono.Cecil": "0.11.6"
         }
       },
       "Microsoft.Testing.Extensions.TrxReport": {
         "type": "Direct",
-        "requested": "[2.4.0, )",
-        "resolved": "2.4.0",
-        "contentHash": "WkOaIp/ivwcaF34rmUAIjafnWJ/chI/2hvH/wLQlLXKNDDvaRYvjkxWC7l0+Ib+C4dGrylUonM4kHwJujlkVKw==",
+        "requested": "[2.5.0, )",
+        "resolved": "2.5.0",
+        "contentHash": "U0dDWXTARCh41DXh0km+fkpAOS+987ymijXsdjOLyTZb4Zss92565PsEqisOncdoGhvDgJiAT+rfO4agfmaVqw==",
         "dependencies": {
-          "Microsoft.Testing.Extensions.TrxReport.Abstractions": "2.4.0",
-          "Microsoft.Testing.Platform": "[2.4.0, 3.0.0)"
+          "Microsoft.Testing.Extensions.TrxReport.Abstractions": "2.5.0",
+          "Microsoft.Testing.Platform": "[2.5.0, 3.0.0)"
         }
       },
       "MinVer": {
@@ -149,6 +150,11 @@
         "type": "Transitive",
         "resolved": "5.0.0",
         "contentHash": "dDoKi0PnDz31yAyETfRntsLArTlVAVzUzCIvvEDsDsucrl33Dl8pIJG06ePTJTI3tGpeyHS9Cq7Foc/s4EeKcg=="
+      },
+      "Mono.Cecil": {
+        "type": "Transitive",
+        "resolved": "0.11.6",
+        "contentHash": "f33RkDtZO8VlGXCtmQIviOtxgnUdym9xx/b1p9h91CRGOsJFxCFOFK1FDbVt1OCf1aWwYejUFa2MOQyFWTFjbA=="
       },
       "System.Diagnostics.EventLog": {
         "type": "Transitive",
@@ -256,36 +262,36 @@
       },
       "Microsoft.Testing.Extensions.Telemetry": {
         "type": "CentralTransitive",
-        "requested": "[2.4.0, )",
-        "resolved": "2.4.0",
-        "contentHash": "JeP1RFqBa11fWmBk8xEfZcMKr4rxWSyI6OZ+659V069CaMkTEOQBW2UdSSeNz3absOsygcn7JJkzerC4LGnZ9w==",
+        "requested": "[2.5.0, )",
+        "resolved": "2.5.0",
+        "contentHash": "KrbMmSQMKoM+RrF4QUp0FNJzmTmFXqz3HNZFQ0/DyGqegAx1NcRYrXbHK+Oxw2f7GBWkrgGc9FIo92oKVkFhsQ==",
         "dependencies": {
           "Microsoft.ApplicationInsights": "2.23.0",
-          "Microsoft.Testing.Platform": "[2.4.0, 3.0.0)"
+          "Microsoft.Testing.Platform": "[2.5.0, 3.0.0)"
         }
       },
       "Microsoft.Testing.Extensions.TrxReport.Abstractions": {
         "type": "CentralTransitive",
-        "requested": "[2.4.0, )",
-        "resolved": "2.4.0",
-        "contentHash": "uRb+4qM42dFDg4kWJZ2kFEcwESNVCRZJjItp5vETorN3rSJGysP617LqYirOcrCYmxg+obPreHMM5JcsNDKtBw==",
+        "requested": "[2.5.0, )",
+        "resolved": "2.5.0",
+        "contentHash": "awUJ9LERhvqQeBCf+CGo5fTMp6glXL8lck2mn/3sHUJ1cKOEfI9yaVS3wRRgAAdJQ0tX6rqisFvhEaZCWW3mcw==",
         "dependencies": {
-          "Microsoft.Testing.Platform": "[2.4.0, 3.0.0)"
+          "Microsoft.Testing.Platform": "[2.5.0, 3.0.0)"
         }
       },
       "Microsoft.Testing.Platform": {
         "type": "CentralTransitive",
-        "requested": "[2.4.0, )",
-        "resolved": "2.4.0",
-        "contentHash": "dp1N3P1ujb0ztwFgqz2o/ItEvq+pm19/AiA+Xq7Zpcy7oPMcxDBZLYGtf0LlU1MveEBJuKVjZhI+LnkfcH/0jQ=="
+        "requested": "[2.5.0, )",
+        "resolved": "2.5.0",
+        "contentHash": "SQ+jJgs4I+Bwd+ua+c++6X+hOMOCceSHZxQPZVtkKit+ENUdErIuGjZjXe9XVDeHixZc3KCgsjhf/bxS4Mb5yA=="
       },
       "Microsoft.Testing.Platform.MSBuild": {
         "type": "CentralTransitive",
-        "requested": "[2.4.0, )",
-        "resolved": "2.4.0",
-        "contentHash": "qr5M6h16YHMJLFDcWELFVMMpGte2BUmveBZKT5YoBV+bmuJRPu9bv/Zqke4yQuOEKRNxoAETrG5jr+/6Rnr3Hg==",
+        "requested": "[2.5.0, )",
+        "resolved": "2.5.0",
+        "contentHash": "+8RNQSAiZoaz/3wqQvCMZKFv7oQ+BNHmM7g6fd47yH9v4wIYzTlnYYt/ohmx2sS4DmOFrKv7xuoqCE8vfW10eA==",
         "dependencies": {
-          "Microsoft.Testing.Platform": "[2.4.0, 3.0.0)"
+          "Microsoft.Testing.Platform": "[2.5.0, 3.0.0)"
         }
       },
       "System.CommandLine": {
