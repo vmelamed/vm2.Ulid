@@ -1,5 +1,11 @@
 # Changelog
 
+## v5.4.3-preview.5 - 2026-10-07
+
+### Internal
+
+- update NuGet package versions in Directory.Packages.props
+
 ## v5.4.3-preview.4 - 2026-10-07
 
 ### Internal
