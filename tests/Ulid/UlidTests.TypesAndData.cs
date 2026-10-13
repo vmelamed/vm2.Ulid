@@ -67,4 +67,12 @@ public partial class UlidTests
         public override DateTimeOffset GetUtcNow() => _now;
     }
 
+    // FakeTimeProvider refuses to move backwards, so the clock-step-back tests need their own clock.
+    class Test_SteppingTimeProvider(long unixTimeMs) : TimeProvider
+    {
+        public long UnixTimeMs { get; set; } = unixTimeMs;
+
+        public override DateTimeOffset GetUtcNow() => DateTimeOffset.FromUnixTimeMilliseconds(UnixTimeMs);
+    }
+
 }

@@ -244,6 +244,23 @@ public partial class UlidTests(ITestOutputHelper output) : TestBase(output)
             ulids[i].Should().BeGreaterThan(ulids[i - 1]);
     }
 
+    [Theory]
+    [InlineData(1)]
+    [InlineData(1000)]
+    public void NewUlid_WhenClockStepsBack_ShouldStayMonotonic(long stepBackMs)
+    {
+        const long start = 1758851704339L;
+        var clock = new Test_SteppingTimeProvider(start);
+        var factory = new UlidFactory(new PseudoRandom(), clock);
+
+        var before = factory.NewUlid();
+        clock.UnixTimeMs = start - stepBackMs;
+        var after = factory.NewUlid();
+
+        after.Should().BeGreaterThan(before);
+        after.Timestamp.Should().Be(before.Timestamp);
+    }
+
     [Fact]
     public void Equals_CompareTo_And_Operators_Behave_As_Expected()
     {
