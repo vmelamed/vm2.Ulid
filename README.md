@@ -307,21 +307,30 @@ it without any additional configuration. For Newtonsoft.Json, use the companion 
 
 ### The `UlidFactory` in a Distributed System
 
-In distributed database applications and services, ULIDs are often generated across many nodes. Design for collision avoidance
-and monotonicity from the start. Node-local monotonicity does not imply global monotonicity, and clock skew can surface quickly
-under load.
+In a distributed application, ULIDs are usually generated on many nodes at once. Decide early which ordering guarantee you
+actually need, because each stronger guarantee costs more.
 
-One approach uses a separate `UlidFactory` instance on each node with a unique node identifier. ULIDs remain distinct even when
-generated in the same millisecond. However, global monotonicity across all nodes does not hold under this approach.
+**Uniqueness needs no coordination.** Each node can use its own `UlidFactory`; no node identifier is needed. The 80 random
+bits make collisions negligible: even a million ULIDs generated across all nodes within the same millisecond collide with a
+probability below 10^-12.
 
-To maintain global monotonicity, a centralized ULID service can generate ULIDs for all nodes. This ensures uniqueness and
-monotonicity across the system, at the cost of a single point of failure and a potential performance bottleneck. Time
-synchronization across nodes remains a challenge; clock skew can cause non-monotonic ULIDs if not handled properly.
+**Ordering across nodes is approximate.** ULIDs from one factory are strictly increasing. ULIDs from different factories or
+nodes are ordered only by their timestamps: within the same millisecond their order is random, and clock skew between nodes
+can make a ULID generated later on one node sort before one generated earlier on another. For database index locality, this
+is almost always good enough.
 
-Another approach uses a consensus algorithm to coordinate ULID generation across nodes. This adds complexity and overhead.
+**A central ULID service gives one total order of issuance.** All nodes request their ULIDs from a single generator per
+sequence, so only the service's clock matters. The costs are a network round-trip per ULID (or per batch) and a dependency
+that must stay available. Replicas with leader election remove the single point of failure, but a new leader must never issue
+ULIDs smaller than the ones its predecessor issued, e.g. it starts after a persisted timestamp high-water mark.
 
-The choice depends on system requirements and constraints. Consider trade-offs among uniqueness, monotonicity, performance, and
-complexity when designing a distributed ULID strategy.
+> [!IMPORTANT]
+> Monotonic *issuance* is not monotonic *visibility*. Even with a central service, a ULID issued earlier can be committed
+> later than one issued after it. A consumer that reads "everything after the last ULID I saw" (cursor pagination, change
+> feeds, outboxes) can therefore miss rows. Such consumers need a watermark, e.g. they read only ULIDs older than the longest
+> expected transaction.
+
+Choose based on your requirements, weighing uniqueness, ordering, latency, availability, and complexity.
 
 ## Performance
 
