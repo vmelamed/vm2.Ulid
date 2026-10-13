@@ -119,8 +119,7 @@ public readonly partial struct Ulid
     /// </summary>
     public const string UlidStringRegex = $"(?i)[{CrockfordDigits}]{{26}}";
 
-    static readonly int CrockfordDigitValuesLength = 256; // the number of possible byte values (0-255) - the length of the lookup table for parsing ULID strings
-
+    // Indexed by a byte, so its length MUST stay 256: the decoder relies on that to index it without range checks.
     // A ReadOnlySpan<byte> property returning a byte literal would be stored in static data (no heap allocation) and is immune to mutation.
     static ReadOnlySpan<byte> CrockfordDigitValues => [
          255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,

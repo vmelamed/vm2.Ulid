@@ -25,12 +25,41 @@ public readonly partial struct Ulid :
 {
     static UlidFactory _defaultFactory = new();
 
-    readonly ReadOnlyMemory<byte> _ulidBytes;
+    // The ULID is held as a 128-bit unsigned number split into two 64-bit halves:
+    //   _hi = bytes 0..7  of the canonical (big-endian) binary form: 48-bit timestamp << 16 | top 16 bits of the random part
+    //   _lo = bytes 8..15 of the canonical (big-endian) binary form: the low 64 bits of the random part
+    // The halves are numbers, not memory images, so comparisons and arithmetic are endianness-agnostic. Every conversion to
+    // or from bytes MUST go through the BinaryPrimitives *BigEndian methods - never through MemoryMarshal or Unsafe casts.
+    // Two ulong-s rather than one UInt128: UInt128 is 16-byte aligned on x64, which would pad structs and arrays embedding Ulid.
+    readonly ulong _hi;
+    readonly ulong _lo;
+
+    const int timestampShift = 16;  // the 16 low bits of _hi belong to the random part
+    const ulong low60BitsMask = (1UL << 60) - 1;
+    const ulong low56BitsMask = (1UL << 56) - 1;
+
+    Ulid(ulong hi, ulong lo)
+    {
+        _hi = hi;
+        _lo = lo;
+    }
 
     /// <summary>
-    /// Gets a read-only buffer of bytes representing the underlying data of the ULID.
+    /// Gets the 16 bytes of the ULID in their canonical, big-endian order.
     /// </summary>
-    public ReadOnlySpan<byte> Bytes => _ulidBytes.Span;
+    /// <remarks>
+    /// <b>Note:</b> the ULID no longer stores its bytes, so every call allocates a new 16-byte array. On hot paths, prefer<br/>
+    /// <see cref="TryWrite(Span{byte})"/> with a stack-allocated buffer.
+    /// </remarks>
+    public ReadOnlySpan<byte> Bytes
+    {
+        get
+        {
+            var bytes = new byte[UlidBytesLength];
+            WriteBytes(bytes);
+            return bytes;
+        }
+    }
 
     /// <summary>
     /// Extracts and converts the ULID's Unix timestamp component into a <see cref="DateTimeOffset"/> representation.
@@ -38,24 +67,25 @@ public readonly partial struct Ulid :
     /// <remarks>
     /// The returned <see cref="DateTimeOffset"/> represents the date and time encoded in the ULID.
     /// </remarks>
-    public DateTimeOffset Timestamp
-    {
-        get
-        {
-            Span<byte> ts = stackalloc byte[sizeof(long)];
-
-            _ulidBytes[TimestampBegin..TimestampEnd].Span.CopyTo(ts[2..8]);
-            return DateTimeOffset.FromUnixTimeMilliseconds(ReadInt64BigEndian(ts));
-        }
-    }
+    public DateTimeOffset Timestamp => DateTimeOffset.FromUnixTimeMilliseconds((long)(_hi >> timestampShift));
 
     /// <summary>
     /// Returns the bytes of the random component from the current ULID instance.
     /// </summary>
     /// <remarks>
-    /// The returned byte array represents the random portion of the ULID.
+    /// The returned byte array represents the random portion of the ULID.<br/>
+    /// <b>Note:</b> every call allocates a new 10-byte array.
     /// </remarks>
-    public ReadOnlySpan<byte> RandomBytes => Bytes[RandomBegin..RandomEnd];
+    public ReadOnlySpan<byte> RandomBytes
+    {
+        get
+        {
+            var bytes = new byte[RandomLength];
+            WriteUInt16BigEndian(bytes, (ushort)_hi);
+            WriteUInt64BigEndian(bytes.AsSpan(sizeof(ushort)), _lo);
+            return bytes;
+        }
+    }
 
     /// <summary>
     /// Generates a new unique ULID (Universally Unique Lexicographically Sortable Identifier) using the default random provider
@@ -72,8 +102,12 @@ public readonly partial struct Ulid :
     /// <summary>
     /// Initializes a new instance of the <see cref="Ulid"/> struct with all bits set to zero, representing the smallest possible value of the <see cref="Ulid"/> type.
     /// </summary>
+    /// <remarks>
+    /// <c>new Ulid()</c>, <c>default(Ulid)</c>, and <see cref="Empty"/> are the same value.
+    /// </remarks>
     public Ulid()
-        => _ulidBytes = new ReadOnlyMemory<byte>(new byte[UlidBytesLength]);
+    {
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Ulid"/> struct using the passed in <paramref name="bytes"/>.<br/>
@@ -110,23 +144,31 @@ public readonly partial struct Ulid :
                         $"The byte buffer must contain at least {nameof(Ulid)}.{nameof(UlidBytesLength)}({UlidBytesLength}) bytes.",
                         nameof(bytes));
 
-        _ulidBytes = new ReadOnlyMemory<byte>(bytes[0..UlidBytesLength].ToArray());
-        return;
+        _hi = ReadUInt64BigEndian(bytes);
+        _lo = ReadUInt64BigEndian(bytes[sizeof(ulong)..]);
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Ulid"/> struct using the specified string representation.
     /// </summary>
     /// <param name="source">The string representation of the ULID to parse. Must be a valid ULID string.</param>
-    public Ulid(string source) => _ulidBytes = Parse(source)._ulidBytes;
+    public Ulid(string source) => this = Parse(source);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Ulid"/> struct from the bytes of the specified <see cref="Guid"/>.
     /// </summary>
+    /// <remarks>
+    /// The ULID bytes are the bytes returned by <see cref="Guid.ToByteArray()"/>, so that<br/>
+    /// <c>new Ulid(guid).ToGuid() == guid</c> and <c>guid.ToByteArray()</c> equals <c>new Ulid(guid).Bytes</c>.
+    /// </remarks>
     /// <param name="source">A <see cref="Guid"/> to initialize the ULID from.</param>
     public Ulid(Guid source)
-        : this(source.ToByteArray(), false)
     {
+        Span<byte> bytes = stackalloc byte[UlidBytesLength];
+
+        source.TryWriteBytes(bytes);
+        _hi = ReadUInt64BigEndian(bytes);
+        _lo = ReadUInt64BigEndian(bytes[sizeof(ulong)..]);
     }
 
     /// <summary>
@@ -144,17 +186,8 @@ public readonly partial struct Ulid :
                         $"The random bytes argument must contain exactly {nameof(Ulid)}.{nameof(RandomLength)} ({RandomLength}) bytes.",
                         nameof(randomBytes));
 
-        var ulidBytes = new byte[UlidBytesLength];
-        var ulidSpan = ulidBytes.AsSpan();
-
-        Span<byte> ts = stackalloc byte[sizeof(long)];
-
-        WriteInt64BigEndian(ts, unixTimestamp);
-        ts[2..8].CopyTo(ulidSpan[TimestampBegin..TimestampEnd]);
-
-        randomBytes.CopyTo(ulidSpan[RandomBegin..RandomEnd]);
-
-        _ulidBytes = new ReadOnlyMemory<byte>(ulidBytes);
+        _hi = ((ulong)unixTimestamp << timestampShift) | ReadUInt16BigEndian(randomBytes);
+        _lo = ReadUInt64BigEndian(randomBytes[sizeof(ushort)..]);
     }
 
     /// <summary>
@@ -189,10 +222,27 @@ public readonly partial struct Ulid :
     }
 
     /// <summary>
+    /// Builds a ULID from a 48-bit timestamp and the 80-bit random part split into its top 16 and low 64 bits.
+    /// The caller guarantees the ranges; used by <see cref="UlidFactory"/> on its hot path.
+    /// </summary>
+    internal static Ulid FromParts(long unixTimestamp, ushort randomHi, ulong randomLo)
+        => new(((ulong)unixTimestamp << timestampShift) | randomHi, randomLo);
+
+    /// <summary>
     /// Converts the current ULID value to its equivalent Guid representation.
     /// </summary>
-    /// <returns></returns>
-    public Guid ToGuid() => new(Bytes);
+    /// <remarks>
+    /// The <see cref="Guid"/> is built from the ULID bytes, i.e. <c>ToGuid().ToByteArray()</c> equals <see cref="Bytes"/>.
+    /// </remarks>
+    /// <returns>The <see cref="Guid"/> with the same bytes as this ULID.</returns>
+    public Guid ToGuid()
+        // Guid stores its first three fields (a, b, c) little-endian in ToByteArray() and the remaining 8 bytes in order,
+        // so the byte-swapped halves of _hi land the ULID bytes in canonical order. Pure arithmetic: endianness-agnostic.
+        => new(ReverseEndianness((uint)(_hi >> 32)),
+               ReverseEndianness((ushort)(_hi >> 16)),
+               ReverseEndianness((ushort)_hi),
+               (byte)(_lo >> 56), (byte)(_lo >> 48), (byte)(_lo >> 40), (byte)(_lo >> 32),
+               (byte)(_lo >> 24), (byte)(_lo >> 16), (byte)(_lo >> 8),  (byte)_lo);
 
     /// <summary>
     /// Converts the current ULID instance to its equivalent Base32 (the default) string representation.
@@ -201,7 +251,8 @@ public readonly partial struct Ulid :
     /// The string representation follows the standard ULID format, which is a 26 uppercase alphanumeric string.<br/>
     /// </remarks>
     /// <returns>A 26-character string that represents the current ULID instance.</returns>
-    public override string ToString() => string.Create(UlidStringLength, this, static (span, ulid) => ulid.TryWrite(span));
+    public override string ToString()
+        => string.Create(UlidStringLength, this, static (span, ulid) => Encode(ulid._hi, ulid._lo, span, CrockfordDigits));
 
     #region Implicit conversions
     /// <summary>
@@ -235,7 +286,7 @@ public readonly partial struct Ulid :
     /// <returns>
     /// <see langword="true"/> if the current instance is equal to the specified <see cref="Ulid"/> instance; otherwise, <see langword="false"/>.
     /// </returns>
-    public bool Equals(Ulid other) => Bytes.SequenceEqual(other.Bytes);
+    public bool Equals(Ulid other) => _hi == other._hi && _lo == other._lo;
 
     /// <summary>
     /// Determines whether the specified object is equal to the current instance.
@@ -249,22 +300,19 @@ public readonly partial struct Ulid :
     /// <summary>
     /// Returns the hash code for the current instance.
     /// </summary>
-    /// <remarks>The hash code is computed based on the underlying byte array representing the ULID.</remarks>
+    /// <remarks>
+    /// <see cref="HashCode"/> is randomized per process, which keeps hash-based collections resistant to hash flooding with<br/>
+    /// ULIDs crafted by an untrusted party.
+    /// </remarks>
     /// <returns>A 32-bit signed integer that serves as the hash code for the current instance.</returns>
-    public override int GetHashCode()
-    {
-        HashCode hc = new();
-        hc.AddBytes(Bytes);
-        return hc.ToHashCode();
-    }
+    public override int GetHashCode() => HashCode.Combine(_hi, _lo);
 
     #region IComparable
     /// <summary>
     /// Compares the current instance with another <see cref="Ulid"/> object and returns an integer that indicates their
     /// relative order.
     /// </summary>
-    /// <remarks>The comparison is performed based on the byte sequence of the underlying ULID
-    /// values.</remarks>
+    /// <remarks>The comparison is equivalent to comparing the canonical big-endian byte sequences of the ULIDs.</remarks>
     /// <param name="other">The <see cref="Ulid"/> instance to compare to the current instance.</param>
     /// <returns>
     /// A signed integer that indicates the relative order of the objects being compared: <list type="bullet">
@@ -273,7 +321,10 @@ public readonly partial struct Ulid :
     /// <paramref name="other"/> in the sort order.</description></item> <item><description>Greater than zero if the
     /// current instance follows <paramref name="other"/> in the sort order.</description></item> </list>
     /// </returns>
-    public int CompareTo(Ulid other) => Bytes.SequenceCompareTo(other.Bytes);
+    public int CompareTo(Ulid other)
+        => _hi != other._hi
+                ? _hi < other._hi ? -1 : 1
+                : _lo.CompareTo(other._lo);
     #endregion
 
     /// <summary>
@@ -297,15 +348,7 @@ public readonly partial struct Ulid :
         if (destination.Length < UlidStringLength)
             return false;
 
-        var ulidAsNumber = ReadUInt128BigEndian(Bytes);
-
-        for (var i = 0; i < UlidStringLength; i++)
-        {
-            // get the least significant 5 bits from the number and convert it to character
-            destination[UlidStringLength - i - 1] = CrockfordDigits[(byte)ulidAsNumber & UlidDigitMask];
-            ulidAsNumber >>>= BitsPerUlidDigit;
-        }
-
+        Encode(_hi, _lo, destination, CrockfordDigits);
         return true;
     }
 
@@ -324,7 +367,7 @@ public readonly partial struct Ulid :
         if (destination.Length < UlidBytesLength)
             return false;
 
-        Bytes.CopyTo(destination);
+        WriteBytes(destination);
         return true;
     }
 
@@ -336,15 +379,7 @@ public readonly partial struct Ulid :
         if (destination.Length < UlidStringLength)
             return false;
 
-        var ulidAsNumber = ReadUInt128BigEndian(Bytes);
-
-        for (var i = 0; i < UlidStringLength; i++)
-        {
-            // get the least significant 5 bits from the number and convert it to character
-            destination[UlidStringLength - i - 1] = CrockfordDigitsUtf8[(byte)ulidAsNumber & UlidDigitMask];
-            ulidAsNumber >>>= BitsPerUlidDigit;
-        }
-
+        Encode(_hi, _lo, destination, CrockfordDigitsUtf8);
         return true;
     }
 
@@ -368,40 +403,7 @@ public readonly partial struct Ulid :
     public static bool TryParse(
         ReadOnlySpan<char> sourceSpan,
         out Ulid result)
-    {
-        result = Empty;
-
-        if (sourceSpan.Length < UlidStringLength)
-            return false;
-
-        // parse the string into a UInt128 value first
-        UInt128 ulidAsNumber = 0;
-
-        Debug.Assert(CrockfordDigitValuesLength == 256, "The length of the CrockfordDigitValues lookup table should be equal to the number of possible byte values (0-255) to ensure that all input characters can be mapped to a digit value or marked as invalid.");
-        for (var i = 0; i < UlidStringLength; i++)
-        {
-            var crockfordChar = sourceSpan[i];
-
-            if (crockfordChar >= CrockfordDigitValuesLength)
-                return false;
-
-            var digitValue = CrockfordDigitValues[crockfordChar];
-
-            if (digitValue >= 32)
-                return false;
-
-            ulidAsNumber = (ulidAsNumber << BitsPerUlidDigit) | digitValue;
-        }
-
-        // get the randomBytes of the UInt128 value
-        Span<byte> ulidSpan = stackalloc byte[UlidBytesLength];
-
-        WriteUInt128BigEndian(ulidSpan, ulidAsNumber);
-
-        // this is our ULID
-        result = new Ulid(ulidSpan, false);
-        return true;
-    }
+        => TryDecode(sourceSpan, out result);
 
     /// <summary>
     /// Attempts to parse the specified UTF-8 string representation of a ULID.
@@ -422,32 +424,7 @@ public readonly partial struct Ulid :
     public static bool TryParse(
         ReadOnlySpan<byte> sourceSpan,
         out Ulid result)
-    {
-        result = Empty;
-
-        if (sourceSpan.Length < UlidStringLength)
-            return false;
-
-        // parse the string into a UInt128 value first
-        UInt128 ulidAsNumber = 0;
-
-        for (var i = 0; i < UlidStringLength; i++)
-        {
-            var digitValue = CrockfordDigitValues[sourceSpan[i]];
-            if (digitValue >= 32)
-                return false;
-            ulidAsNumber = (ulidAsNumber << BitsPerUlidDigit) | digitValue;
-        }
-
-        // get the randomBytes of the UInt128 value
-        Span<byte> ulidSpan = stackalloc byte[UlidBytesLength];
-
-        WriteUInt128BigEndian(ulidSpan, ulidAsNumber);
-
-        // this is our ULID
-        result = new Ulid(ulidSpan, false);
-        return true;
-    }
+        => TryDecode(sourceSpan, out result);
 
     /// <summary>
     /// Parses the specified string representation of a ULID and returns the corresponding <see cref="Ulid"/> instance.
@@ -502,7 +479,7 @@ public readonly partial struct Ulid :
             return false;
         }
 
-        return TryParse(source, out result);
+        return TryParse(source.AsSpan(), out result);
     }
     #endregion
 
@@ -540,15 +517,86 @@ public readonly partial struct Ulid :
     /// <inheritdoc/>
     public static Ulid operator ++(Ulid value)
     {
-        var newUlidBytes = value.Bytes.ToArray();
-        var span = newUlidBytes.AsSpan();
+        var lo = value._lo + 1;
+        var hi = lo == 0 ? value._hi + 1 : value._hi;
 
-        var i = span.Length - 1;
-        for (; i >= 0; i--)
-            if (unchecked(++span[i]) != 0)
-                return new Ulid(span, false);
+        if (hi == 0 && lo == 0)
+            throw new OverflowException("Ulid overflowed.");
 
-        throw new OverflowException("Ulid overflowed.");
+        return new(hi, lo);
     }
     #endregion
+
+    void WriteBytes(Span<byte> destination)
+    {
+        WriteUInt64BigEndian(destination, _hi);
+        WriteUInt64BigEndian(destination[sizeof(ulong)..], _lo);
+    }
+
+    // The 26 Crockford digits carry 130 bits; the value has 128, so the first digit holds only the top 3 bits.
+    // The value is encoded in three groups that each fit a ulong, so no UInt128 arithmetic is needed:
+    //   digits  0..1  - bits 127..120 ( 8 bits: 3 + 5)
+    //   digits  2..13 - bits 119..60  (60 bits: 12 x 5)
+    //   digits 14..25 - bits  59..0   (60 bits: 12 x 5)
+    static void Encode<T>(ulong hi, ulong lo, Span<T> destination, ReadOnlySpan<T> digits)
+    {
+        var top8  = hi >> 56;
+        var mid60 = ((hi & low56BitsMask) << 4) | (lo >> 60);
+        var low60 = lo & low60BitsMask;
+
+        destination = destination[..UlidStringLength];   // one bounds check here lets the JIT elide the ones below
+
+        destination[0] = digits[(int)(top8 >> BitsPerUlidDigit)];
+        destination[1] = digits[(int)(top8 & UlidDigitMask)];
+
+        for (var i = 13; i >= 2; i--, mid60 >>= BitsPerUlidDigit)
+            destination[i] = digits[(int)(mid60 & UlidDigitMask)];
+
+        for (var i = 25; i >= 14; i--, low60 >>= BitsPerUlidDigit)
+            destination[i] = digits[(int)(low60 & UlidDigitMask)];
+    }
+
+    // The inverse of Encode. Invalid digits map to 255 in CrockfordDigitValues; rather than branching on every character, the
+    // digit values (and, for UTF-16, the bits above the low byte) are OR-ed into one accumulator that is tested once at the end.
+    static bool TryDecode<T>(ReadOnlySpan<T> source, out Ulid result)
+        where T : unmanaged, IBinaryInteger<T>
+    {
+        result = Empty;
+
+        if (source.Length < UlidStringLength)
+            return false;
+
+        source = source[..UlidStringLength];
+
+        uint invalid = 0;
+
+        var top10 = DecodeDigits(source[..2], ref invalid);
+        var mid60 = DecodeDigits(source[2..14], ref invalid);
+        var low60 = DecodeDigits(source[14..], ref invalid);
+
+        // a valid digit is 0..31: any higher bit means an invalid character
+        if ((invalid & ~(uint)UlidDigitMask) != 0)
+            return false;
+
+        // NOTE: like the previous UInt128 implementation, the 2 bits of top10 above bit 7 (first digit > '7') are silently
+        // dropped here, so e.g. "8000..." aliases "0000...". See the code review notes - the spec says such input is invalid.
+        result = new((top10 << 56) | (mid60 >> 4), (mid60 << 60) | low60);
+        return true;
+    }
+
+    static ulong DecodeDigits<T>(ReadOnlySpan<T> chars, ref uint invalid)
+        where T : unmanaged, IBinaryInteger<T>
+    {
+        ulong value = 0;
+
+        foreach (var ch in chars)
+        {
+            var c = uint.CreateTruncating(ch);
+            uint digit = CrockfordDigitValues[(byte)c];
+
+            invalid |= digit | (c >> 8);
+            value = (value << BitsPerUlidDigit) | digit;
+        }
+        return value;
+    }
 }

@@ -16,11 +16,12 @@ namespace vm2;
 /// </remarks>
 public sealed class UlidFactory(IUlidRandomProvider? randomProvider = null, TimeProvider? timeProvider = null)
 {
-    IUlidRandomProvider _rng = randomProvider ?? new CryptoRandom();
-    TimeProvider _clock = timeProvider ?? TimeProvider.System;
-    byte[] _lastRandom = new byte[RandomLength];
+    readonly IUlidRandomProvider _rng = randomProvider ?? new CryptoRandom();
+    readonly TimeProvider _clock = timeProvider ?? TimeProvider.System;
+    readonly Lock _lock = new();
     long _lastTimestamp;
-    Lock _lock = new();
+    ushort _lastRandomHi;   // the top 16 bits of the last 80-bit random part
+    ulong _lastRandomLo;    // the low 64 bits of the last 80-bit random part
 
     /// <summary>
     /// Generates a new Universally Unique Lexicographically Sortable Identifier (ULID).
@@ -34,7 +35,7 @@ public sealed class UlidFactory(IUlidRandomProvider? randomProvider = null, Time
     /// <returns>A new <see cref="Ulid"/> instance representing the generated ULID.</returns>
     public Ulid NewUlid()
     {
-        var randomSpan  = _lastRandom.AsSpan();
+        Span<byte> random = stackalloc byte[RandomLength];
 
         lock (_lock)
         {
@@ -44,21 +45,24 @@ public sealed class UlidFactory(IUlidRandomProvider? randomProvider = null, Time
 
             if (timestampNow <= _lastTimestamp)
             {
-                // increment the random part with carry over for monotonicity
-                for (var i = randomSpan.Length-1; i >= 0; i--)
-                    if (unchecked(++randomSpan[i]) != 0)
-                        return new Ulid(_lastTimestamp, randomSpan);
+                // We ran out of consecutive values for this millisecond. Check before incrementing, so that the state is
+                // not wrapped around to zero and the next call cannot emit a smaller ULID.
+                if (_lastRandomLo == ulong.MaxValue && _lastRandomHi == ushort.MaxValue)
+                    throw new OverflowException("Random component overflowed; cannot generate more ULIDs for this millisecond.");
 
-                // We ran out of consecutive values for this millisecond.
-                // This has 2^-80 chance of happening.
-                throw new OverflowException("Random component overflowed; cannot generate more ULIDs for this millisecond.");
+                // increment the 80-bit random part with carry over for monotonicity
+                if (++_lastRandomLo == 0)
+                    _lastRandomHi++;
+
+                return Ulid.FromParts(_lastTimestamp, _lastRandomHi, _lastRandomLo);
             }
 
-            _rng.Fill(randomSpan);
+            _rng.Fill(random);
             _lastTimestamp = timestampNow;
+            _lastRandomHi  = ReadUInt16BigEndian(random);
+            _lastRandomLo  = ReadUInt64BigEndian(random[sizeof(ushort)..]);
 
-            // create a new ULID from the bytes
-            return new Ulid(_lastTimestamp, randomSpan);
+            return Ulid.FromParts(_lastTimestamp, _lastRandomHi, _lastRandomLo);
         }
     }
 }
