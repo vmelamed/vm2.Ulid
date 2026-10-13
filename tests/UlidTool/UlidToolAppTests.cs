@@ -61,6 +61,40 @@ public sealed class UlidToolAppTests(ITestOutputHelper output) : TestBase(output
         output.Should().Contain("Random Bytes:");
     }
 
+    [Fact]
+    public void Run_FormatDetailed_ShouldSplitUlidStringIntoTimestampAndRandomParts()
+    {
+        using var writer = new StringWriter();
+
+        UlidToolApp.Run(["-f", "detailed"], writer);
+
+        var lines = GetNonEmptyLines(writer.ToString());
+        var ulid = lines.Single(l => l.StartsWith("ULID:"))["ULID:".Length..].Trim();
+        var timestampPart = lines.Single(l => l.Contains("Timestamp:")).Split(' ', StringSplitOptions.RemoveEmptyEntries)[1];
+        var randomPart = lines.Single(l => l.Contains("Random Bytes:")).Split(' ', StringSplitOptions.RemoveEmptyEntries)[2];
+
+        timestampPart.Should().HaveLength(10);
+        randomPart.Should().HaveLength(16);
+        (timestampPart + randomPart).Should().Be(ulid);
+    }
+
+    [Theory]
+    [InlineData("ULID", 1)]
+    [InlineData("U", 1)]
+    [InlineData("GUID", 1)]
+    [InlineData("Gu", 1)]
+    [InlineData("DETAILED", 4)]
+    [InlineData("De", 4)]
+    public void Run_FormatInAnyCase_ShouldProduceOutput(string format, int expectedLines)
+    {
+        using var writer = new StringWriter();
+
+        var exitCode = UlidToolApp.Run(["-f", format], writer);
+
+        exitCode.Should().Be(0);
+        GetNonEmptyLines(writer.ToString()).Should().HaveCount(expectedLines);
+    }
+
     [Theory]
     [InlineData("0")]
     [InlineData("10001")]
