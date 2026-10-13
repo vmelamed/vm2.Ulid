@@ -27,17 +27,22 @@ public sealed class UlidFactory(IUlidRandomProvider? randomProvider = null, Time
     /// </summary>
     /// <remarks>
     /// This method creates a ULID based on the current UTC timestamp and a random component. If called multiple times within
-    /// the same millisecond, the random component is incremented to ensure uniqueness. The method is thread-safe.
+    /// the same millisecond, the random component is incremented to ensure uniqueness. If the clock moves backwards (e.g. an<br/>
+    /// NTP step), the factory keeps the last timestamp and increments the random component, so the generated ULIDs remain<br/>
+    /// strictly increasing. The method is thread-safe.
     /// </remarks>
     /// <returns>A new <see cref="Ulid"/> instance representing the generated ULID.</returns>
     public Ulid NewUlid()
     {
         var randomSpan  = _lastRandom.AsSpan();
-        var timestampNow = _clock.GetUtcNow().ToUnixTimeMilliseconds();
 
         lock (_lock)
         {
-            if (_lastTimestamp == timestampNow)
+            // The clock MUST be read inside the lock: a thread that read an earlier time but acquired the lock later would
+            // otherwise emit a ULID smaller than the one emitted just before it.
+            var timestampNow = _clock.GetUtcNow().ToUnixTimeMilliseconds();
+
+            if (timestampNow <= _lastTimestamp)
             {
                 // increment the random part with carry over for monotonicity
                 for (var i = randomSpan.Length-1; i >= 0; i--)
