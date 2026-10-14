@@ -43,6 +43,17 @@ public class UlidToString
     }
 #endif
 
+    [Benchmark(Description = "Interpolated $\"id={ulid}\"", OperationsPerInvoke = operationsPerInvoke)]
+    public string Ulid_Interpolation()
+    {
+        string suppressOptimizationDiscard = "";
+
+        for (int i = 0; i < operationsPerInvoke; i++)
+            suppressOptimizationDiscard = $"id={_data2.GetNext()}";
+
+        return suppressOptimizationDiscard;
+    }
+
     [Benchmark(Description = "Ulid.ToString", OperationsPerInvoke = operationsPerInvoke)]
     public string Ulid_ToString()
     {
