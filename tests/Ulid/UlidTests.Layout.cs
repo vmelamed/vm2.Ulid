@@ -111,6 +111,26 @@ public partial class UlidTests
         }
     }
 
+    // Folding each ulong to 32 bits before the seeded mix ((int)v ^ (int)(v >> 32)) maps every _lo = (n << 32) | n to 0,
+    // so these ULIDs all collided regardless of HashCode's per-process seed.
+    [Fact]
+    public void GetHashCode_WhenHalvesOfEachUlongAreEqual_ShouldNotCollide()
+    {
+        Span<byte> bytes = stackalloc byte[UlidBytesLength];
+        var hashes = new HashSet<int>();
+
+        for (uint n = 1; n <= 1000; n++)
+        {
+            bytes.Clear();
+            bytes[0] = 1;
+            System.Buffers.Binary.BinaryPrimitives.WriteUInt64BigEndian(bytes[8..], ((ulong)n << 32) | n);
+            hashes.Add(new Ulid(bytes, false).GetHashCode());
+        }
+
+        // 1000 random 32-bit hashes collide with probability ~1e-4; allow a few rather than demand perfection
+        hashes.Count.Should().BeGreaterThan(990);
+    }
+
     [Fact]
     public void Equality_ShouldBeReflexiveSymmetricTransitiveAndConsistentWithHashCode()
     {
