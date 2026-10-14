@@ -63,7 +63,7 @@ public readonly partial struct Ulid :
     /// <remarks>
     /// The returned <see cref="DateTimeOffset"/> represents the date and time encoded in the ULID.
     /// </remarks>
-    public DateTimeOffset Timestamp => DateTimeOffset.FromUnixTimeMilliseconds((long)(_hi >> TimestampShift));
+    public DateTimeOffset Timestamp => DateTimeOffset.FromUnixTimeMilliseconds((long)(_hi >> timestampShift));
 
     /// <summary>
     /// Returns the bytes of the random component from the current ULID instance.
@@ -183,7 +183,7 @@ public readonly partial struct Ulid :
                         $"The random bytes argument must contain exactly {nameof(Ulid)}.{nameof(RandomLength)} ({RandomLength}) bytes.",
                         nameof(randomBytes));
 
-        _hi = ((ulong)unixTimestamp << TimestampShift) | ReadUInt16BigEndian(randomBytes);
+        _hi = ((ulong)unixTimestamp << timestampShift) | ReadUInt16BigEndian(randomBytes);
         _lo = ReadUInt64BigEndian(randomBytes[sizeof(ushort)..]);
     }
 
@@ -223,7 +223,7 @@ public readonly partial struct Ulid :
     /// The caller guarantees the ranges; used by <see cref="UlidFactory"/> on its hot path.
     /// </summary>
     internal static Ulid FromParts(long unixTimestamp, ushort randomHi, ulong randomLo)
-        => new(((ulong)unixTimestamp << TimestampShift) | randomHi, randomLo);
+        => new(((ulong)unixTimestamp << timestampShift) | randomHi, randomLo);
 
     /// <summary>
     /// Converts the current ULID value to its equivalent Guid representation.
@@ -538,8 +538,8 @@ public readonly partial struct Ulid :
     static void Encode<T>(ulong hi, ulong lo, Span<T> destination, ReadOnlySpan<T> digits)
     {
         var top8  = hi >> 56;
-        var mid60 = ((hi & Low56BitsMask) << 4) | (lo >> 60);
-        var low60 = lo & Low60BitsMask;
+        var mid60 = ((hi & low56BitsMask) << 4) | (lo >> 60);
+        var low60 = lo & low60BitsMask;
 
         destination = destination[..UlidStringLength];   // one bounds check here lets the JIT elide the ones below
 
