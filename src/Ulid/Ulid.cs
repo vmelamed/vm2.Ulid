@@ -305,7 +305,7 @@ public readonly partial struct Ulid :
     /// ULIDs crafted by an untrusted party.
     /// </remarks>
     /// <returns>A 32-bit signed integer that serves as the hash code for the current instance.</returns>
-    public override int GetHashCode() => HashCode.Combine(_hi, _lo);
+    public override int GetHashCode() => HashCode.Combine((uint)_hi, (uint)(_hi >> 32), (uint)_lo, (uint)(_lo >> 32));
 
     #region IComparable
     /// <summary>
