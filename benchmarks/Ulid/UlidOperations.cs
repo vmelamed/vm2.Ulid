@@ -24,16 +24,16 @@ public class UlidOperations
     [GlobalSetup]
     public void Setup()
     {
-        var factory = new UlidFactory(new vm2.Providers.Ulid.PseudoRandom());
+        var factory = new UlidFactory(new Providers.Ulid.PseudoRandom());
 
         _ulids      = [.. Enumerable.Range(0, operationsPerInvoke).Select(_ => factory.NewUlid())];
+        Random.Shared.Shuffle(_ulids);
         // equal values backed by different storage, so Equals cannot short-circuit on reference identity
-        _copies     = [.. _ulids.Select(u => vm2.Ulid.Parse(u.ToString()))];
+        _copies     = [.. _ulids.Select(u => Ulid.Parse(u.ToString()))];
         _guids      = [.. _ulids.Select(u => u.ToGuid())];
         _bytes      = [.. _ulids.Select(u => u.Bytes.ToArray())];
         _set        = [.. _ulids];
         _sortBuffer = new Ulid[operationsPerInvoke];
-        Random.Shared.Shuffle(_ulids);
     }
 
     [Benchmark(Description = "Ulid.Equals", OperationsPerInvoke = operationsPerInvoke)]
