@@ -17,7 +17,10 @@ namespace vm2;
 public readonly partial struct Ulid :
     IEquatable<Ulid>,
     IComparable<Ulid>,
-    IParsable<Ulid>,
+    ISpanParsable<Ulid>,
+    IUtf8SpanParsable<Ulid>,
+    ISpanFormattable,
+    IUtf8SpanFormattable,
     IEqualityOperators<Ulid, Ulid, bool>,
     IComparisonOperators<Ulid, Ulid, bool>,
     IIncrementOperators<Ulid>,
@@ -380,6 +383,90 @@ public readonly partial struct Ulid :
         return true;
     }
 
+    #region ISpanFormattable, IUtf8SpanFormattable
+    /// <summary>
+    /// Formats the ULID as its canonical 26-character Crockford Base32 string.
+    /// </summary>
+    /// <remarks>
+    /// A ULID has a single representation, so only the default format - <see langword="null"/> or empty - is supported.<br/>
+    /// The <paramref name="formatProvider"/> is ignored: the representation does not depend on culture.
+    /// </remarks>
+    /// <param name="format">The format to use. Must be <see langword="null"/> or empty.</param>
+    /// <param name="formatProvider">Ignored.</param>
+    /// <returns>The 26-character string representation of the ULID.</returns>
+    /// <exception cref="FormatException">The <paramref name="format"/> is not <see langword="null"/> or empty.</exception>
+    public string ToString(string? format, IFormatProvider? formatProvider)
+    {
+        ValidateFormat(format);
+        return ToString();
+    }
+
+    /// <summary>
+    /// Tries to format the ULID as its canonical 26-character Crockford Base32 string into the provided span of characters.
+    /// </summary>
+    /// <remarks>
+    /// This is what string interpolation (<c>$"{ulid}"</c>), <see cref="string.Format(string, object?)"/>, and structured logging<br/>
+    /// call, so formatting a ULID that way writes it directly into the destination buffer without allocating an intermediate string.
+    /// </remarks>
+    /// <param name="destination">The span to write the 26 characters to.</param>
+    /// <param name="charsWritten">
+    /// When this method returns, contains the number of characters written: <see cref="UlidStringLength"/> on success, otherwise 0.
+    /// </param>
+    /// <param name="format">The format to use. Must be empty.</param>
+    /// <param name="provider">Ignored.</param>
+    /// <returns>
+    /// <see langword="true"/> if the formatting was successful; <see langword="false"/> if <paramref name="destination"/> is too small.
+    /// </returns>
+    /// <exception cref="FormatException">The <paramref name="format"/> is not empty.</exception>
+    public bool TryFormat(
+        Span<char> destination,
+        out int charsWritten,
+        ReadOnlySpan<char> format = default,
+        IFormatProvider? provider = null)
+    {
+        ValidateFormat(format);
+
+        charsWritten = TryWrite(destination) ? UlidStringLength : 0;
+        return charsWritten != 0;
+    }
+
+    /// <summary>
+    /// Tries to format the ULID as its canonical 26-character Crockford Base32 string into the provided span of UTF-8 bytes.
+    /// </summary>
+    /// <remarks>
+    /// This is what UTF-8 string interpolation (e.g. <see cref="System.Text.Unicode.Utf8.TryWrite(Span{byte}, ref System.Text.Unicode.Utf8.TryWriteInterpolatedStringHandler, out int)"/>)<br/>
+    /// calls, so a ULID is written directly into the destination buffer without allocating an intermediate string.
+    /// </remarks>
+    /// <param name="utf8Destination">The span to write the 26 UTF-8 bytes to.</param>
+    /// <param name="bytesWritten">
+    /// When this method returns, contains the number of bytes written: <see cref="UlidStringLength"/> on success, otherwise 0.
+    /// </param>
+    /// <param name="format">The format to use. Must be empty.</param>
+    /// <param name="provider">Ignored.</param>
+    /// <returns>
+    /// <see langword="true"/> if the formatting was successful; <see langword="false"/> if <paramref name="utf8Destination"/> is too small.
+    /// </returns>
+    /// <exception cref="FormatException">The <paramref name="format"/> is not empty.</exception>
+    public bool TryFormat(
+        Span<byte> utf8Destination,
+        out int bytesWritten,
+        ReadOnlySpan<char> format = default,
+        IFormatProvider? provider = null)
+    {
+        ValidateFormat(format);
+
+        bytesWritten = TryWriteUtf8(utf8Destination) ? UlidStringLength : 0;
+        return bytesWritten != 0;
+    }
+
+    // Same contract as Guid: an unsupported format is a caller bug, so it throws even from TryFormat.
+    static void ValidateFormat(ReadOnlySpan<char> format)
+    {
+        if (!format.IsEmpty)
+            throw new FormatException($"The format '{format}' is not supported. A ULID supports only the default (empty) format.");
+    }
+    #endregion
+
     /// <summary>
     /// Attempts to parse the specified UTF-16 string representation of a ULID.
     /// </summary>
@@ -478,6 +565,52 @@ public readonly partial struct Ulid :
 
         return TryParse(source.AsSpan(), out result);
     }
+    #endregion
+
+    #region ISpanParsable<Ulid>, IUtf8SpanParsable<Ulid>
+    /// <summary>
+    /// Parses the specified UTF-16 character span as a ULID.
+    /// </summary>
+    /// <param name="s">The characters to parse.</param>
+    /// <param name="provider">Ignored: the representation does not depend on culture.</param>
+    /// <returns>The parsed <see cref="Ulid"/>.</returns>
+    /// <exception cref="ArgumentException"><paramref name="s"/> does not represent a valid ULID.</exception>
+    public static Ulid Parse(ReadOnlySpan<char> s, IFormatProvider? provider = null)
+        => TryParse(s, out var ulid) ? ulid : throw new ArgumentException("The input source does not represent a valid ULID.", nameof(s));
+
+    /// <summary>
+    /// Tries to parse the specified UTF-16 character span as a ULID.
+    /// </summary>
+    /// <param name="s">The characters to parse.</param>
+    /// <param name="provider">Ignored: the representation does not depend on culture.</param>
+    /// <param name="result">
+    /// When this method returns, contains the parsed <see cref="Ulid"/> if the parsing succeeded; otherwise, <see cref="Empty"/>.
+    /// </param>
+    /// <returns><see langword="true"/> if <paramref name="s"/> was parsed successfully; otherwise, <see langword="false"/>.</returns>
+    public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out Ulid result)
+        => TryParse(s, out result);
+
+    /// <summary>
+    /// Parses the specified UTF-8 byte span as a ULID.
+    /// </summary>
+    /// <param name="utf8Text">The UTF-8 bytes to parse.</param>
+    /// <param name="provider">Ignored: the representation does not depend on culture.</param>
+    /// <returns>The parsed <see cref="Ulid"/>.</returns>
+    /// <exception cref="ArgumentException"><paramref name="utf8Text"/> does not represent a valid ULID.</exception>
+    public static Ulid Parse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider)
+        => Parse(utf8Text);
+
+    /// <summary>
+    /// Tries to parse the specified UTF-8 byte span as a ULID.
+    /// </summary>
+    /// <param name="utf8Text">The UTF-8 bytes to parse.</param>
+    /// <param name="provider">Ignored: the representation does not depend on culture.</param>
+    /// <param name="result">
+    /// When this method returns, contains the parsed <see cref="Ulid"/> if the parsing succeeded; otherwise, <see cref="Empty"/>.
+    /// </param>
+    /// <returns><see langword="true"/> if <paramref name="utf8Text"/> was parsed successfully; otherwise, <see langword="false"/>.</returns>
+    public static bool TryParse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider, out Ulid result)
+        => TryParse(utf8Text, out result);
     #endregion
 
     #region IMinMaxValues<Ulid>
