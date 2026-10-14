@@ -594,7 +594,9 @@ public readonly partial struct Ulid :
             var c = uint.CreateTruncating(ch);
             uint digit = CrockfordDigitValues[(byte)c];
 
-            invalid |= digit | (c >> 8);
+            // c & 0xFF00 keeps a UTF-16 char's high byte at bits 8..15, above the digit mask; shifting it down (c >> 8) would
+            // drop e.g. U+0130 into the masked-out low bits and let it alias the digit '0' found in its low byte.
+            invalid |= digit | (c & 0xFF00);
             value = (value << BitsPerUlidDigit) | digit;
         }
         return value;

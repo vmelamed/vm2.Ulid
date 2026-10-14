@@ -181,6 +181,29 @@ public partial class UlidTests(ITestOutputHelper output) : TestBase(output)
         TryParse(Encoding.UTF8.GetBytes(invalid), out r).Should().BeFalse();
     }
 
+    // UTF-16 characters whose LOW byte is a valid Crockford digit ('0', 'A', '1'): they must not alias that digit.
+    public static TheoryData<char, int> HighByteAliasChars = new()
+    {
+        { '\u0130', 0 },    // U+0130 (I with dot above) - low byte '0'
+        { '\u0141', 0 },    // U+0141 (L with stroke) - low byte 'A'
+        { '\u0131', 0 },    // U+0131 (dotless i) - low byte '1'
+        { '\u0130', 13 },
+        { '\uFF30', 25 },   // U+FF30 (fullwidth P) - low byte '0'
+    };
+
+    [Theory]
+    [MemberData(nameof(HighByteAliasChars))]
+    public void TryParse_Utf16CharWhoseLowByteIsADigit_ShouldFail(char wrong, int position)
+    {
+        var chars = new string('0', UlidStringLength).ToCharArray();
+        chars[position] = wrong;
+        var invalid = new string(chars);
+
+        TryParse(invalid, out var result).Should().BeFalse();
+        result.Should().Be(Empty);
+        TryParse(Encoding.UTF8.GetBytes(invalid), out _).Should().BeFalse();
+    }
+
     [Fact]
     public void TryParse_Null_ReturnsFalse()
     {
