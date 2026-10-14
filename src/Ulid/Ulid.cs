@@ -34,10 +34,6 @@ public readonly partial struct Ulid :
     readonly ulong _hi;
     readonly ulong _lo;
 
-    const int timestampShift = 16;  // the 16 low bits of _hi belong to the random part
-    const ulong low60BitsMask = (1UL << 60) - 1;
-    const ulong low56BitsMask = (1UL << 56) - 1;
-
     Ulid(ulong hi, ulong lo)
     {
         _hi = hi;
@@ -136,6 +132,7 @@ public readonly partial struct Ulid :
 
             if (!TryParse(bytes[0..UlidStringLength], out this))
                 throw new ArgumentException("The byte buffer does not represent a valid ULID string.", nameof(bytes));
+
             return;
         }
 
@@ -242,7 +239,7 @@ public readonly partial struct Ulid :
                ReverseEndianness((ushort)(_hi >> 16)),
                ReverseEndianness((ushort)_hi),
                (byte)(_lo >> 56), (byte)(_lo >> 48), (byte)(_lo >> 40), (byte)(_lo >> 32),
-               (byte)(_lo >> 24), (byte)(_lo >> 16), (byte)(_lo >> 8),  (byte)_lo);
+               (byte)(_lo >> 24), (byte)(_lo >> 16), (byte)(_lo >> 8), (byte)_lo);
 
     /// <summary>
     /// Converts the current ULID instance to its equivalent Base32 (the default) string representation.
@@ -592,7 +589,7 @@ public readonly partial struct Ulid :
         foreach (var ch in chars)
         {
             var c = uint.CreateTruncating(ch);
-            uint digit = CrockfordDigitValues[(byte)c];
+            uint digit = crockfordDigitValues[(byte)c];
 
             // c & 0xFF00 keeps a UTF-16 char's high byte at bits 8..15, above the digit mask; shifting it down (c >> 8) would
             // drop e.g. U+0130 into the masked-out low bits and let it alias the digit '0' found in its low byte.
