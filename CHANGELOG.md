@@ -1,5 +1,14 @@
 # Changelog
 
+## v5.5.0-preview.2 - 2026-10-15
+
+### Internal
+
+- fix wrong names, paths and links, a non-compiling sample, and inaccurate claims
+- rewrite "The UlidFactory in a Distributed System"
+- update the performance table
+- corrected text about monotonic visibility
+
 ## v5.5.0-preview.1 - 2026-10-15
 
 ### Added
