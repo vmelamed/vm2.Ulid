@@ -388,13 +388,14 @@ public readonly partial struct Ulid :
     /// Formats the ULID as its canonical 26-character Crockford Base32 string.
     /// </summary>
     /// <remarks>
-    /// A ULID has a single representation, so only the default format - <see langword="null"/> or empty - is supported.<br/>
+    /// A ULID has a single representation. The default format (<see langword="null"/> or empty) and the general format<br/>
+    /// (<c>"G"</c> or <c>"g"</c>), which <see cref="IFormattable"/> requires every implementation to support, both produce it.<br/>
     /// The <paramref name="formatProvider"/> is ignored: the representation does not depend on culture.
     /// </remarks>
-    /// <param name="format">The format to use. Must be <see langword="null"/> or empty.</param>
+    /// <param name="format">The format to use: <see langword="null"/>, empty, <c>"G"</c>, or <c>"g"</c>.</param>
     /// <param name="formatProvider">Ignored.</param>
     /// <returns>The 26-character string representation of the ULID.</returns>
-    /// <exception cref="FormatException">The <paramref name="format"/> is not <see langword="null"/> or empty.</exception>
+    /// <exception cref="FormatException">The <paramref name="format"/> is not <see langword="null"/>, empty, <c>"G"</c>, or <c>"g"</c>.</exception>
     public string ToString(string? format, IFormatProvider? formatProvider)
     {
         ValidateFormat(format);
@@ -412,12 +413,12 @@ public readonly partial struct Ulid :
     /// <param name="charsWritten">
     /// When this method returns, contains the number of characters written: <see cref="UlidStringLength"/> on success, otherwise 0.
     /// </param>
-    /// <param name="format">The format to use. Must be empty.</param>
+    /// <param name="format">The format to use: empty, <c>"G"</c>, or <c>"g"</c>.</param>
     /// <param name="provider">Ignored.</param>
     /// <returns>
     /// <see langword="true"/> if the formatting was successful; <see langword="false"/> if <paramref name="destination"/> is too small.
     /// </returns>
-    /// <exception cref="FormatException">The <paramref name="format"/> is not empty.</exception>
+    /// <exception cref="FormatException">The <paramref name="format"/> is not empty, <c>"G"</c>, or <c>"g"</c>.</exception>
     public bool TryFormat(
         Span<char> destination,
         out int charsWritten,
@@ -441,12 +442,12 @@ public readonly partial struct Ulid :
     /// <param name="bytesWritten">
     /// When this method returns, contains the number of bytes written: <see cref="UlidStringLength"/> on success, otherwise 0.
     /// </param>
-    /// <param name="format">The format to use. Must be empty.</param>
+    /// <param name="format">The format to use: empty, <c>"G"</c>, or <c>"g"</c>.</param>
     /// <param name="provider">Ignored.</param>
     /// <returns>
     /// <see langword="true"/> if the formatting was successful; <see langword="false"/> if <paramref name="utf8Destination"/> is too small.
     /// </returns>
-    /// <exception cref="FormatException">The <paramref name="format"/> is not empty.</exception>
+    /// <exception cref="FormatException">The <paramref name="format"/> is not empty, <c>"G"</c>, or <c>"g"</c>.</exception>
     public bool TryFormat(
         Span<byte> utf8Destination,
         out int bytesWritten,
@@ -459,11 +460,12 @@ public readonly partial struct Ulid :
         return bytesWritten != 0;
     }
 
-    // Same contract as Guid: an unsupported format is a caller bug, so it throws even from TryFormat.
+    // Like Guid, an unsupported format is a caller bug, so it throws even from TryFormat. "G" is accepted because the
+    // IFormattable contract requires every implementation to support the general format.
     static void ValidateFormat(ReadOnlySpan<char> format)
     {
-        if (!format.IsEmpty)
-            throw new FormatException($"The format '{format}' is not supported. A ULID supports only the default (empty) format.");
+        if (!format.IsEmpty && format is not "G" and not "g")
+            throw new FormatException($"The format '{format}' is not supported. A ULID supports only the default (empty) and the general (\"G\") formats.");
     }
     #endregion
 
