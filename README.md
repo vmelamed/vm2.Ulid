@@ -327,8 +327,8 @@ ULIDs smaller than the ones its predecessor issued, e.g. it starts after a persi
 > [!IMPORTANT]
 > Monotonic *issuance* is not monotonic *visibility*. Even with a central service, a ULID issued earlier can be committed
 > later than one issued after it. A consumer that reads "everything after the last ULID I saw" (cursor pagination, change
-> feeds, outboxes) can therefore miss rows. Such consumers need a watermark, e.g. they read only ULIDs older than the longest
-> expected transaction.
+> feeds, outboxes) can therefore miss rows. Such consumers need a commit-ordered cursor or a watermark that accounts for all
+> in-flight writes; delaying reads by an expected transaction duration alone does not guarantee completeness.
 
 Choose based on your requirements, weighing uniqueness, ordering, latency, availability, and complexity.
 
