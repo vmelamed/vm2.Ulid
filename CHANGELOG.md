@@ -1,5 +1,28 @@
 # Changelog
 
+## v5.4.3-preview.7 - 2026-10-15
+
+### Fixed
+
+- keep ULIDs monotonic when threads race or the clock steps back
+- hash all four 32-bit words of the ULID to prevent seed-independent collisions
+- reject UTF-16 characters whose low byte is a valid Crockford digit
+- un-delete CrockfordDigitValues
+- undo the undo...
+
+### Internal
+
+- add UlidOperations benchmarks for equality, ordering, hashing and conversions
+- shuffle before deriving the equal-value copies in UlidOperations
+- move the new constants into Ulid.Constants and remove the not used CrockfordDigitValues
+- update packages
+- upgrade .NET SDK to 10.0.402
+- update packages
+
+### Performance
+
+- hold the ULID as two ulong halves instead of a heap-allocated byte array
+
 ## v5.4.3-preview.6 - 2026-10-12
 
 ### Internal
