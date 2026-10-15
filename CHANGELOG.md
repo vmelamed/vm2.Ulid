@@ -1,5 +1,11 @@
 # Changelog
 
+## v5.4.3-preview.8 - 2026-10-15
+
+### Fixed
+
+- detailed format dropped a random digit; upper-case formats printed nothing
+
 ## v5.4.3-preview.7 - 2026-10-15
 
 ### Fixed

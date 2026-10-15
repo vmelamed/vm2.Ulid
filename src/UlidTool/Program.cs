@@ -97,29 +97,33 @@ internal static class UlidToolApp
         rootCommand.SetAction(
             parseResult =>
             {
+                // the validator accepts any letter case, so the action must normalize the same way
+                string format = parseResult.GetValue(formatOption)!.ToLowerInvariant();
+
                 for (var i = 0; i < parseResult.GetValue(numberOption); i++)
                 {
                     var ulid = Ulid.NewUlid();
-                    string format = parseResult.GetValue(formatOption)!;
 
                     switch (format)
                     {
-                        case string f when "ulid".StartsWith(f):
+                        case string f when "ulid".StartsWith(f, StringComparison.Ordinal):
                             Console.WriteLine(ulid.ToString());
                             break;
 
-                        case string f when "guid".StartsWith(f):
+                        case string f when "guid".StartsWith(f, StringComparison.Ordinal):
                             Console.WriteLine(ulid.ToGuid());
                             break;
 
-                        case string f when "detailed".StartsWith(f):
+                        case string f when "detailed".StartsWith(f, StringComparison.Ordinal):
                             DateTimeOffset timestamp = ulid.Timestamp;
                             byte[] randomBytes = ulid.RandomBytes.ToArray();
+                            string ulidString = ulid.ToString();
 
-                            Console.WriteLine($"ULID: {ulid}");
+                            // 10 Crockford digits carry exactly the 48 timestamp bits (3 + 9 x 5); the other 16 carry the 80 random bits
+                            Console.WriteLine($"ULID: {ulidString}");
                             Console.WriteLine($"GUID: {ulid.ToGuid()}");
-                            Console.WriteLine($"  Timestamp:    {ulid.ToString()[..10]}      {timestamp:o} ({timestamp.ToUnixTimeMilliseconds()})");
-                            Console.WriteLine($"  Random Bytes: {ulid.ToString()[11..]} [ 0x{string.Join(", 0x", randomBytes.Select(b => b.ToString("X2")))} ]");
+                            Console.WriteLine($"  Timestamp:    {ulidString[..10]}       {timestamp:o} ({timestamp.ToUnixTimeMilliseconds()})");
+                            Console.WriteLine($"  Random Bytes: {ulidString[10..]} [ 0x{string.Join(", 0x", randomBytes.Select(b => b.ToString("X2")))} ]");
                             Console.WriteLine();
                             break;
                     }
