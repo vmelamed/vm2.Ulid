@@ -69,16 +69,26 @@ public partial class UlidTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public void ToString_WithDefaultFormat_ShouldEqualToString(string? format)
+    [InlineData("G")]
+    [InlineData("g")]
+    public void Formatting_WithDefaultOrGeneralFormat_ShouldProduceCanonicalString(string? format)
     {
         var ulid = Parse(KnownUlid);
+        var chars = new char[UlidStringLength];
+        var bytes = new byte[UlidStringLength];
 
         ulid.ToString(format, CultureInfo.InvariantCulture).Should().Be(KnownUlid);
+        ulid.TryFormat(chars, out _, format).Should().BeTrue();
+        new string(chars).Should().Be(KnownUlid);
+        ulid.TryFormat(bytes, out _, format).Should().BeTrue();
+        Encoding.UTF8.GetString(bytes).Should().Be(KnownUlid);
+        string.Format(CultureInfo.InvariantCulture, $"{{0:{format}}}", ulid).Should().Be(KnownUlid);
     }
 
     [Theory]
-    [InlineData("G")]
+    [InlineData("GG")]
     [InlineData("D")]
+    [InlineData("N")]
     [InlineData("x")]
     public void Formatting_WithUnsupportedFormat_ShouldThrowFormatException(string format)
     {
