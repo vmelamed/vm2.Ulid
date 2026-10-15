@@ -1,5 +1,15 @@
 # Changelog
 
+## v5.5.0-preview.1 - 2026-10-15
+
+### Added
+
+- implement ISpanFormattable, IUtf8SpanFormattable, ISpanParsable and IUtf8SpanParsable
+
+### Internal
+
+- add string interpolation benchmark for Ulid
+
 ## v5.4.3-preview.8 - 2026-10-15
 
 ### Fixed
