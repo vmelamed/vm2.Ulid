@@ -1,5 +1,11 @@
 # Changelog
 
+## v5.5.0-preview.3 - 2026-10-15
+
+### Fixed
+
+- accept the general "G" format in Ulid formatting
+
 ## v5.5.0-preview.2 - 2026-10-15
 
 ### Internal
