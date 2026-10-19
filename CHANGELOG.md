@@ -1,5 +1,12 @@
 # Changelog
 
+## v5.5.1-preview.1 - 2026-10-19
+
+### Internal
+
+- promote to stable v5.5.0 [skip ci]
+- update changelog for v5.5.0 [skip ci]
+
 ## v5.5.0 - 2026-10-15
 
 See prereleases below.
