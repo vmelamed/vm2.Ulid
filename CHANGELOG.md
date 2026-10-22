@@ -1,5 +1,11 @@
 # Changelog
 
+## v5.5.1-preview.2 - 2026-10-22
+
+### Fixed
+
+- instead of examples/*.lock.json -> examples/packages.lock.json
+
 ## v5.5.1-preview.1 - 2026-10-19
 
 ### Internal
