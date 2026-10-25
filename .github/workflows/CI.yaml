@@ -249,6 +249,5 @@ jobs:
               warning "Building packages was skipped. The CI workflow is intentionally marked as failed to save time. Use this option only for testing non-package CI jobs faster." &&
               rc=$failure
 
-          remove_traps
           exit $rc
 #  ===>>> end shared content
