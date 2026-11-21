@@ -218,8 +218,8 @@ jobs:
         run: |
           source $DEVOPS_LIB_DIR/gh_core.sh
 
-          declare -xri success
-          declare -xri failure
+          declare -x success
+          declare -x failure
 
           if [[ $prerun_ci_result == "failure" || $prerun_ci_result == "cancelled" ]]; then
               exit_with_error -ec "$failure" -ns "CI pipeline pre-run (arguments gathering and preparation) failed or was cancelled: $prerun_ci_result."
